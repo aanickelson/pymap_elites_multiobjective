@@ -44,8 +44,7 @@ import multiprocessing
 # from scipy.spatial import cKDTree : TODO -- faster?
 from sklearn.neighbors import KDTree
 
-from map_elites import common as cm
-
+from pymap_elites_multiobjective.map_elites import common as cm
 
 
 def __add_to_archive(s, centroid, archive, kdt):
@@ -54,14 +53,32 @@ def __add_to_archive(s, centroid, archive, kdt):
     n = cm.make_hashable(niche)
     s.centroid = n
     if n in archive:
-        if s.fitness > archive[n].fitness:
-            archive[n] = s
-            return 1
-        return 0
+        archive[n] = is_pareto_efficient_simple(archive[n], s)
+        return
     else:
-        archive[n] = s
-        return 1
+        archive[n] = [s]
+        return
 
+
+def is_pareto_efficient_simple(vals, new):
+    """
+    copied and modified from https://stackoverflow.com/questions/32791911/fast-calculation-of-pareto-front-in-python
+    Find the pareto-efficient points
+    :param costs: An (n_points, n_costs) array
+    :return: A (n_points, ) boolean array, indicating whether each point is Pareto efficient
+    """
+    vals.append(new)
+    fitnesses = [s.fitness for s in vals]
+    costs = np.array(fitnesses)
+    is_efficient = np.ones(costs.shape[0], dtype=bool)
+    for i, c in enumerate(costs):
+        if is_efficient[i]:
+            is_efficient[is_efficient] = np.any(costs[is_efficient] > c, axis=1)  # Keep any point with a lower cost
+            eff_add = np.all(costs == c, axis=1)
+            is_efficient += eff_add
+            is_efficient[i] = True  # And keep self
+    final_vals = [vals[j] for j in range(len(vals)) if is_efficient[j]]
+    return final_vals
 
 # evaluate a single vector (x) with a function f and return a species
 # t = vector, function
@@ -76,7 +93,8 @@ def compute(dim_map, dim_x, f,
             max_evals=1e5,
             params=cm.default_params,
             log_file=None,
-            variation_operator=cm.variation):
+            variation_operator=cm.variation,
+            data_fname=None):
     """CVT MAP-Elites
        Vassiliades V, Chatzilygeroudis K, Mouret JB. Using centroidal voronoi tessellations to scale up the multidimensional archive of phenotypic elites algorithm. IEEE Transactions on Evolutionary Computation. 2017 Aug 3;22(4):623-30.
 
@@ -112,8 +130,8 @@ def compute(dim_map, dim_x, f,
             rand2 = np.random.randint(len(keys), size=params['batch_size'])
             for n in range(0, params['batch_size']):
                 # parent selection
-                x = archive[keys[rand1[n]]]
-                y = archive[keys[rand2[n]]]
+                x = np.random.choice(archive[keys[rand1[n]]])
+                y = np.random.choice(archive[keys[rand2[n]]])
                 # copy & add variation
                 z = variation_operator(x.x, y.x, params)
                 to_evaluate += [(z, f)]
@@ -128,12 +146,12 @@ def compute(dim_map, dim_x, f,
 
         # write archive
         if b_evals >= params['dump_period'] and params['dump_period'] != -1:
-            print("[{}/{}]".format(n_evals, int(max_evals)), end=" ", flush=True)
-            cm.__save_archive(archive, n_evals)
+            print("[{}/{}] \n".format(n_evals, int(max_evals)), end=" ", flush=True)
+            cm.__save_archive(archive, n_evals, data_fname)
             b_evals = 0
         # write log
         if log_file != None:
-            fit_list = np.array([x.fitness for x in archive.values()])
+            fit_list = np.array([x[0].fitness[0] for x in archive.values()])
             log_file.write("{} {} {} {} {} {} {}\n".format(n_evals, len(archive.keys()),
                     fit_list.max(), np.mean(fit_list), np.median(fit_list),
                     np.percentile(fit_list, 5), np.percentile(fit_list, 95)))

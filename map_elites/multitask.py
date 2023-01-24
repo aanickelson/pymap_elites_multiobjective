@@ -49,7 +49,7 @@ from collections import defaultdict
 from sklearn.neighbors import KDTree
 from scipy.spatial import distance
 
-from map_elites import common as cm
+from pymap_elites_multiobjective import common as cm
 
 
 def add_to_archive(s, archive):

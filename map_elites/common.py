@@ -46,6 +46,7 @@ import sys
 import random
 from collections import defaultdict
 from sklearn.cluster import KMeans
+from os import path, getcwd
 
 default_params = \
     {
@@ -84,7 +85,7 @@ def polynomial_mutation(x):
     Cf Deb 2001, p 124 ; param: eta_m
     '''
     y = x.copy()
-    eta_m = 5.0;
+    eta_m = 5.0
     r = np.random.random(size=len(x))
     for i in range(0, len(x)):
         if r[i] < 0.5:
@@ -191,7 +192,7 @@ def cvt(k, dim, samples, cvt_use_cache=True):
 
     x = np.random.rand(samples, dim)
     k_means = KMeans(init='k-means++', n_clusters=k,
-                     n_init=1, n_jobs=-1, verbose=1)#,algorithm="full")
+                     n_init=1, verbose=1)#,algorithm="full")
     k_means.fit(x)
     __write_centroids(k_means.cluster_centers_)
 
@@ -211,15 +212,20 @@ def parallel_eval(evaluate_function, to_evaluate, pool, params):
 
 # format: fitness, centroid, desc, genome \n
 # fitness, centroid, desc and x are vectors
-def __save_archive(archive, gen):
+def __save_archive(archive, gen, data_fname=None):
+    filename = 'archive_' + str(gen) + '.dat'
+
+    if data_fname:
+        filename = path.join(data_fname, 'archive_' + str(gen) + '.dat')
+
     def write_array(a, f):
         for i in a:
             f.write(str(i) + ' ')
-    filename = 'archive_' + str(gen) + '.dat'
     with open(filename, 'w') as f:
-        for k in archive.values():
-            f.write(str(k.fitness) + ' ')
-            write_array(k.centroid, f)
-            write_array(k.desc, f)
-            write_array(k.x, f)
-            f.write("\n")
+        for lst in archive.values():
+            for k in lst:
+                write_array(k.fitness, f)
+                write_array(k.centroid, f)
+                write_array(k.desc, f)
+                write_array(k.x, f)
+                f.write("\n")
