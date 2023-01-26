@@ -60,14 +60,26 @@ def __add_to_archive(s, centroid, archive, kdt):
         return
 
 
-def is_pareto_efficient_simple(vals, new):
+def __add_pareto_to_archive(s_list, archive, kdt):
+    global_pareto = is_pareto_efficient_simple(s_list)
+    for s in global_pareto:
+        niche_index = kdt.query([s.desc], k=1)[1][0][0]
+        niche = kdt.data[niche_index]
+        n = cm.make_hashable(niche)
+        s.centroid = n
+        archive[n].append(s)
+    return
+
+
+def is_pareto_efficient_simple(vals, new=None):
     """
     copied and modified from https://stackoverflow.com/questions/32791911/fast-calculation-of-pareto-front-in-python
     Find the pareto-efficient points
     :param costs: An (n_points, n_costs) array
     :return: A (n_points, ) boolean array, indicating whether each point is Pareto efficient
     """
-    vals.append(new)
+    if new:
+        vals.append(new)
     fitnesses = [s.fitness for s in vals]
     costs = np.array(fitnesses)
     is_efficient = np.ones(costs.shape[0], dtype=bool)
@@ -111,7 +123,7 @@ def compute(dim_map, dim_x, f,
 
     # create the CVT
     c = cm.cvt(n_niches, dim_map,
-              params['cvt_samples'],data_fname ,params['cvt_use_cache'])
+              params['cvt_samples'], params['cvt_use_cache'])
     kdt = KDTree(c, leaf_size=30, metric='euclidean')
     cm.__write_centroids(c, data_fname)
 
@@ -120,7 +132,7 @@ def compute(dim_map, dim_x, f,
     b_evals = 0 # number evaluation since the last dump
 
     # main loop
-    while (n_evals < max_evals):
+    while n_evals < max_evals:
         to_evaluate = []
         # random initialization
         if len(archive) <= params['random_init'] * n_niches:
@@ -144,6 +156,8 @@ def compute(dim_map, dim_x, f,
         # natural selection
         for s in s_list:
             __add_to_archive(s, s.desc, archive, kdt)
+
+        __add_pareto_to_archive(s_list, archive, kdt)
         # count evals
         n_evals += len(to_evaluate)
         b_evals += len(to_evaluate)

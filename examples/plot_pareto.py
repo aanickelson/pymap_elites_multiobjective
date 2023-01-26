@@ -1,18 +1,37 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from shapely.geometry import Polygon
 
 
 def plot_it(x, y, iseff, fname, dirname):
     plt.clf()
     max_vals = [10, max(x), max(y)]
-    plt_max = max(max_vals) + 0.5
+    # plt_max = max(max_vals) + 0.5
+    plt_max = 21
     plt.xlim([-0.5, plt_max])
     plt.ylim([-0.5, plt_max])
     plt.scatter(x, y, c='red')
     plt.scatter(x[iseff], y[iseff], c="blue")
+    curve_area = get_area(x[iseff], y[iseff])
     plt.locator_params(axis="both", integer=True, tight=True)
-    plt.title(fname)
+    plt.title(f"{fname} AREA: {curve_area}")
     plt.savefig(os.path.join(dirname, fname + '.png'))
+    return curve_area
+
+
+def get_area(x, y):
+    xy = list(zip(x, y))
+    # Add the origin
+    xy.append((0, 0))
+    # Add the x-axis intercept
+    xy.append((max(x), 0))
+    # Add the y-axis intercept
+    xy.append((0, max(y)))
+
+    unique_xy = np.unique(xy, axis=0)
+
+    pgon = Polygon(unique_xy)
+    return pgon.area
 
 
 def is_pareto_efficient_simple(xyvals):
@@ -44,22 +63,66 @@ def load_data(filename):
     return xvals, yvals, xyvals
 
 
+def process(data):
+    from scipy.stats import sem
+    mu = np.mean(data, axis=0)
+    ste = sem(data, axis=0)
+    # mu = data[0]
+    # ste = data[0]
+    return mu, ste
+
+
+def plot_areas(evos, areas_pareto, areas_no, dirname):
+    plt.clf()
+    evos = np.array(evos)
+    set_for_loop = [[areas_pareto, 'pareto'], [areas_no, 'no']]
+    for [data, pareto] in set_for_loop:
+        try:
+            means, sterr = process(data)
+            plt.plot(evos, means)
+        except ValueError:
+            continue
+        plt.fill_between(evos, means-sterr, means+sterr, alpha=0.5, label=pareto)
+    plt.title(f"{dirname} areas")
+    plt.legend()
+    plt.savefig(os.path.join('/home/toothless/workspaces/pymap_elites_multiobjective/examples/data/area_graphs', dirname + '.png'))
+
+
 if __name__ == '__main__':
     # fname = '/home/anna/PycharmProjects/py_map_elites/examples/data/002_20230123_191216/archive_100000.dat'
 
 
     import os
 
-    rootdir = '/home/anna/PycharmProjects/py_map_elites/examples/data'
+    rootdir = '/home/toothless/workspaces/pymap_elites_multiobjective/examples/data'
     graphs_fname = os.path.join(rootdir, 'graphs')
-
-    for subdir, dirs, files in os.walk(rootdir):
-        for sub in dirs:
-            fname = os.path.join(rootdir, sub, 'archive_100000.dat')
-            try:
-                x, y, xy = load_data(fname)
-            except FileNotFoundError:
+    evols = [i*10000 for i in range(11) if i > 0]
+    x = 0
+    for pnum in ['004', '005', '002']:
+        for subdir, dirs, files in os.walk(rootdir):
+            if not dirs:
                 continue
-            is_eff = is_pareto_efficient_simple(xy)
-            plot_it(x, y, is_eff, sub, graphs_fname)
-
+            areas_w_pareto = []
+            areas_no_pareto = []
+            for sub in dirs:
+                pareto = False
+                if not pnum in sub:
+                    continue
+                if '20230126' in sub:
+                    pareto = True
+                areas = []
+                for evo in evols:
+                    fname = os.path.join(rootdir, sub, f'archive_{evo}.dat')
+                    try:
+                        x, y, xy = load_data(fname)
+                    except FileNotFoundError:
+                        continue
+                    is_eff = is_pareto_efficient_simple(xy)
+                    # curve_area = plot_it(x, y, is_eff, f'{sub}_{evo}', graphs_fname)
+                    curve_area = get_area(x[is_eff], y[is_eff])
+                    areas.append(curve_area)
+                if pareto:
+                    areas_w_pareto.append(areas)
+                else:
+                    areas_no_pareto.append(areas)
+            plot_areas(evols, areas_w_pareto, areas_no_pareto, pnum)
