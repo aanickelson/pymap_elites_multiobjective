@@ -72,10 +72,10 @@ def process(data):
     return mu, ste
 
 
-def plot_areas(evos, areas_pareto, areas_no, dirname, area_fname):
+def plot_areas(evos, areas_pareto, areas_no, areas_parallel, dirname, area_fname):
     plt.clf()
     evos = np.array(evos)
-    set_for_loop = [[areas_pareto, 'pareto'], [areas_no, 'no']]
+    set_for_loop = [[areas_pareto, 'pareto'], [areas_no, 'no'], [areas_parallel, 'parallel']]
     for [data, pareto] in set_for_loop:
         try:
             means, sterr = process(data)
@@ -104,14 +104,18 @@ if __name__ == '__main__':
         for subdir, dirs, files in os.walk(rootdir):
             if not dirs:
                 continue
-            areas_w_pareto = []
-            areas_no_pareto = []
+            areas_pareto = []
+            areas_no = []
+            areas_parallel = []
+
             for sub in dirs:
-                pareto = False
+                pareto = 'no'
                 if not pnum in sub:
                     continue
-                if 'par' in sub:
-                    pareto = True
+                if 'pareto' in sub:
+                    pareto = 'pareto'
+                elif 'parallel' in sub:
+                    pareto = 'parallel'
                 areas = []
                 for evo in evols:
                     fname = os.path.join(rootdir, sub, f'archive_{evo}.dat')
@@ -121,12 +125,16 @@ if __name__ == '__main__':
                         continue
                     is_eff = is_pareto_efficient_simple(xy)
                     curve_area = plot_it(x, y, is_eff, f'{sub}_{evo}', graphs_fname)
-                    curve_area = get_area(x[is_eff], y[is_eff])
+                    # curve_area = get_area(x[is_eff], y[is_eff])
                     areas.append(curve_area)
                 if len(areas) < len(evols):
                     continue
-                if pareto:
-                    areas_w_pareto.append(areas)
+                if pareto == 'pareto':
+                    areas_pareto.append(areas)
+                elif pareto == 'no':
+                    areas_no.append(areas)
+                elif pareto == 'parallel':
+                    areas_parallel.append(areas)
                 else:
-                    areas_no_pareto.append(areas)
-            plot_areas(evols, areas_w_pareto, areas_no_pareto, pnum, area_fname)
+                    print('something has gone horribly wrong')
+            plot_areas(evols, areas_pareto, areas_no, areas_parallel, pnum, area_fname)
