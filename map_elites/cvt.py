@@ -128,14 +128,19 @@ def compute(dim_map, dim_x, f,
                 x = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
                 to_evaluate += [(x, f)]
         else:  # variation/selection loop
-            keys = list(archive.keys())
+            arch_pols = []
+            # Unpack all the policies to mutate
+            for key, value in archive.items():
+                for val_i, val in enumerate(value):
+                    arch_pols.append(val)
+
             # we select all the parents at the same time because randint is slow
-            rand1 = np.random.randint(len(keys), size=params['batch_size'])
-            rand2 = np.random.randint(len(keys), size=params['batch_size'])
+            rand1 = np.random.randint(len(arch_pols), size=params['batch_size'])
+            rand2 = np.random.randint(len(arch_pols), size=params['batch_size'])
             for n in range(0, params['batch_size']):
                 # parent selection
-                x = np.random.choice(archive[keys[rand1[n]]])
-                y = np.random.choice(archive[keys[rand2[n]]])
+                x = arch_pols[rand1[n]]
+                y = arch_pols[rand2[n]]
                 # copy & add variation
                 z = variation_operator(x.x, y.x, params)
                 to_evaluate += [(z, f)]

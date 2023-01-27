@@ -40,6 +40,7 @@
 import math
 import numpy as np
 import multiprocessing
+import random
 
 # from scipy.spatial import cKDTree : TODO -- faster?
 from sklearn.neighbors import KDTree
@@ -127,27 +128,35 @@ def compute(dim_map, dim_x, f,
     cm.__write_centroids(c, data_fname)
 
     archive = {} # init archive (empty)
+    pareto_archive = []
     n_evals = 0 # number of evaluations since the beginning
     b_evals = 0 # number evaluation since the last dump
+    n_evolutions = 0
 
     # main loop
     while n_evals < max_evals:
         to_evaluate = []
+        to_evaluate_p = []
         # random initialization
         if len(archive) <= params['random_init'] * n_niches:
             for i in range(0, params['random_init_batch']):
                 x = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
+                x_p = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
+
                 to_evaluate += [(x, f)]
+                to_evaluate_p += [(x_p, f)]
         else:  # variation/selection loop
+            # keys = list(archive.keys())
             arch_pols = []
             # Unpack all the policies to mutate
             for key, value in archive.items():
                 for val_i, val in enumerate(value):
                     arch_pols.append(val)
 
+            batch_sz = int(params['batch_size'] / 2)
             # we select all the parents at the same time because randint is slow
-            rand1 = np.random.randint(len(arch_pols), size=params['batch_size'])
-            rand2 = np.random.randint(len(arch_pols), size=params['batch_size'])
+            rand1 = np.random.randint(len(arch_pols), size=batch_sz)
+            rand2 = np.random.randint(len(arch_pols), size=batch_sz)
             for n in range(0, params['batch_size']):
                 # parent selection
                 x = arch_pols[rand1[n]]
@@ -156,14 +165,34 @@ def compute(dim_map, dim_x, f,
                 z = variation_operator(x.x, y.x, params)
                 to_evaluate += [(z, f)]
 
+            randp1 = np.random.randint(len(pareto_archive), size=batch_sz)
+            randp2 = np.random.randint(len(pareto_archive), size=batch_sz)
+            for n in range(0, params):
+                x_p = arch_pols[rand1[n]]
+                y_p = arch_pols[rand2[n]]
+                # copy & add variation
+                z_p = variation_operator(x_p.x, y_p.x, params)
+                to_evaluate_p += [(z_p, f)]
+
         # evaluation of the fitness for to_evaluate
         s_list = cm.parallel_eval(__evaluate, to_evaluate, pool, params)
+        s_p_list = cm.parallel_eval(__evaluate, to_evaluate_p, pool, params)
+
+        # Keep only the policies that are pareto optimal
+        pareto_archive = is_pareto_efficient_simple(s_p_list)
+
         # natural selection
         for s in s_list:
             __add_to_archive(s, s.desc, archive, kdt)
+        if not n_evolutions % 10:
+            __add_pareto_to_archive(pareto_archive, archive, kdt)
 
-        __add_pareto_to_archive(s_list, archive, kdt)
-        # count evals
+            # Copy current population to pareto archive
+            pareto_archive = []
+            for key, value in archive.items():
+                for val_i, val in enumerate(value):
+                    pareto_archive.append(val)
+
         n_evals += len(to_evaluate)
         b_evals += len(to_evaluate)
 
@@ -179,5 +208,7 @@ def compute(dim_map, dim_x, f,
                     fit_list.max(), np.mean(fit_list), np.median(fit_list),
                     np.percentile(fit_list, 5), np.percentile(fit_list, 95)))
             log_file.flush()
+        n_evolutions += 1
+
     cm.__save_archive(archive, n_evals)
     return archive

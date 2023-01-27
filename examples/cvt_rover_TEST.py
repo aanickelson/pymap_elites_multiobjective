@@ -7,6 +7,7 @@ import math
 
 import pymap_elites_multiobjective.map_elites.cvt_plus_pareto as cvt_me_pareto
 import pymap_elites_multiobjective.map_elites.cvt as cvt_me
+import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
 import pymap_elites_multiobjective.map_elites.common as cm_map_elites
 from teaming.domain import DiscreteRoverDomain as Domain
 import evo_playground.parameters as param
@@ -50,12 +51,17 @@ def main(setup):
     out_size = env.get_action_size()
     wts_dim = in_size * out_size
     dom = RoverWrapper(env)
-    if with_pareto:
+    if with_pareto == 'pareto':
         archive = cvt_me_pareto.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=500, max_evals=evals,
                                         log_file=open('cvt.dat', 'w'), params=px, data_fname=filepath)
-    else:
+    elif with_pareto == 'parallel':
+        archive = cvt_me_pareto_parallel.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=500, max_evals=evals,
+                                        log_file=open('cvt.dat', 'w'), params=px, data_fname=filepath)
+    elif with_pareto == 'no':
         archive = cvt_me.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=500, max_evals=evals,
                                  log_file=open('cvt.dat', 'w'), params=px, data_fname=filepath)
+    else:
+        print(f'{with_pareto} is not an option. Options are "parallel", "pareto", and "no"')
 
 
 if __name__ == '__main__':
@@ -71,23 +77,21 @@ if __name__ == '__main__':
     evals = 150000
 
     batch = []
-    for with_pareto in [False, True]:
-        par = 'no'
-        if with_pareto:
-            par = 'par'
+    pareto_paralell_options = ['parallel', 'pareto', 'no']
+    for with_pareto in pareto_paralell_options:
         for i in range(10):
             for p in [param.p05, param.p02, param.p04]:
 
                 now = datetime.now()
                 now_str = now.strftime("%Y%m%d_%H%M%S")
-                filepath = path.join(getcwd(), 'data2', f'{p.trial_num:03d}_{par}_run{i}_{now_str}')
+                filepath = path.join(getcwd(), 'data2', f'{p.trial_num:03d}_{with_pareto}_run{i}_{now_str}')
                 mkdir(filepath)
                 batch.append([p, filepath, with_pareto])
-    num_cores = multiprocessing.cpu_count()
-    pool = multiprocessing.Pool(num_cores)
-    pool.map(main, batch)
+    # num_cores = multiprocessing.cpu_count()
+    # pool = multiprocessing.Pool(num_cores)
+    # pool.map(main, batch)
 
     # This was originally set up to do multiprocessing... but you can't multiprocess something that's being multiprocessed...
     # Leaving it in case we want to multiprocess at this level later
-    # for setup in batch:
-    #     main(setup)
+    for setup in batch:
+        main(setup)

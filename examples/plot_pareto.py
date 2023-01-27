@@ -72,7 +72,7 @@ def process(data):
     return mu, ste
 
 
-def plot_areas(evos, areas_pareto, areas_no, dirname):
+def plot_areas(evos, areas_pareto, areas_no, dirname, area_fname):
     plt.clf()
     evos = np.array(evos)
     set_for_loop = [[areas_pareto, 'pareto'], [areas_no, 'no']]
@@ -85,7 +85,7 @@ def plot_areas(evos, areas_pareto, areas_no, dirname):
         plt.fill_between(evos, means-sterr, means+sterr, alpha=0.5, label=pareto)
     plt.title(f"{dirname} areas")
     plt.legend()
-    plt.savefig(os.path.join('/home/toothless/workspaces/pymap_elites_multiobjective/examples/data/area_graphs', dirname + '.png'))
+    plt.savefig(os.path.join(area_fname, dirname + '.png'))
 
 
 if __name__ == '__main__':
@@ -94,9 +94,10 @@ if __name__ == '__main__':
 
     import os
 
-    rootdir = '/home/toothless/workspaces/pymap_elites_multiobjective/examples/data'
+    rootdir = '/home/toothless/workspaces/pymap_elites_multiobjective/examples/data2'
     graphs_fname = os.path.join(rootdir, 'graphs')
-    evols = [i*10000 for i in range(11) if i > 0]
+    area_fname = os.path.join(rootdir, 'area_graphs')
+    evols = [i*10000 for i in range(16) if i > 0]
     x = 0
     for pnum in ['004', '005', '002']:
         for subdir, dirs, files in os.walk(rootdir):
@@ -108,7 +109,7 @@ if __name__ == '__main__':
                 pareto = False
                 if not pnum in sub:
                     continue
-                if '20230126' in sub:
+                if 'par' in sub:
                     pareto = True
                 areas = []
                 for evo in evols:
@@ -118,11 +119,13 @@ if __name__ == '__main__':
                     except FileNotFoundError:
                         continue
                     is_eff = is_pareto_efficient_simple(xy)
-                    # curve_area = plot_it(x, y, is_eff, f'{sub}_{evo}', graphs_fname)
+                    curve_area = plot_it(x, y, is_eff, f'{sub}_{evo}', graphs_fname)
                     curve_area = get_area(x[is_eff], y[is_eff])
                     areas.append(curve_area)
+                if len(areas) < len(evols):
+                    continue
                 if pareto:
                     areas_w_pareto.append(areas)
                 else:
                     areas_no_pareto.append(areas)
-            plot_areas(evols, areas_w_pareto, areas_no_pareto, pnum)
+            plot_areas(evols, areas_w_pareto, areas_no_pareto, pnum, area_fname)
