@@ -44,22 +44,22 @@ class RoverWrapper:
 
 
 def main(setup):
-    [p, filepath, with_pareto] = setup
+    [env_p, cvt_p, filepath, with_pareto] = setup
 
-    env = Domain(p)
+    env = Domain(env_p)
     in_size = env.state_size()
     out_size = env.get_action_size()
     wts_dim = in_size * out_size
     dom = RoverWrapper(env)
     if with_pareto == 'pareto':
         archive = cvt_me_pareto.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=500, max_evals=evals,
-                                        log_file=open('cvt.dat', 'w'), params=px, data_fname=filepath)
+                                        log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     elif with_pareto == 'parallel':
         archive = cvt_me_pareto_parallel.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=500, max_evals=evals,
-                                        log_file=open('cvt.dat', 'w'), params=px, data_fname=filepath)
+                                        log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     elif with_pareto == 'no':
         archive = cvt_me.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=500, max_evals=evals,
-                                 log_file=open('cvt.dat', 'w'), params=px, data_fname=filepath)
+                                 log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     else:
         print(f'{with_pareto} is not an option. Options are "parallel", "pareto", and "no"')
 
@@ -79,14 +79,14 @@ if __name__ == '__main__':
     batch = []
     pareto_paralell_options = ['parallel', 'pareto', 'no']
     for with_pareto in pareto_paralell_options:
-        for i in range(10):
-            for p in [param.p05, param.p02, param.p04]:
+        for p in [param.p04, param.p05]:
+            for i in range(10):
 
                 now = datetime.now()
                 now_str = now.strftime("%Y%m%d_%H%M%S")
                 filepath = path.join(getcwd(), 'data2', f'{p.trial_num:03d}_{with_pareto}_run{i}_{now_str}')
                 mkdir(filepath)
-                batch.append([p, filepath, with_pareto])
+                batch.append([p, px, filepath, with_pareto])
     num_cores = multiprocessing.cpu_count()
     pool = multiprocessing.Pool(num_cores)
     pool.map(main, batch)
