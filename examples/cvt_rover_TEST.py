@@ -87,11 +87,11 @@ if __name__ == '__main__':
                 filepath = path.join(getcwd(), 'data2', f'{p.trial_num:03d}_{with_pareto}_run{i}_{now_str}')
                 mkdir(filepath)
                 batch.append([p, filepath, with_pareto])
-    # num_cores = multiprocessing.cpu_count()
-    # pool = multiprocessing.Pool(num_cores)
-    # pool.map(main, batch)
+    num_cores = multiprocessing.cpu_count()
+    pool = multiprocessing.Pool(num_cores)
+    pool.map(main, batch)
 
     # This was originally set up to do multiprocessing... but you can't multiprocess something that's being multiprocessed...
     # Leaving it in case we want to multiprocess at this level later
-    for setup in batch:
-        main(setup)
+    # for setup in batch:
+    #     main(setup)

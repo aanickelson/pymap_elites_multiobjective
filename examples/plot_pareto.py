@@ -94,7 +94,8 @@ if __name__ == '__main__':
 
     import os
 
-    rootdir = '/home/toothless/workspaces/pymap_elites_multiobjective/examples/data2'
+    # rootdir = '/home/toothless/workspaces/pymap_elites_multiobjective/examples/data2'
+    rootdir = '/home/anna/PycharmProjects/pymap_elites_multiobjective/examples/data2'
     graphs_fname = os.path.join(rootdir, 'graphs')
     area_fname = os.path.join(rootdir, 'area_graphs')
     evols = [i*10000 for i in range(16) if i > 0]
