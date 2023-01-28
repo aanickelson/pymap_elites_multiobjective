@@ -68,6 +68,11 @@ def main(setup):
         print(f'{with_pareto} is not an option. Options are "parallel", "pareto", and "no"')
 
 
+def multiprocess_main(batch_for_multi):
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()-1) as pool:
+        pool.map(main, batch_for_multi)
+
+
 if __name__ == '__main__':
 
     # we do 10M evaluations, which takes a while in Python (but it is very fast in the C++ version...)
@@ -90,9 +95,12 @@ if __name__ == '__main__':
                 filepath = path.join(getcwd(), 'data2', f'{p.trial_num:03d}_{with_pareto}_run{i}_{now_str}')
                 mkdir(filepath)
                 batch.append([p, px, filepath, with_pareto])
-    num_cores = multiprocessing.cpu_count()
-    pool = multiprocessing.Pool(num_cores)
-    pool.map(main, batch)
+
+    multiprocess_main(batch)
+    # num_cores = multiprocessing.cpu_count() - 1
+    # pool = multiprocessing.Pool(num_cores)
+    # with multiprocessing.Pool(num_cores=multiprocessing.cpu_count()-1) as pool:
+    #     pool.map(main, batch)
 
     # This was originally set up to do multiprocessing... but you can't multiprocess something that's being multiprocessed...
     # Leaving it in case we want to multiprocess at this level later
