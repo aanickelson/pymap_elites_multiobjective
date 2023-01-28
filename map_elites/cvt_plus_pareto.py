@@ -169,7 +169,7 @@ def compute(dim_map, dim_x, f,
 
         # write archive
         if b_evals >= params['dump_period'] and params['dump_period'] != -1:
-            print("[{}/{}] \n".format(n_evals, int(max_evals)), end=" ", flush=True)
+            print(f"[{n_evals}/{int(max_evals)}] - {data_fname} \n", end=" ", flush=True)
             cm.__save_archive(archive, n_evals, data_fname)
             b_evals = 0
         # write log
@@ -179,5 +179,5 @@ def compute(dim_map, dim_x, f,
                     fit_list.max(), np.mean(fit_list), np.median(fit_list),
                     np.percentile(fit_list, 5), np.percentile(fit_list, 95)))
             log_file.flush()
-    cm.__save_archive(archive, n_evals)
+    cm.__save_archive(archive, n_evals, data_fname)
     return archive

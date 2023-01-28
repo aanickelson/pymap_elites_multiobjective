@@ -47,6 +47,8 @@ import random
 from collections import defaultdict
 from sklearn.cluster import KMeans
 from os import path, getcwd
+import warnings
+
 
 default_params = \
     {
@@ -212,11 +214,14 @@ def parallel_eval(evaluate_function, to_evaluate, pool, params):
 
 # format: fitness, centroid, desc, genome \n
 # fitness, centroid, desc and x are vectors
-def __save_archive(archive, gen, data_fname=None):
+def __save_archive(archive, gen, data_fname):
     filename = 'archive_' + str(gen) + '.dat'
 
     if data_fname:
         filename = path.join(data_fname, 'archive_' + str(gen) + '.dat')
+    else:
+        warnings.warn("No longer saving data")
+        return False
 
     def write_array(a, f):
         for i in a:
@@ -229,3 +234,5 @@ def __save_archive(archive, gen, data_fname=None):
                 write_array(k.desc, f)
                 write_array(k.x, f)
                 f.write("\n")
+
+    return True

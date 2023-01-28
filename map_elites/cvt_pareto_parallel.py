@@ -68,8 +68,12 @@ def __add_pareto_to_archive(s_list, archive, kdt):
         niche = kdt.data[niche_index]
         n = cm.make_hashable(niche)
         s.centroid = n
-        archive[n].append(s)
-    return
+        if n in archive:
+            archive[n].append(s)
+            return
+        else:
+            archive[n] = [s]
+            return
 
 
 def is_pareto_efficient_simple(vals, new=None):
@@ -114,6 +118,8 @@ def compute(dim_map, dim_x, f,
        Format of the logfile: evals archive_size max mean median 5%_percentile, 95%_percentile
 
     """
+    if not data_fname:
+        raise ValueError(f"no filename - ")
     # setup the parallel processing pool
     if params['parallel'] == True:
 
@@ -193,13 +199,15 @@ def compute(dim_map, dim_x, f,
                 for val_i, val in enumerate(value):
                     pareto_archive.append(val)
 
-        n_evals += len(to_evaluate)
-        b_evals += len(to_evaluate)
+        n_evals += len(to_evaluate) + len(to_evaluate_p)
+        b_evals += len(to_evaluate) + len(to_evaluate_p)
 
         # write archive
         if b_evals >= params['dump_period'] and params['dump_period'] != -1:
-            print("[{}/{}] \n".format(n_evals, int(max_evals)), end=" ", flush=True)
-            cm.__save_archive(archive, n_evals, data_fname)
+            print(f"[{n_evals}/{int(max_evals)}] - {data_fname} \n", end=" ", flush=True)
+            saved = cm.__save_archive(archive, n_evals, data_fname)
+            if not saved:
+                print()
             b_evals = 0
         # write log
         if log_file != None:
@@ -210,5 +218,5 @@ def compute(dim_map, dim_x, f,
             log_file.flush()
         n_evolutions += 1
 
-    cm.__save_archive(archive, n_evals)
+    cm.__save_archive(archive, n_evals, data_fname)
     return archive
