@@ -7,8 +7,9 @@ import math
 
 import pymap_elites_multiobjective.map_elites.cvt_plus_pareto as cvt_me_pareto
 import pymap_elites_multiobjective.map_elites.cvt as cvt_me
-import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
 import pymap_elites_multiobjective.map_elites.common as cm_map_elites
+import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
+
 from teaming.domain import DiscreteRoverDomain as Domain
 import evo_playground.parameters as param
 from evo_playground.learning.neuralnet_no_hid import NeuralNetwork as NN
@@ -52,12 +53,15 @@ def main(setup):
     wts_dim = in_size * out_size
     dom = RoverWrapper(env)
     if with_pareto == 'pareto':
+        print(with_pareto, filepath)
         archive = cvt_me_pareto.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=500, max_evals=evals,
                                         log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     elif with_pareto == 'parallel':
+        print(with_pareto, filepath)
         archive = cvt_me_pareto_parallel.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=500, max_evals=evals,
                                         log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     elif with_pareto == 'no':
+        print(with_pareto, filepath)
         archive = cvt_me.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=500, max_evals=evals,
                                  log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     else:
@@ -79,9 +83,8 @@ if __name__ == '__main__':
     batch = []
     pareto_paralell_options = ['parallel', 'pareto', 'no']
     for with_pareto in pareto_paralell_options:
-        for p in [param.p04, param.p05]:
-            for i in range(10):
-
+        for p in [param.p04, param.p05, param.p06]:
+            for i in range(5):
                 now = datetime.now()
                 now_str = now.strftime("%Y%m%d_%H%M%S")
                 filepath = path.join(getcwd(), 'data2', f'{p.trial_num:03d}_{with_pareto}_run{i}_{now_str}')
