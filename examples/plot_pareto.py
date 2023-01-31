@@ -124,8 +124,8 @@ if __name__ == '__main__':
                     except FileNotFoundError:
                         continue
                     is_eff = is_pareto_efficient_simple(xy)
-                    curve_area = plot_it(x, y, is_eff, f'{sub}_{evo}', graphs_fname)
-                    # curve_area = get_area(x[is_eff], y[is_eff])
+                    # curve_area = plot_it(x, y, is_eff, f'{sub}_{evo}', graphs_fname)
+                    curve_area = get_area(x[is_eff], y[is_eff])
                     areas.append(curve_area)
                 if len(areas) < len(evols):
                     continue

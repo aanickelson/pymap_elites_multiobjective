@@ -92,6 +92,7 @@ def is_pareto_efficient_simple(vals, new=None):
     final_vals = [vals[j] for j in range(len(vals)) if is_efficient[j]]
     return final_vals
 
+
 # evaluate a single vector (x) with a function f and return a species
 # t = vector, function
 def __evaluate(t):
@@ -179,5 +180,5 @@ def compute(dim_map, dim_x, f,
                     fit_list.max(), np.mean(fit_list), np.median(fit_list),
                     np.percentile(fit_list, 5), np.percentile(fit_list, 95)))
             log_file.flush()
-    cm.__save_archive(archive, n_evals, data_fname)
+    cm.__save_archive(archive, n_evals, data_fname, final=True)
     return archive

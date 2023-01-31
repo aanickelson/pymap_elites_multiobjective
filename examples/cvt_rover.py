@@ -46,7 +46,7 @@ class RoverWrapper:
 
 def main(setup):
     [env_p, cvt_p, filepath, with_pareto] = setup
-
+    archive = {}
     env = Domain(env_p)
     in_size = env.state_size()
     out_size = env.get_action_size()
@@ -77,27 +77,31 @@ if __name__ == '__main__':
 
     # we do 10M evaluations, which takes a while in Python (but it is very fast in the C++ version...)
     px = cm_map_elites.default_params.copy()
-    px["dump_period"] = 5000
+    px["dump_period"] = 10000
     px["batch_size"] = 100
     px["min"] = -5
     px["max"] = 5
     px["parallel"] = False
     px['cvt_use_cache'] = False
+    px['add_random'] = 10
     evals = 150000
 
     batch = []
-    pareto_paralell_options = ['parallel', 'pareto', 'no']
+    pareto_paralell_options = ['parallel']  # , 'pareto', 'no']
     for with_pareto in pareto_paralell_options:
-        for p in [param.p04, param.p05, param.p06]:
-            for i in range(5):
+        for p in [param.p06]:  # , param.p05, param.p06]:
+            for i in range(10):
                 now = datetime.now()
                 now_str = now.strftime("%Y%m%d_%H%M%S")
-                filepath = path.join(getcwd(), 'data2', f'{p.trial_num:03d}_{with_pareto}_run{i}_{now_str}')
+                filepath = path.join(getcwd(), 'data3', f'{p.trial_num:03d}_{with_pareto}_run{i}_{now_str}')
                 mkdir(filepath)
                 batch.append([p, px, filepath, with_pareto])
 
+    # Use this one
     multiprocess_main(batch)
-    # num_cores = multiprocessing.cpu_count() - 1
+
+    # This is the bad way. Don't do it this way
+    # num_cores = multiprocessing.cpu_count()
     # pool = multiprocessing.Pool(num_cores)
     # with multiprocessing.Pool(num_cores=multiprocessing.cpu_count()-1) as pool:
     #     pool.map(main, batch)

@@ -76,10 +76,10 @@ default_params = \
 
 class Species:
     def __init__(self, x, desc, fitness, centroid=None):
-        self.x = x
-        self.desc = desc
-        self.fitness = fitness
-        self.centroid = centroid
+        self.x = x  # NN weights
+        self.desc = desc    # Full description of the location in behavior space
+        self.fitness = fitness  # Evaluated fitness
+        self.centroid = centroid    # Centroid of the niche in the behavior space
 
 
 def polynomial_mutation(x):
@@ -212,9 +212,10 @@ def parallel_eval(evaluate_function, to_evaluate, pool, params):
         s_list = map(evaluate_function, to_evaluate)
     return list(s_list)
 
+
 # format: fitness, centroid, desc, genome \n
 # fitness, centroid, desc and x are vectors
-def __save_archive(archive, gen, data_fname):
+def __save_archive(archive, gen, data_fname, final=False):
     filename = 'archive_' + str(gen) + '.dat'
 
     if data_fname:
@@ -231,8 +232,10 @@ def __save_archive(archive, gen, data_fname):
             for k in lst:
                 write_array(k.fitness, f)
                 write_array(k.centroid, f)
-                write_array(k.desc, f)
-                write_array(k.x, f)
+                # Only save the full weights set and behavior description for the final result
+                if final:
+                    write_array(k.desc, f)
+                    write_array(k.x, f)
                 f.write("\n")
 
     return True

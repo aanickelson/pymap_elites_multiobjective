@@ -54,7 +54,7 @@ def __add_to_archive(s, centroid, archive, kdt):
     n = cm.make_hashable(niche)
     s.centroid = n
     if n in archive:
-        archive[n] = is_pareto_efficient_simple(archive[n], s)
+        archive[n], _ = is_pareto_efficient_simple(archive[n], s)
         return
     else:
         archive[n] = [s]
@@ -62,18 +62,24 @@ def __add_to_archive(s, centroid, archive, kdt):
 
 
 def __add_pareto_to_archive(s_list, archive, kdt):
-    global_pareto = is_pareto_efficient_simple(s_list)
-    for s in global_pareto:
+    for s in s_list:
         niche_index = kdt.query([s.desc], k=1)[1][0][0]
         niche = kdt.data[niche_index]
         n = cm.make_hashable(niche)
         s.centroid = n
         if n in archive:
             archive[n].append(s)
-            return
         else:
             archive[n] = [s]
-            return
+
+
+def keep_n_pareto_levels(vals, n_levels):
+    non_pareto = vals
+    pareto = []
+    for i in range(n_levels):
+        first_pareto, non_pareto = is_pareto_efficient_simple(non_pareto)
+        pareto.extend(first_pareto)
+    return pareto
 
 
 def is_pareto_efficient_simple(vals, new=None):
@@ -95,7 +101,9 @@ def is_pareto_efficient_simple(vals, new=None):
             is_efficient += eff_add
             is_efficient[i] = True  # And keep self
     final_vals = [vals[j] for j in range(len(vals)) if is_efficient[j]]
-    return final_vals
+    non_pareto = [vals[k] for k in range(len(vals)) if not is_efficient[k]]
+    return final_vals, non_pareto
+
 
 # evaluate a single vector (x) with a function f and return a species
 # t = vector, function
@@ -103,6 +111,7 @@ def __evaluate(t):
     z, f = t  # evaluate z with function f
     fit, desc = f(z)
     return cm.Species(z, desc, fit)
+
 
 # map-elites algorithm (CVT variant)
 def compute(dim_map, dim_x, f,
@@ -152,6 +161,15 @@ def compute(dim_map, dim_x, f,
                 to_evaluate += [(x, f)]
                 to_evaluate_p += [(x_p, f)]
         else:  # variation/selection loop
+            # add n random policies each generation to maintain diversity
+            for i in range(0, params['add_random']):
+                x = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
+                x_p = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
+
+                to_evaluate += [(x, f)]
+                to_evaluate_p += [(x_p, f)]
+
+
             # keys = list(archive.keys())
             arch_pols = []
             # Unpack all the policies to mutate
@@ -184,13 +202,14 @@ def compute(dim_map, dim_x, f,
         s_list = cm.parallel_eval(__evaluate, to_evaluate, pool, params)
         s_p_list = cm.parallel_eval(__evaluate, to_evaluate_p, pool, params)
 
-        # Keep only the policies that are pareto optimal
-        pareto_archive = is_pareto_efficient_simple(s_p_list)
+        # Keep only the policies that are on the first n pareto front layers
+        pareto_archive = keep_n_pareto_levels(s_p_list, n_levels=3)
 
         # natural selection
         for s in s_list:
             __add_to_archive(s, s.desc, archive, kdt)
         if not n_evolutions % 10:
+            pareto_archive = keep_n_pareto_levels(s_p_list, n_levels=2)
             __add_pareto_to_archive(pareto_archive, archive, kdt)
 
             # Copy current population to pareto archive
@@ -218,5 +237,5 @@ def compute(dim_map, dim_x, f,
             log_file.flush()
         n_evolutions += 1
 
-    cm.__save_archive(archive, n_evals, data_fname)
+    cm.__save_archive(archive, n_evals, data_fname, final=True)
     return archive
