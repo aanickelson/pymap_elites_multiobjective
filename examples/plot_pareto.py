@@ -100,7 +100,7 @@ if __name__ == '__main__':
     area_fname = os.path.join(rootdir, 'area_graphs')
     evols = [i*10000 for i in range(16) if i > 0]
     x = 0
-    for pnum in ['004', '005', '002']:
+    for pnum in ['006']:  # '004', '005',
         for subdir, dirs, files in os.walk(rootdir):
             if not dirs:
                 continue
