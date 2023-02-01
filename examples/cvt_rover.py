@@ -90,13 +90,16 @@ if __name__ == '__main__':
     evals = 150000
 
     batch = []
-    pareto_paralell_options = ['parallel', 'pareto', 'no']
+    pareto_paralell_options = ['parallel', 'no']  # 'pareto',
+    now = datetime.now()
+    now_str = now.strftime("%Y%m%d_%H%M%S")
+    dirpath = path.join(getcwd(), now_str)
+    mkdir(dirpath)
+
     for with_pareto in pareto_paralell_options:
-        for p in [param.p04, param.p05, param.p06]:
-            for i in range(10):
-                now = datetime.now()
-                now_str = now.strftime("%Y%m%d_%H%M%S")
-                filepath = path.join(getcwd(), now_str, f'{p.trial_num:03d}_{with_pareto}_run{i}')
+        for p in [param.p04, param.p06]:  #param.p05,
+            for i in range(5):
+                filepath = path.join(dirpath, f'{p.trial_num:03d}_{with_pareto}_run{i}')
                 mkdir(filepath)
                 batch.append([p, px, filepath, with_pareto])
 
