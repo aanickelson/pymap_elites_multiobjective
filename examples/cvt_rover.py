@@ -52,17 +52,18 @@ def main(setup):
     out_size = env.get_action_size()
     wts_dim = in_size * out_size
     dom = RoverWrapper(env)
+    n_niches = 50
     if with_pareto == 'pareto':
         print(with_pareto, filepath)
-        archive = cvt_me_pareto.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=500, max_evals=evals,
+        archive = cvt_me_pareto.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
                                         log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     elif with_pareto == 'parallel':
         print(with_pareto, filepath)
-        archive = cvt_me_pareto_parallel.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=500, max_evals=evals,
+        archive = cvt_me_pareto_parallel.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
                                         log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     elif with_pareto == 'no':
         print(with_pareto, filepath)
-        archive = cvt_me.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=500, max_evals=evals,
+        archive = cvt_me.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
                                  log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     else:
         print(f'{with_pareto} is not an option. Options are "parallel", "pareto", and "no"')
@@ -77,14 +78,16 @@ if __name__ == '__main__':
 
     # we do 10M evaluations, which takes a while in Python (but it is very fast in the C++ version...)
     px = cm_map_elites.default_params.copy()
-    px["dump_period"] = 10000
-    px["batch_size"] = 100
+    px["dump_period"] = 10
+    px["batch_size"] = 10
     px["min"] = -5
     px["max"] = 5
     px["parallel"] = False
     px['cvt_use_cache'] = False
     px['add_random'] = 10
-    evals = 150000
+    px['random_init_batch'] = 10
+    px['random_init'] = 0.01
+    evals = 150
 
     batch = []
     pareto_paralell_options = ['parallel']  # , 'pareto', 'no']
@@ -98,7 +101,7 @@ if __name__ == '__main__':
                 batch.append([p, px, filepath, with_pareto])
 
     # Use this one
-    multiprocess_main(batch)
+    # multiprocess_main(batch)
 
     # This is the bad way. Don't do it this way
     # num_cores = multiprocessing.cpu_count()
@@ -108,5 +111,5 @@ if __name__ == '__main__':
 
     # This was originally set up to do multiprocessing... but you can't multiprocess something that's being multiprocessed...
     # Leaving it in case we want to multiprocess at this level later
-    # for setup in batch:
-    #     main(setup)
+    for setup in batch:
+        main(setup)

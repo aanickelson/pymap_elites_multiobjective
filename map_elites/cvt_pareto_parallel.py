@@ -181,19 +181,19 @@ def compute(dim_map, dim_x, f,
             # we select all the parents at the same time because randint is slow
             rand1 = np.random.randint(len(arch_pols), size=batch_sz)
             rand2 = np.random.randint(len(arch_pols), size=batch_sz)
-            for n in range(0, params['batch_size']):
+            for n in range(0, batch_sz):
                 # parent selection
-                x = arch_pols[rand1[n]]
-                y = arch_pols[rand2[n]]
+                pol1 = arch_pols[rand1[n]]
+                pol2 = arch_pols[rand2[n]]
                 # copy & add variation
-                z = variation_operator(x.x, y.x, params)
-                to_evaluate += [(z, f)]
+                new_pol = variation_operator(pol1.x, pol2.x, params)
+                to_evaluate += [(new_pol, f)]
 
             randp1 = np.random.randint(len(pareto_archive), size=batch_sz)
             randp2 = np.random.randint(len(pareto_archive), size=batch_sz)
-            for n in range(0, params):
-                x_p = arch_pols[rand1[n]]
-                y_p = arch_pols[rand2[n]]
+            for n in range(0, batch_sz):
+                x_p = arch_pols[randp1[n]]
+                y_p = arch_pols[randp2[n]]
                 # copy & add variation
                 z_p = variation_operator(x_p.x, y_p.x, params)
                 to_evaluate_p += [(z_p, f)]
@@ -209,8 +209,9 @@ def compute(dim_map, dim_x, f,
         for s in s_list:
             __add_to_archive(s, s.desc, archive, kdt)
         if not n_evolutions % 10:
-            pareto_archive = keep_n_pareto_levels(s_p_list, n_levels=2)
-            __add_pareto_to_archive(pareto_archive, archive, kdt)
+
+            for s_p in pareto_archive:
+                __add_to_archive(s_p, s_p.desc, archive, kdt)
 
             # Copy current population to pareto archive
             pareto_archive = []
