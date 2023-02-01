@@ -52,7 +52,7 @@ def main(setup):
     out_size = env.get_action_size()
     wts_dim = in_size * out_size
     dom = RoverWrapper(env)
-    n_niches = 500
+    n_niches = 15000
     if with_pareto == 'pareto':
         print(with_pareto, filepath)
         archive = cvt_me_pareto.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     px['cvt_use_cache'] = False
     px['add_random'] = 5
     px['random_init_batch'] = 100
-    px['random_init'] = 0.01
+    px['random_init'] = 0.001    # Percent of niches that should be filled in order to start mutation
     evals = 150000
 
     batch = []
