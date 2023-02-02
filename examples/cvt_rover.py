@@ -60,7 +60,7 @@ def main(setup):
     elif with_pareto == 'parallel':
         print(with_pareto, filepath)
         archive = cvt_me_pareto_parallel.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
-                                        log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
+                                                 log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     elif with_pareto == 'no':
         print(with_pareto, filepath)
         archive = cvt_me.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,

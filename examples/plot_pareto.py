@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
@@ -20,17 +22,22 @@ def plot_it(x, y, iseff, fname, dirname):
 
 
 def get_area(x, y):
-    xy = list(zip(x, y))
-    # Add the origin
-    xy.append((0, 0))
-    # Add the x-axis intercept
-    xy.append((max(x), 0))
-    # Add the y-axis intercept
-    xy.append((0, max(y)))
+    try:
+        xy = list(zip(x, y))
+        # Add the origin
+        xy.append((0, 0))
+        # Add the x-axis intercept
+        xy.append((max(x), 0))
+        # Add the y-axis intercept
+        xy.append((0, max(y)))
 
-    unique_xy = np.unique(xy, axis=0)
+        unique_xy = np.unique(xy, axis=0)
 
-    pgon = Polygon(unique_xy)
+        pgon = Polygon(unique_xy)
+    except RuntimeWarning:
+        print(x)
+        print(y)
+        exit(1)
     return pgon.area
 
 
@@ -65,22 +72,29 @@ def load_data(filename):
 
 def process(data):
     from scipy.stats import sem
-    mu = np.mean(data, axis=0)
-    ste = sem(data, axis=0)
+    try:
+        mu = np.mean(data, axis=0)
+        ste = sem(data, axis=0)
+    except RuntimeWarning:
+        print(data)
     # mu = data[0]
     # ste = data[0]
     return mu, ste
 
 
 def plot_areas(evos, areas_pareto, areas_no, areas_parallel, dirname, area_fname):
+    print('We made it to plotting')
     plt.clf()
     evos = np.array(evos)
     set_for_loop = [[areas_pareto, 'pareto'], [areas_no, 'no'], [areas_parallel, 'parallel']]
     for [data, pareto] in set_for_loop:
+        if not data:
+            continue
         try:
             means, sterr = process(data)
             plt.plot(evos, means)
-        except ValueError:
+        except RuntimeWarning:
+            print("'tis here, mlord")
             continue
         plt.fill_between(evos, means-sterr, means+sterr, alpha=0.5, label=pareto)
     plt.title(f"{dirname} areas")
@@ -93,48 +107,58 @@ if __name__ == '__main__':
 
 
     import os
+    date = '20230201_135535'
 
     # rootdir = '/home/toothless/workspaces/pymap_elites_multiobjective/examples/data2'
-    rootdir = '/home/anna/PycharmProjects/pymap_elites_multiobjective/examples/data2'
+    rootdir = f'/home/anna/PycharmProjects/pymap_elites_multiobjective/examples/{date}'
     graphs_fname = os.path.join(rootdir, 'graphs')
     area_fname = os.path.join(rootdir, 'area_graphs')
-    evols = [i*10000 for i in range(16) if i > 0]
+    evols = [i*10000 for i in range(31) if i > 0]
     x = 0
-    for pnum in ['006']:  # '004', '005',
-        for subdir, dirs, files in os.walk(rootdir):
-            if not dirs:
+    pnum = 'rastrigin'
+    # for pnum in ['006']:  # '004', '005',
+    for subdir, dirs, files in os.walk(rootdir):
+        print(subdir)
+        for file in files:
+            if 'centroids' in file:
                 continue
-            areas_pareto = []
-            areas_no = []
-            areas_parallel = []
+            print(int(re.findall(r'\d+', file)[0]))
 
-            for sub in dirs:
-                pareto = 'no'
-                if not pnum in sub:
-                    continue
-                if 'pareto' in sub:
-                    pareto = 'pareto'
-                elif 'parallel' in sub:
-                    pareto = 'parallel'
-                areas = []
-                for evo in evols:
-                    fname = os.path.join(rootdir, sub, f'archive_{evo}.dat')
-                    try:
-                        x, y, xy = load_data(fname)
-                    except FileNotFoundError:
-                        continue
-                    is_eff = is_pareto_efficient_simple(xy)
-                    # curve_area = plot_it(x, y, is_eff, f'{sub}_{evo}', graphs_fname)
-                    curve_area = get_area(x[is_eff], y[is_eff])
-                    areas.append(curve_area)
-                if len(areas) < len(evols):
-                    continue
-                if pareto == 'pareto':
-                    areas_pareto.append(areas)
-                elif pareto == 'no':
-                    areas_no.append(areas)
-                elif pareto == 'parallel':
-                    areas_parallel.append(areas)
-                else:
-                    print('something has gone horribly wrong')
-            plot_areas(evols, areas_pareto, areas_no, areas_parallel, pnum, area_fname)
+        if not dirs:
+            continue
+        # areas_pareto = []
+        # areas_no = []
+        # areas_parallel = []
+        #
+        # for sub in dirs:
+        #     print(sub)
+        #     pareto = 'no'
+        #     if not pnum in sub:
+        #         continue
+        #     if 'pareto' in sub:
+        #         pareto = 'pareto'
+        #     elif 'parallel' in sub:
+        #         pareto = 'parallel'
+        #     areas = []
+        #     for evo in evols2:
+        #         fname = os.path.join(rootdir, sub, f'archive_{evo}.dat')
+        #         # print(fname)
+        #         try:
+        #             x, y, xy = load_data(fname)
+        #         except FileNotFoundError:
+        #             continue
+        #         is_eff = is_pareto_efficient_simple(xy)
+        #         # curve_area = plot_it(x, y, is_eff, f'{sub}_{evo}', graphs_fname)
+        #         curve_area = get_area(x[is_eff], y[is_eff])
+        #         areas.append(curve_area)
+        #     if len(areas) < 15:
+        #         continue
+        #     if pareto == 'pareto':
+        #         areas_pareto.append(areas)
+        #     elif pareto == 'no':
+        #         areas_no.append(areas)
+        #     elif pareto == 'parallel':
+        #         areas_parallel.append(areas)
+        #     else:
+        #         print('something has gone horribly wrong')
+        # plot_areas(evols, areas_pareto, areas_no, areas_parallel, pnum, area_fname)
