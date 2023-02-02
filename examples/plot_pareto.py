@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
 
     import os
-    date = '20230201_135535'
+    date = '20230201_145141'
 
     # rootdir = '/home/toothless/workspaces/pymap_elites_multiobjective/examples/data2'
     rootdir = f'/home/anna/PycharmProjects/pymap_elites_multiobjective/examples/{date}'
@@ -130,7 +130,11 @@ if __name__ == '__main__':
         for file in files:
             if 'centroids' in file:
                 continue
-            fnums.append(int(re.findall(r'\d+', file)[0]))
+            try:
+                fnums.append(int(re.findall(r'\d+', file)[0]))
+            except IndexError:
+                print(file, "index error")
+                continue
         fnums.sort()
         print(sub)
         pareto = 'no'
