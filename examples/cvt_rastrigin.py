@@ -94,3 +94,6 @@ if __name__ == '__main__':
 
     # Use this one
     multiprocess_main(batch)
+
+    # for p_set in batch:
+    #     main(p_set)

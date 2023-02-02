@@ -154,7 +154,7 @@ def compute(dim_map, dim_x, f,
         to_evaluate_p = []
         # random initialization
         if len(archive) <= params['random_init'] * n_niches:
-            for i in range(0, params['random_init_batch']):
+            for i in range(0, int(params['random_init_batch'] / 2)):
                 x = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
                 x_p = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
 

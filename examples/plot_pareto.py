@@ -10,7 +10,7 @@ def plot_it(x, y, iseff, fname, dirname):
     plt.clf()
     max_vals = [10, max(x), max(y)]
     # plt_max = max(max_vals) + 0.5
-    plt_max = 21
+    plt_max = 90
     plt.xlim([-0.5, plt_max])
     plt.ylim([-0.5, plt_max])
     plt.scatter(x, y, c='red')
@@ -158,8 +158,10 @@ if __name__ == '__main__':
             except FileNotFoundError:
                 continue
             is_eff = is_pareto_efficient_simple(xy)
-            # curve_area = plot_it(x, y, is_eff, f'{sub}_{evo}', graphs_fname)
-            curve_area = get_area(x[is_eff], y[is_eff])
+            if evo > 298000:
+                curve_area = plot_it(x, y, is_eff, f'{pareto}_{evo}', sub)
+            else:
+                curve_area = get_area(x[is_eff], y[is_eff])
             areas.append(curve_area)
         if len(areas) < 15:
             continue
