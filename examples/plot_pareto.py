@@ -3,6 +3,7 @@ import re
 import numpy as np
 from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
+from os import mkdir
 
 
 def plot_it(x, y, iseff, fname, dirname):
@@ -99,6 +100,10 @@ def plot_areas(evos, areas_pareto, areas_no, areas_parallel, dirname, area_fname
         plt.fill_between(evos, means-sterr, means+sterr, alpha=0.5, label=pareto)
     plt.title(f"{dirname} areas")
     plt.legend()
+    try:
+        mkdir(area_fname)
+    except FileExistsError:
+        pass
     plt.savefig(os.path.join(area_fname, dirname + '.png'))
 
 
