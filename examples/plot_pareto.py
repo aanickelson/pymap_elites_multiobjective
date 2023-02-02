@@ -116,49 +116,50 @@ if __name__ == '__main__':
     evols = [i*10000 for i in range(31) if i > 0]
     x = 0
     pnum = 'rastrigin'
+
+    areas_pareto = []
+    areas_no = []
+    areas_parallel = []
     # for pnum in ['006']:  # '004', '005',
-    for subdir, dirs, files in os.walk(rootdir):
-        print(subdir)
+
+    for sub, _, files in os.walk(rootdir):
+        if not files:
+            continue
+        fnums = []
+
         for file in files:
             if 'centroids' in file:
                 continue
-            print(int(re.findall(r'\d+', file)[0]))
-
-        if not dirs:
+            fnums.append(int(re.findall(r'\d+', file)[0]))
+        fnums.sort()
+        print(sub)
+        pareto = 'no'
+        if not pnum in sub:
             continue
-        # areas_pareto = []
-        # areas_no = []
-        # areas_parallel = []
-        #
-        # for sub in dirs:
-        #     print(sub)
-        #     pareto = 'no'
-        #     if not pnum in sub:
-        #         continue
-        #     if 'pareto' in sub:
-        #         pareto = 'pareto'
-        #     elif 'parallel' in sub:
-        #         pareto = 'parallel'
-        #     areas = []
-        #     for evo in evols2:
-        #         fname = os.path.join(rootdir, sub, f'archive_{evo}.dat')
-        #         # print(fname)
-        #         try:
-        #             x, y, xy = load_data(fname)
-        #         except FileNotFoundError:
-        #             continue
-        #         is_eff = is_pareto_efficient_simple(xy)
-        #         # curve_area = plot_it(x, y, is_eff, f'{sub}_{evo}', graphs_fname)
-        #         curve_area = get_area(x[is_eff], y[is_eff])
-        #         areas.append(curve_area)
-        #     if len(areas) < 15:
-        #         continue
-        #     if pareto == 'pareto':
-        #         areas_pareto.append(areas)
-        #     elif pareto == 'no':
-        #         areas_no.append(areas)
-        #     elif pareto == 'parallel':
-        #         areas_parallel.append(areas)
-        #     else:
-        #         print('something has gone horribly wrong')
-        # plot_areas(evols, areas_pareto, areas_no, areas_parallel, pnum, area_fname)
+        if 'pareto' in sub:
+            pareto = 'pareto'
+        elif 'parallel' in sub:
+            pareto = 'parallel'
+        areas = []
+        for evo in fnums:
+            fname = os.path.join(rootdir, sub, f'archive_{evo}.dat')
+            # print(fname)
+            try:
+                x, y, xy = load_data(fname)
+            except FileNotFoundError:
+                continue
+            is_eff = is_pareto_efficient_simple(xy)
+            # curve_area = plot_it(x, y, is_eff, f'{sub}_{evo}', graphs_fname)
+            curve_area = get_area(x[is_eff], y[is_eff])
+            areas.append(curve_area)
+        if len(areas) < 15:
+            continue
+        if pareto == 'pareto':
+            areas_pareto.append(areas)
+        elif pareto == 'no':
+            areas_no.append(areas)
+        elif pareto == 'parallel':
+            areas_parallel.append(areas)
+        else:
+            print('something has gone horribly wrong')
+    plot_areas(evols, areas_pareto, areas_no, areas_parallel, pnum, area_fname)
