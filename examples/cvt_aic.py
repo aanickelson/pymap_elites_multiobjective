@@ -4,6 +4,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import numpy as np
 import math
+from copy import deepcopy
 
 import pymap_elites_multiobjective.map_elites.cvt_plus_pareto as cvt_me_pareto
 import pymap_elites_multiobjective.map_elites.cvt as cvt_me
@@ -11,9 +12,9 @@ import pymap_elites_multiobjective.map_elites.common as cm_map_elites
 import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
 
 from AIC.aic import aic as Domain
-from AIC.run_wrapper import run_env
-from evo_playground.parameters.learningparams00 import LearnParams as lp
-import evo_playground.parameters as param
+from AIC.parameter import parameter as params
+from evo_playground.run_env import run_env
+from evo_playground.parameters.learningparams01 import LearnParams as lp
 # from evo_playground.learning.neuralnet_no_hid import NeuralNetwork as NN
 from evo_playground.learning.neuralnet import NeuralNetwork as NN
 from torch import from_numpy
@@ -23,8 +24,9 @@ import multiprocessing
 
 
 class RoverWrapper:
-    def __init__(self, env):
+    def __init__(self, env, param):
         self.env = env
+        self.p = param
         self.st_size = env.state_size()
         self.hid = lp.hid
         self.act_size = env.action_size()
@@ -38,14 +40,14 @@ class RoverWrapper:
         l1_wts = from_numpy(np.reshape(x[:self.l1_size], (self.hid, self.st_size)))
         l2_wts = from_numpy(np.reshape(x[self.l1_size:], (self.act_size, self.hid)))
         self.model.set_weights([l1_wts, l2_wts])
-        # self.model.set_weights([l2_wts])
-        self.env.run_sim([self.model])
-        fitness = self.env.multiG()
-        rmtime = self.env.agent_room_times()[0]
+        fitness, bh = run_env(self.env, [self.model], self.p, use_bh=True)
+        # fitness = self.env.multiG()
+        # rmtime = self.env.agent_room_times()[0]
+
         self.n_evals += 1
         # if not self.n_evals % 1000:
         #     print(f"Number of values tested: {self.n_evals}")
-        return fitness, rmtime
+        return fitness, bh[0]
 
 
 def main(setup):
@@ -53,21 +55,24 @@ def main(setup):
     archive = {}
     env = Domain(env_p)
     in_size = env.state_size()
+    hid_size = lp.hid
     out_size = env.action_size()
-    wts_dim = in_size * out_size
-    dom = RoverWrapper(env)
-    n_niches = 15000
+    wts_dim = (in_size * hid_size) + (hid_size * out_size)
+    dom = RoverWrapper(env, env_p)
+    n_niches = 10000
+
+    n_behaviors = p.n_bh * p.n_poi_types
     if with_pareto == 'pareto':
         print(with_pareto, filepath)
-        archive = cvt_me_pareto.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
+        archive = cvt_me_pareto.compute(n_behaviors, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
                                         log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     elif with_pareto == 'parallel':
         print(with_pareto, filepath)
-        archive = cvt_me_pareto_parallel.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
+        archive = cvt_me_pareto_parallel.compute(n_behaviors, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
                                                  log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     elif with_pareto == 'no':
         print(with_pareto, filepath)
-        archive = cvt_me.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
+        archive = cvt_me.compute(n_behaviors, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
                                  log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     else:
         print(f'{with_pareto} is not an option. Options are "parallel", "pareto", and "no"')
@@ -88,24 +93,27 @@ if __name__ == '__main__':
     px["max"] = 5
     px["parallel"] = False
     px['cvt_use_cache'] = False
-    px['add_random'] = 5
+    px['add_random'] = 0
     px['random_init_batch'] = 100
     px['random_init'] = 0.001    # Percent of niches that should be filled in order to start mutation
     evals = 150000
 
+    p = deepcopy(params)
+    p.n_bh = 3
+    p.n_agents = 1
+
     batch = []
-    pareto_paralell_options = ['parallel', 'no']  # 'pareto',
+    pareto_paralell_options = ['no']  # 'pareto',, 'parallel',
     now = datetime.now()
     now_str = now.strftime("%Y%m%d_%H%M%S")
     dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
 
     for with_pareto in pareto_paralell_options:
-        for p in [param.p04, param.p06]:  #param.p05,
-            for i in range(5):
-                filepath = path.join(dirpath, f'{p.trial_num:03d}_{with_pareto}_run{i}')
-                mkdir(filepath)
-                batch.append([p, px, filepath, with_pareto])
+        for i in range(lp.n_stat_runs):
+            filepath = path.join(dirpath, f'{p.param_idx:03d}_{with_pareto}_run{i}')
+            mkdir(filepath)
+            batch.append([p, px, filepath, with_pareto])
 
     # Use this one
     multiprocess_main(batch)
