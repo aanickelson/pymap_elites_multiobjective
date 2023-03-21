@@ -8,9 +8,9 @@ from os import mkdir
 
 def plot_it(x, y, iseff, fname, dirname):
     plt.clf()
-    max_vals = [10, max(x), max(y)]
-    # plt_max = max(max_vals) + 0.5
-    plt_max = 90
+    max_vals = [max(x), max(y)]
+    plt_max = max(max_vals) + 0.5
+    # plt_max = 90
     plt.xlim([-0.5, plt_max])
     plt.ylim([-0.5, plt_max])
     plt.scatter(x, y, c='red')
@@ -112,15 +112,15 @@ if __name__ == '__main__':
 
 
     import os
-    date = '20230201_145141'
+    date = '20230320_165654'
 
     # rootdir = '/home/toothless/workspaces/pymap_elites_multiobjective/examples/data2'
     rootdir = f'/home/anna/PycharmProjects/pymap_elites_multiobjective/examples/{date}'
     graphs_fname = os.path.join(rootdir, 'graphs')
     area_fname = os.path.join(rootdir, 'area_graphs')
-    evols = [i*10000 for i in range(31) if i > 0]
+    evols = [i*10000 for i in range(16) if i > 0]
     x = 0
-    pnum = 'rastrigin'
+    pnum = 'AIC'
 
     areas_pareto = []
     areas_no = []
@@ -133,7 +133,7 @@ if __name__ == '__main__':
         fnums = []
 
         for file in files:
-            if 'centroids' in file:
+            if 'archive' not in file:
                 continue
             try:
                 fnums.append(int(re.findall(r'\d+', file)[0]))
@@ -143,8 +143,8 @@ if __name__ == '__main__':
         fnums.sort()
         print(sub)
         pareto = 'no'
-        if not pnum in sub:
-            continue
+        # if not pnum in sub:
+        #     continue
         if 'pareto' in sub:
             pareto = 'pareto'
         elif 'parallel' in sub:
@@ -158,10 +158,10 @@ if __name__ == '__main__':
             except FileNotFoundError:
                 continue
             is_eff = is_pareto_efficient_simple(xy)
-            if evo > 298000:
-                curve_area = plot_it(x, y, is_eff, f'{pareto}_{evo}', sub)
-            else:
-                curve_area = get_area(x[is_eff], y[is_eff])
+            # if evo > 140000:
+            curve_area = plot_it(x, y, is_eff, f'{pareto}_{evo}', sub)
+            # else:
+            #     curve_area = get_area(x[is_eff], y[is_eff])
             areas.append(curve_area)
         if len(areas) < 15:
             continue

@@ -1,5 +1,9 @@
 # only required to run python3 examples/cvt_rastrigin.py
+import random
 import sys, os
+
+import numpy.random
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import numpy as np
@@ -12,7 +16,7 @@ import pymap_elites_multiobjective.map_elites.common as cm_map_elites
 import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
 
 from AIC.aic import aic as Domain
-from AIC.parameter import parameter as params
+from evo_playground.parameters.parameters00 import Parameters as params
 from evo_playground.run_env import run_env
 from evo_playground.parameters.learningparams01 import LearnParams as lp
 # from evo_playground.learning.neuralnet_no_hid import NeuralNetwork as NN
@@ -51,7 +55,8 @@ class RoverWrapper:
 
 
 def main(setup):
-    [env_p, cvt_p, filepath, with_pareto] = setup
+    [env_p, cvt_p, filepath, with_pareto, stat_num] = setup
+    numpy.random.seed(stat_num + random.randint(0, 10000))
     archive = {}
     env = Domain(env_p)
     in_size = env.state_size()
@@ -59,7 +64,7 @@ def main(setup):
     out_size = env.action_size()
     wts_dim = (in_size * hid_size) + (hid_size * out_size)
     dom = RoverWrapper(env, env_p)
-    n_niches = 10000
+    n_niches = 1000
 
     n_behaviors = p.n_bh * p.n_poi_types
     if with_pareto == 'pareto':
@@ -96,7 +101,7 @@ if __name__ == '__main__':
     px['add_random'] = 0
     px['random_init_batch'] = 100
     px['random_init'] = 0.001    # Percent of niches that should be filled in order to start mutation
-    evals = 150000
+    evals = 100000
 
     p = deepcopy(params)
     p.n_bh = 3
@@ -113,12 +118,13 @@ if __name__ == '__main__':
         for i in range(lp.n_stat_runs):
             filepath = path.join(dirpath, f'{p.param_idx:03d}_{with_pareto}_run{i}')
             mkdir(filepath)
-            batch.append([p, px, filepath, with_pareto])
+            batch.append([p, px, filepath, with_pareto, i])
 
     # Use this one
-    multiprocess_main(batch)
+    # multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
+    main(batch[0])
     # for setup in batch:
     #     main(setup)
 
