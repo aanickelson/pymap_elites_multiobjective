@@ -112,13 +112,14 @@ if __name__ == '__main__':
 
 
     import os
-    date = '20230320_165654'
+    date = '20230321_161034'
 
     # rootdir = '/home/toothless/workspaces/pymap_elites_multiobjective/examples/data2'
     rootdir = f'/home/anna/PycharmProjects/pymap_elites_multiobjective/examples/{date}'
     graphs_fname = os.path.join(rootdir, 'graphs')
     area_fname = os.path.join(rootdir, 'area_graphs')
-    evols = [i*10000 for i in range(16) if i > 0]
+    n_files = 10
+    evols = [(i + 1) * 10000 for i in range(n_files)]
     x = 0
     pnum = 'AIC'
 
@@ -163,7 +164,7 @@ if __name__ == '__main__':
             # else:
             #     curve_area = get_area(x[is_eff], y[is_eff])
             areas.append(curve_area)
-        if len(areas) < 15:
+        if len(areas) < n_files:
             continue
         if pareto == 'pareto':
             areas_pareto.append(areas)
