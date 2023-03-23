@@ -9,10 +9,10 @@ from os import mkdir
 def plot_it(x, y, iseff, fname, dirname):
     plt.clf()
     max_vals = [max(x), max(y)]
-    plt_max = max(max_vals) + 0.5
+    plt_max = 2.3
     # plt_max = 90
-    plt.xlim([-0.5, plt_max])
-    plt.ylim([-0.5, plt_max])
+    plt.xlim([-0.1, plt_max])
+    plt.ylim([-0.1, plt_max])
     plt.scatter(x, y, c='red')
     plt.scatter(x[iseff], y[iseff], c="blue")
     curve_area = get_area(x[iseff], y[iseff])
@@ -112,13 +112,13 @@ if __name__ == '__main__':
 
 
     import os
-    date = '20230321_161034'
+    date = '20230322_160140'
 
     # rootdir = '/home/toothless/workspaces/pymap_elites_multiobjective/examples/data2'
     rootdir = f'/home/anna/PycharmProjects/pymap_elites_multiobjective/examples/{date}'
     graphs_fname = os.path.join(rootdir, 'graphs')
     area_fname = os.path.join(rootdir, 'area_graphs')
-    n_files = 10
+    n_files = 20
     evols = [(i + 1) * 10000 for i in range(n_files)]
     x = 0
     pnum = 'AIC'

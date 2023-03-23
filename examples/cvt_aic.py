@@ -16,7 +16,9 @@ import pymap_elites_multiobjective.map_elites.common as cm_map_elites
 import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
 
 from AIC.aic import aic as Domain
-from evo_playground.parameters.parameters00 import Parameters as params
+from evo_playground.parameters.parameters01 import Parameters as p01
+from evo_playground.parameters.parameters03 import Parameters as p03
+
 from evo_playground.run_env import run_env
 from evo_playground.parameters.learningparams01 import LearnParams as lp
 # from evo_playground.learning.neuralnet_no_hid import NeuralNetwork as NN
@@ -101,32 +103,31 @@ if __name__ == '__main__':
     px['add_random'] = 0
     px['random_init_batch'] = 100
     px['random_init'] = 0.001    # Percent of niches that should be filled in order to start mutation
-    evals = 100000
+    evals = 200000
 
-    p = deepcopy(params)
-    p.n_bh = 3
-    p.n_agents = 1
+    for params in [p03]:
+        p = deepcopy(params)
+        p.n_bh = 3
+        p.n_agents = 1
+        lp.n_stat_runs = 1
+        batch = []
+        pareto_paralell_options = ['parallel']  # 'no', 'pareto',, 'parallel',
+        now = datetime.now()
+        now_str = now.strftime("%Y%m%d_%H%M%S")
+        dirpath = path.join(getcwd(), now_str)
+        mkdir(dirpath)
 
-    batch = []
-    pareto_paralell_options = ['no']  # 'pareto',, 'parallel',
-    now = datetime.now()
-    now_str = now.strftime("%Y%m%d_%H%M%S")
-    dirpath = path.join(getcwd(), now_str)
-    mkdir(dirpath)
+        for with_pareto in pareto_paralell_options:
+            for i in range(lp.n_stat_runs):
+                filepath = path.join(dirpath, f'{p.param_idx:03d}_{with_pareto}_run{i}')
+                mkdir(filepath)
+                batch.append([p, px, filepath, with_pareto, i])
 
-    for with_pareto in pareto_paralell_options:
-        for i in range(lp.n_stat_runs):
-            filepath = path.join(dirpath, f'{p.param_idx:03d}_{with_pareto}_run{i}')
-            mkdir(filepath)
-            batch.append([p, px, filepath, with_pareto, i])
+        # Use this one
+        multiprocess_main(batch)
 
-    # Use this one
-    # multiprocess_main(batch)
-
-    # This runs a single experiment / setup at a time for debugging
-    main(batch[0])
-    # for setup in batch:
-    #     main(setup)
+        # This runs a single experiment / setup at a time for debugging
+        # main(batch[0])
 
 
     # This is the bad way. Don't do it this way
