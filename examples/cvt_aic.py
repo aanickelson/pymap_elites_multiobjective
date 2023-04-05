@@ -16,11 +16,11 @@ import pymap_elites_multiobjective.map_elites.common as cm_map_elites
 import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
 
 from AIC.aic import aic as Domain
-from evo_playground.parameters.parameters01 import Parameters as p01
-from evo_playground.parameters.parameters03 import Parameters as p03
+from pymap_elites_multiobjective.parameters.parameters01 import Parameters as p01
+from pymap_elites_multiobjective.parameters.parameters03 import Parameters as p03
 
-from evo_playground.run_env import run_env
-from evo_playground.parameters.learningparams01 import LearnParams as lp
+from pymap_elites_multiobjective.examples.run_env import run_env
+from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
 # from evo_playground.learning.neuralnet_no_hid import NeuralNetwork as NN
 from evo_playground.learning.neuralnet import NeuralNetwork as NN
 from torch import from_numpy
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     px["batch_size"] = 100
     px["min"] = -5
     px["max"] = 5
-    px["parallel"] = False
+    px["parallel"] = True
     px['cvt_use_cache'] = False
     px['add_random'] = 0
     px['random_init_batch'] = 100
