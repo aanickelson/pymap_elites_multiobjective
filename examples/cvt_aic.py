@@ -68,7 +68,8 @@ def main(setup):
     dom = RoverWrapper(env, env_p)
     n_niches = 1000
 
-    n_behaviors = p.n_bh * p.n_poi_types
+    n_behaviors = p.n_bh
+    # n_behaviors = p.n_bh * p.n_poi_types
     if with_pareto == 'pareto':
         print(with_pareto, filepath)
         archive = cvt_me_pareto.compute(n_behaviors, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
@@ -107,11 +108,11 @@ if __name__ == '__main__':
 
     for params in [p03]:
         p = deepcopy(params)
-        p.n_bh = 3
+        p.n_bh = 5
         p.n_agents = 1
         lp.n_stat_runs = 1
         batch = []
-        pareto_paralell_options = ['parallel']  # 'no', 'pareto',, 'parallel',
+        pareto_paralell_options = ['no']  # 'no', 'pareto',, 'parallel',
         now = datetime.now()
         now_str = now.strftime("%Y%m%d_%H%M%S")
         dirpath = path.join(getcwd(), now_str)
