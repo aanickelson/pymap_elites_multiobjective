@@ -112,7 +112,7 @@ if __name__ == '__main__':
 
 
     import os
-    date = '20230407_181235'
+    date = '20230410_163617'
 
     # rootdir = '/home/toothless/workspaces/pymap_elites_multiobjective/examples/data2'
     rootdir = f'/home/anna/PycharmProjects/pymap_elites_multiobjective/examples/{date}'

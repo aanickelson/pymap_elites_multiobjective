@@ -19,7 +19,7 @@ def run_env(env, policies, p, use_bh=False):
     if not use_bh:
         return env.G()
     else:
-        return env.G(), calc_bh(bh_space, p.n_poi_types, p.n_agents, n_behaviors, env.agents)
+        return env.G(), calc_bh(bh_space, p.n_poi_types, p.n_agents, n_behaviors, env.agents, p.counter)
 
 
 def action_space(act_vec, p, n_beh):
@@ -29,8 +29,12 @@ def action_space(act_vec, p, n_beh):
     # return [poi_type, sum(act_vec[-n_beh:])]
 
 
-def calc_bh(bh_vec, n_poi_types, n_agents, n_beh, agents):
-    bh = np.zeros((n_agents, n_poi_types + 3))
+def calc_bh(bh_vec, n_poi_types, n_agents, n_beh, agents, counter):
+    # If there are counterfactual agents, include the agent behaviors
+    if counter:
+        bh = np.zeros((n_agents, n_poi_types + 3))
+    else:
+        bh = np.zeros((n_agents, n_poi_types))
     for ag in range(n_agents):
         ag_bhs = np.array(bh_vec[ag])
         agent = agents[ag]
@@ -42,8 +46,8 @@ def calc_bh(bh_vec, n_poi_types, n_agents, n_beh, agents):
                     bh[ag][poi] = np.sum(poi_bh)
             except RuntimeWarning:
                 pass
-
-        bh[ag][-3:] = np.array([agent.min_dist, agent.max_dist, (agent.avg_dist[0] / agent.avg_dist[1])])
+        if counter:
+           bh[ag][-3:] = np.array([agent.min_dist, agent.max_dist, (agent.avg_dist[0] / agent.avg_dist[1])])
 
     bh = np.nan_to_num(bh, np.nan)
     # bh = np.reshape(bh, (n_agents, n_poi_types * n_beh))

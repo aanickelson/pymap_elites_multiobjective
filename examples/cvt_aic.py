@@ -18,6 +18,7 @@ import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pare
 from AIC.aic import aic as Domain
 from pymap_elites_multiobjective.parameters.parameters01 import Parameters as p01
 from pymap_elites_multiobjective.parameters.parameters03 import Parameters as p03
+from pymap_elites_multiobjective.parameters.parameters04 import Parameters as p04
 
 from pymap_elites_multiobjective.examples.run_env import run_env
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
@@ -66,7 +67,7 @@ def main(setup):
     out_size = env.action_size()
     wts_dim = (in_size * hid_size) + (hid_size * out_size)
     dom = RoverWrapper(env, env_p)
-    n_niches = 1000
+    n_niches = 10000
 
     n_behaviors = p.n_bh
     # n_behaviors = p.n_bh * p.n_poi_types
@@ -99,24 +100,28 @@ if __name__ == '__main__':
     px["batch_size"] = 100
     px["min"] = -5
     px["max"] = 5
-    px["parallel"] = True
+    px["parallel"] = False
     px['cvt_use_cache'] = False
     px['add_random'] = 0
     px['random_init_batch'] = 100
     px['random_init'] = 0.001    # Percent of niches that should be filled in order to start mutation
-    evals = 200000
+    evals = 20000
 
-    for params in [p03]:
+    now = datetime.now()
+    now_str = now.strftime("%Y%m%d_%H%M%S")
+    dirpath = path.join(getcwd(), now_str)
+    mkdir(dirpath)
+
+    for params in [p04, p03]:
         p = deepcopy(params)
-        p.n_bh = 5
+        if params.counter:
+            p.n_bh = params.n_poi_types + 3
+        else:
+            p.n_bh = params.n_poi_types
         p.n_agents = 1
         lp.n_stat_runs = 1
         batch = []
         pareto_paralell_options = ['no']  # 'no', 'pareto',, 'parallel',
-        now = datetime.now()
-        now_str = now.strftime("%Y%m%d_%H%M%S")
-        dirpath = path.join(getcwd(), now_str)
-        mkdir(dirpath)
 
         for with_pareto in pareto_paralell_options:
             for i in range(lp.n_stat_runs):
