@@ -67,7 +67,7 @@ def main(setup):
     out_size = env.action_size()
     wts_dim = (in_size * hid_size) + (hid_size * out_size)
     dom = RoverWrapper(env, env_p)
-    n_niches = 10000
+    n_niches = px['n_niches']
 
     n_behaviors = env_p.n_bh
     # n_behaviors = p.n_bh * p.n_poi_types
@@ -105,6 +105,7 @@ if __name__ == '__main__':
     px['add_random'] = 0
     px['random_init_batch'] = 100
     px['random_init'] = 0.001    # Percent of niches that should be filled in order to start mutation
+    px['n_niches'] = 10000
     evals = 200000
 
     now = datetime.now()
@@ -113,7 +114,7 @@ if __name__ == '__main__':
     mkdir(dirpath)
     batch = []
 
-    for params in [p04, p03]:
+    for params in [p03, p04]:
         p = deepcopy(params)
         if params.counter:
             p.n_bh = params.n_poi_types + 3
