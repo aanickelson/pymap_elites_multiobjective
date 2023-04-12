@@ -3,7 +3,7 @@ import re
 import numpy as np
 from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
-from os import mkdir
+import os
 
 
 def plot_it(x, y, iseff, fname, dirname):
@@ -83,12 +83,11 @@ def process(data):
     return mu, ste
 
 
-def plot_areas(evos, areas_pareto, areas_no, areas_parallel, dirname, area_fname):
+def plot_areas(evos, data_and_names, dirname, area_fname):
     print('We made it to plotting')
     plt.clf()
     evos = np.array(evos)
-    set_for_loop = [[areas_pareto, 'pareto'], [areas_no, 'no'], [areas_parallel, 'parallel']]
-    for [data, pareto] in set_for_loop:
+    for [data, nm] in data_and_names:
         if not data:
             continue
         try:
@@ -97,81 +96,87 @@ def plot_areas(evos, areas_pareto, areas_no, areas_parallel, dirname, area_fname
         except RuntimeWarning:
             print("'tis here, mlord")
             continue
-        plt.fill_between(evos, means-sterr, means+sterr, alpha=0.5, label=pareto)
+        plt.fill_between(evos, means-sterr, means+sterr, alpha=0.5, label=nm)
     plt.title(f"{dirname} areas")
     plt.legend()
     try:
-        mkdir(area_fname)
+        os.mkdir(area_fname)
     except FileExistsError:
         pass
     plt.savefig(os.path.join(area_fname, dirname + '.png'))
 
 
 if __name__ == '__main__':
-    # fname = '/home/anna/PycharmProjects/py_map_elites/examples/data/002_20230123_191216/archive_100000.dat'
 
+    # Change these parameters to run the script
+    n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
+    domain_name = 'AIC'  # What domain is being tested
+    date = '20230410_171258'  # Date stamp of data folder
+    param_set = ['003', '004']  # Distinguishing factor in the filenames of parameter you want to test (e.g. diff param files, different selection types, etc)
 
-    import os
-    date = '20230410_163617'
+    pareto = 'no'  # This is legacy, but currently still necessary
 
-    # rootdir = '/home/toothless/workspaces/pymap_elites_multiobjective/examples/data2'
-    rootdir = f'/home/anna/PycharmProjects/pymap_elites_multiobjective/examples/{date}'
+    # Filename setup
+    rootdir = os.path.join(os.getcwd(), date)
     graphs_fname = os.path.join(rootdir, 'graphs')
     area_fname = os.path.join(rootdir, 'area_graphs')
-    n_files = 20
+
     evols = [(i + 1) * 10000 for i in range(n_files)]
-    x = 0
-    pnum = 'AIC'
+    data_and_nm = [[[], p] for p in param_set]
 
-    areas_pareto = []
-    areas_no = []
-    areas_parallel = []
-    # for pnum in ['006']:  # '004', '005',
-
+    # Walk through all the files in the given directory
     for sub, _, files in os.walk(rootdir):
+        # If there are no files, move on to the next item
         if not files:
             continue
-        fnums = []
 
+        # This block gets the file numbers of all the archives
+        fnums = []
         for file in files:
+            # 'archive' is what all the data is saved to
             if 'archive' not in file:
                 continue
             try:
+                # Find all file numbers (the final number appended, which is the number of policies tested so far)
                 fnums.append(int(re.findall(r'\d+', file)[0]))
             except IndexError:
                 print(file, "index error")
                 continue
+        # Sort all file numbers
         fnums.sort()
         print(sub)
-        pareto = 'no'
-        # if not pnum in sub:
-        #     continue
-        if 'pareto' in sub:
-            pareto = 'pareto'
-        elif 'parallel' in sub:
-            pareto = 'parallel'
+
+        # This block figures out which parameter set the data goes with
+        p_num = param_set[0]
+        for p in param_set:
+            if p in sub:
+                p_num = p
+
+        # This block goes through each file, gets the data, finds the pareto front, gets the area, then saves the area
         areas = []
         for evo in fnums:
             fname = os.path.join(rootdir, sub, f'archive_{evo}.dat')
-            # print(fname)
             try:
                 x, y, xy = load_data(fname)
             except FileNotFoundError:
                 continue
             is_eff = is_pareto_efficient_simple(xy)
-            # if evo > 140000:
+            # Use this line if you want to plot the evoloution of the pareto fronts over time
             curve_area = plot_it(x, y, is_eff, f'{pareto}_{evo}', sub)
-            # else:
-            #     curve_area = get_area(x[is_eff], y[is_eff])
+            # Use this line if you only want the areas for the final plot, and not the individual pareto plots
+            # curve_area = get_area(x[is_eff], y[is_eff])
             areas.append(curve_area)
         if len(areas) < n_files:
             continue
-        if pareto == 'pareto':
-            areas_pareto.append(areas)
-        elif pareto == 'no':
-            areas_no.append(areas)
-        elif pareto == 'parallel':
-            areas_parallel.append(areas)
-        else:
+
+        # Save the areas to the appropriate parameter set
+        it_worked = False
+        for i, p_name in enumerate(param_set):
+            if p_num == p_name:
+                data_and_nm[i][0].append(areas)
+                it_worked = True
+        if not it_worked:
             print('something has gone horribly wrong')
-    plot_areas(evols, areas_pareto, areas_no, areas_parallel, pnum, area_fname)
+
+    # Plot the areas data for all parameters on one plot to compare
+    plot_areas(evols, data_and_nm, domain_name, area_fname)

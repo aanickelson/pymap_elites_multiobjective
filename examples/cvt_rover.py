@@ -45,14 +45,13 @@ class RoverWrapper:
 
 
 def main(setup):
-    [env_p, cvt_p, filepath, with_pareto] = setup
+    [env_p, cvt_p, n_niches, filepath, with_pareto] = setup
     archive = {}
     env = Domain(env_p)
     in_size = env.state_size()
     out_size = env.get_action_size()
     wts_dim = in_size * out_size
     dom = RoverWrapper(env)
-    n_niches = 15000
     if with_pareto == 'pareto':
         print(with_pareto, filepath)
         archive = cvt_me_pareto.compute(env.n_rooms, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
@@ -87,7 +86,7 @@ if __name__ == '__main__':
     px['add_random'] = 5
     px['random_init_batch'] = 100
     px['random_init'] = 0.001    # Percent of niches that should be filled in order to start mutation
-    evals = 150000
+    evals = 500000
 
     batch = []
     pareto_paralell_options = ['parallel', 'no']  # 'pareto',
@@ -95,13 +94,14 @@ if __name__ == '__main__':
     now_str = now.strftime("%Y%m%d_%H%M%S")
     dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
-
+    n_niches = [100, 1000, 10000]
     for with_pareto in pareto_paralell_options:
-        for p in [param.p04, param.p06]:  #param.p05,
-            for i in range(5):
-                filepath = path.join(dirpath, f'{p.trial_num:03d}_{with_pareto}_run{i}')
-                mkdir(filepath)
-                batch.append([p, px, filepath, with_pareto])
+        for nich in n_niches:
+            for p in [param.p06]:  # param.p04, param.p05,
+                for i in range(3):
+                    filepath = path.join(dirpath, f'{p.trial_num:03d}_{with_pareto}_niches{nich}_run{i}')
+                    mkdir(filepath)
+                    batch.append([p, px, nich, filepath, with_pareto])
 
     # Use this one
     multiprocess_main(batch)

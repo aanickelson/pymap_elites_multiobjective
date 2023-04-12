@@ -120,7 +120,8 @@ def compute(dim_map, dim_x, f,
             params=cm.default_params,
             log_file=None,
             variation_operator=cm.variation,
-            data_fname=None):
+            data_fname=None,
+            with_pareto=False):
     """CVT MAP-Elites
        Vassiliades V, Chatzilygeroudis K, Mouret JB. Using centroidal voronoi tessellations to scale up the multidimensional archive of phenotypic elites algorithm. IEEE Transactions on Evolutionary Computation. 2017 Aug 3;22(4):623-30.
 
@@ -147,40 +148,52 @@ def compute(dim_map, dim_x, f,
     n_evals = 0 # number of evaluations since the beginning
     b_evals = 0 # number evaluation since the last dump
     n_evolutions = 0
-
+    rand_init = params['random_init_batch']
     # main loop
     while n_evals < max_evals:
         to_evaluate = []
         to_evaluate_p = []
-        # random initialization
+
         if len(archive) <= params['random_init'] * n_niches:
-            for i in range(0, int(params['random_init_batch'] / 2)):
-                x = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
-                x_p = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
+            # If we're using the pareto method, each batch gets half of the initial policies
+            if with_pareto:
+                rand_init = int(params['random_init_batch'] / 2)
+                init_batch_p = np.random.uniform(low=params['min'], high=params['max'], size=(rand_init, dim_x))
+                for x_p in init_batch_p:
+                    to_evaluate_p += [(x_p, f)]
 
+            init_batch = np.random.uniform(low=params['min'], high=params['max'], size=(rand_init, dim_x))
+            for x in init_batch:
                 to_evaluate += [(x, f)]
-                to_evaluate_p += [(x_p, f)]
+
+
         else:  # variation/selection loop
+            add_random = params['add_random']
             # add n random policies each generation to maintain diversity
-            for i in range(0, params['add_random']):
-                x = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
-                x_p = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
+            if with_pareto:
+                add_random = int(params['add_random'] / 2)
+                rand_batch_p = np.random.uniform(low=params['min'], high=params['max'], size=(add_random, dim_x))
+                for x_p in rand_batch_p:
+                    to_evaluate_p += [(x_p, f)]
 
+            rand_batch = np.random.uniform(low=params['min'], high=params['max'], size=(add_random, dim_x))
+            for x in rand_batch:
                 to_evaluate += [(x, f)]
-                to_evaluate_p += [(x_p, f)]
 
-
-            # keys = list(archive.keys())
             arch_pols = []
             # Unpack all the policies to mutate
             for key, value in archive.items():
                 for val_i, val in enumerate(value):
                     arch_pols.append(val)
 
-            batch_sz = int(params['batch_size'] / 2)
+            batch_sz = params['batch_size']
+            if with_pareto:
+                batch_sz = int(params['batch_size'] / 2)
+
             # we select all the parents at the same time because randint is slow
             rand1 = np.random.randint(len(arch_pols), size=batch_sz)
             rand2 = np.random.randint(len(arch_pols), size=batch_sz)
+
             for n in range(0, batch_sz):
                 # parent selection
                 pol1 = arch_pols[rand1[n]]
@@ -189,26 +202,27 @@ def compute(dim_map, dim_x, f,
                 new_pol = variation_operator(pol1.x, pol2.x, params)
                 to_evaluate += [(new_pol, f)]
 
-            randp1 = np.random.randint(len(pareto_archive), size=batch_sz)
-            randp2 = np.random.randint(len(pareto_archive), size=batch_sz)
-            for n in range(0, batch_sz):
-                x_p = arch_pols[randp1[n]]
-                y_p = arch_pols[randp2[n]]
-                # copy & add variation
-                z_p = variation_operator(x_p.x, y_p.x, params)
-                to_evaluate_p += [(z_p, f)]
+            if with_pareto:
+                randp1 = np.random.randint(len(pareto_archive), size=batch_sz)
+                randp2 = np.random.randint(len(pareto_archive), size=batch_sz)
+                for n in range(0, batch_sz):
+                    x_p = arch_pols[randp1[n]]
+                    y_p = arch_pols[randp2[n]]
+                    # copy & add variation
+                    z_p = variation_operator(x_p.x, y_p.x, params)
+                    to_evaluate_p += [(z_p, f)]
 
         # evaluation of the fitness for to_evaluate
         s_list = cm.parallel_eval(__evaluate, to_evaluate, pool, params)
-        s_p_list = cm.parallel_eval(__evaluate, to_evaluate_p, pool, params)
-
-        # Keep only the policies that are on the first n pareto front layers
-        pareto_archive = keep_n_pareto_levels(s_p_list, n_levels=3)
+        if with_pareto:
+            s_p_list = cm.parallel_eval(__evaluate, to_evaluate_p, pool, params)
+            # Keep only the policies that are on the first n pareto front layers
+            pareto_archive = keep_n_pareto_levels(s_p_list, n_levels=3)
 
         # natural selection
         for s in s_list:
             __add_to_archive(s, s.desc, archive, kdt)
-        if not n_evolutions % 10:
+        if with_pareto and not n_evolutions % 10:
 
             for s_p in pareto_archive:
                 __add_to_archive(s_p, s_p.desc, archive, kdt)

@@ -69,7 +69,7 @@ def main(setup):
     dom = RoverWrapper(env, env_p)
     n_niches = 10000
 
-    n_behaviors = p.n_bh
+    n_behaviors = env_p.n_bh
     # n_behaviors = p.n_bh * p.n_poi_types
     if with_pareto == 'pareto':
         print(with_pareto, filepath)
@@ -105,12 +105,13 @@ if __name__ == '__main__':
     px['add_random'] = 0
     px['random_init_batch'] = 100
     px['random_init'] = 0.001    # Percent of niches that should be filled in order to start mutation
-    evals = 20000
+    evals = 200000
 
     now = datetime.now()
     now_str = now.strftime("%Y%m%d_%H%M%S")
     dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
+    batch = []
 
     for params in [p04, p03]:
         p = deepcopy(params)
@@ -119,8 +120,7 @@ if __name__ == '__main__':
         else:
             p.n_bh = params.n_poi_types
         p.n_agents = 1
-        lp.n_stat_runs = 1
-        batch = []
+        lp.n_stat_runs = 3
         pareto_paralell_options = ['no']  # 'no', 'pareto',, 'parallel',
 
         for with_pareto in pareto_paralell_options:
@@ -129,11 +129,11 @@ if __name__ == '__main__':
                 mkdir(filepath)
                 batch.append([p, px, filepath, with_pareto, i])
 
-        # Use this one
-        multiprocess_main(batch)
+    # Use this one
+    multiprocess_main(batch)
 
-        # This runs a single experiment / setup at a time for debugging
-        # main(batch[0])
+    # This runs a single experiment / setup at a time for debugging
+    # main(batch[0])
 
 
     # This is the bad way. Don't do it this way
