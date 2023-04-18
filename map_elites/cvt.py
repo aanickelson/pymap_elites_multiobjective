@@ -74,6 +74,9 @@ def is_pareto_efficient_simple(vals, new):
     for i, c in enumerate(costs):
         if is_efficient[i]:
             is_efficient[is_efficient] = np.any(costs[is_efficient] > c, axis=1)  # Keep any point with a lower cost
+            # The two lines below this capture points that are equal to the current compared point
+            # Without these two lines, it will only keep one of each pareto point
+            # E.g. if there are two policies that both get [4,0], only the first will be kept. That's bad.
             eff_add = np.all(costs == c, axis=1)
             is_efficient += eff_add
             is_efficient[i] = True  # And keep self
@@ -103,7 +106,6 @@ def compute(dim_map, dim_x, f,
     """
     # setup the parallel processing pool
     if params['parallel'] == True:
-
         num_cores = multiprocessing.cpu_count()
         pool = multiprocessing.Pool(num_cores)
     else:

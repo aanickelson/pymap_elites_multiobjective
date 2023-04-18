@@ -111,72 +111,77 @@ if __name__ == '__main__':
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
     domain_name = 'AIC'  # What domain is being tested
-    date = '20230410_171258'  # Date stamp of data folder
+    dates = ['20230417_170533', '20230412_134629']  # Date stamp of data folder
     param_set = ['003', '004']  # Distinguishing factor in the filenames of parameter you want to test (e.g. diff param files, different selection types, etc)
+    all_dates = '_'.join(dates)
+    # Filename setup
+    # rootdir = os.path.join(os.getcwd(), '_graphs' + all_dates)
+    # os.mkdir(rootdir)
+    graphs_fname = os.path.join(os.getcwd(), 'graphs_' + all_dates)
+    os.mkdir(graphs_fname)
 
     pareto = 'no'  # This is legacy, but currently still necessary
-
-    # Filename setup
-    rootdir = os.path.join(os.getcwd(), date)
-    graphs_fname = os.path.join(rootdir, 'graphs')
-    area_fname = os.path.join(rootdir, 'area_graphs')
-
     evols = [(i + 1) * 10000 for i in range(n_files)]
     data_and_nm = [[[], p] for p in param_set]
 
-    # Walk through all the files in the given directory
-    for sub, _, files in os.walk(rootdir):
-        # If there are no files, move on to the next item
-        if not files:
-            continue
-
-        # This block gets the file numbers of all the archives
-        fnums = []
-        for file in files:
-            # 'archive' is what all the data is saved to
-            if 'archive' not in file:
+    for date in dates:
+        rootdir = os.path.join(os.getcwd(), date)
+        # area_fname = os.path.join(rootdir, 'graphs')
+        # Walk through all the files in the given directory
+        for sub, _, files in os.walk(rootdir):
+            # If there are no files, move on to the next item
+            if not files:
                 continue
-            try:
-                # Find all file numbers (the final number appended, which is the number of policies tested so far)
-                fnums.append(int(re.findall(r'\d+', file)[0]))
-            except IndexError:
-                print(file, "index error")
+
+            # This block gets the file numbers of all the archives
+            fnums = []
+            for file in files:
+                # 'archive' is what all the data is saved to
+                if 'archive' not in file:
+                    continue
+                try:
+                    # Find all file numbers (the final number appended, which is the number of policies tested so far)
+                    fnums.append(int(re.findall(r'\d+', file)[0]))
+                except IndexError:
+                    print(file, "index error")
+                    continue
+            # Sort all file numbers
+            fnums.sort()
+            print(sub)
+
+            # Get the name of the sub-directory
+            params_name = sub.split('/')[-1]
+
+            # Pulls the parameter file number
+            p_num = params_name[:3]
+
+            # This block goes through each file, gets the data, finds the pareto front, gets the area, then saves the area
+            areas = []
+            for evo in fnums:
+                fname = os.path.join(rootdir, sub, f'archive_{evo}.dat')
+                try:
+                    x, y, xy = load_data(fname)
+                except FileNotFoundError:
+                    continue
+                is_eff = is_pareto_efficient_simple(xy)
+                # Use this line if you want to plot the evoloution of the pareto fronts over time
+                if evo == fnums[-1]:
+                    curve_area = plot_it(x, y, is_eff, f'{date}_{params_name}_{pareto}_{evo}', graphs_fname)
+                # Use this line if you only want the areas for the final plot, and not the individual pareto plots
+                else:
+                    curve_area = get_area(x[is_eff], y[is_eff])
+                areas.append(curve_area)
+            if len(areas) < n_files:
                 continue
-        # Sort all file numbers
-        fnums.sort()
-        print(sub)
 
-        # This block figures out which parameter set the data goes with
-        p_num = param_set[0]
-        for p in param_set:
-            if p in sub:
-                p_num = p
-
-        # This block goes through each file, gets the data, finds the pareto front, gets the area, then saves the area
-        areas = []
-        for evo in fnums:
-            fname = os.path.join(rootdir, sub, f'archive_{evo}.dat')
-            try:
-                x, y, xy = load_data(fname)
-            except FileNotFoundError:
-                continue
-            is_eff = is_pareto_efficient_simple(xy)
-            # Use this line if you want to plot the evoloution of the pareto fronts over time
-            curve_area = plot_it(x, y, is_eff, f'{pareto}_{evo}', sub)
-            # Use this line if you only want the areas for the final plot, and not the individual pareto plots
-            # curve_area = get_area(x[is_eff], y[is_eff])
-            areas.append(curve_area)
-        if len(areas) < n_files:
-            continue
-
-        # Save the areas to the appropriate parameter set
-        it_worked = False
-        for i, p_name in enumerate(param_set):
-            if p_num == p_name:
-                data_and_nm[i][0].append(areas)
-                it_worked = True
-        if not it_worked:
-            print('something has gone horribly wrong')
+            # Save the areas to the appropriate parameter set
+            it_worked = False
+            for i, p_name in enumerate(param_set):
+                if p_num == p_name:
+                    data_and_nm[i][0].append(areas)
+                    it_worked = True
+            if not it_worked:
+                print('something has gone horribly wrong')
 
     # Plot the areas data for all parameters on one plot to compare
-    plot_areas(evols, data_and_nm, domain_name, area_fname)
+    plot_areas(evols, data_and_nm, domain_name, graphs_fname)

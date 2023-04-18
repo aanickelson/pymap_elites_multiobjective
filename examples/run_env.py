@@ -30,24 +30,31 @@ def action_space(act_vec, p, n_beh):
 
 
 def calc_bh(bh_vec, n_poi_types, n_agents, n_beh, agents, counter):
-    # If there are counterfactual agents, include the agent behaviors
+    # If there are counterfactual agents, include in b
     if counter:
         bh = np.zeros((n_agents, n_poi_types + 3))
     else:
-        bh = np.zeros((n_agents, n_poi_types))
-    for ag in range(n_agents):
-        ag_bhs = np.array(bh_vec[ag])
-        agent = agents[ag]
+        bh = np.zeros((n_agents, n_poi_types * 3))
+    for ag_i in range(n_agents):
+        ag_bhs = np.array(bh_vec[ag_i])
+        agent = agents[ag_i]
+        # List of the start / stop indices of where each set of POI behaviors falls in the behavior array
+        poi_bh_idxs = list(range(0, (n_poi_types * 3) + 1, 3))
         for poi in range(n_poi_types):
-            try:
-                all_poi_bhs = ag_bhs[ag_bhs[:, 0] == poi]
-                if all_poi_bhs.size > 0:
-                    poi_bh = all_poi_bhs.mean(axis=0)[1:]
-                    bh[ag][poi] = np.sum(poi_bh)
-            except RuntimeWarning:
-                pass
+            # Get all behaviors associated with this POI type
+            all_poi_bhs = ag_bhs[ag_bhs[:, 0] == poi]
+            if all_poi_bhs.size > 0:
+                # Mean of all behaviors for that POI type
+                poi_bh = all_poi_bhs.mean(axis=0)[1:]
+                # Sum of the behavior means
+                if counter:
+                    bh[ag_i][poi] = np.sum(poi_bh)
+                else:
+                    # Set the three behaviors associated with this POI to the mean of the behaviors
+                    bh[ag_i][poi_bh_idxs[poi]:poi_bh_idxs[poi + 1]] = poi_bh
+
         if counter:
-           bh[ag][-3:] = np.array([agent.min_dist, agent.max_dist, (agent.avg_dist[0] / agent.avg_dist[1])])
+           bh[ag_i][-3:] = np.array([agent.min_dist, agent.max_dist, (agent.avg_dist[0] / agent.avg_dist[1])])
 
     bh = np.nan_to_num(bh, np.nan)
     # bh = np.reshape(bh, (n_agents, n_poi_types * n_beh))

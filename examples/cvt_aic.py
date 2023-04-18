@@ -121,7 +121,7 @@ if __name__ == '__main__':
         else:
             p.n_bh = params.n_poi_types
         p.n_agents = 1
-        lp.n_stat_runs = 3
+        lp.n_stat_runs = 5
         pareto_paralell_options = ['no']  # 'no', 'pareto',, 'parallel',
 
         for with_pareto in pareto_paralell_options:
