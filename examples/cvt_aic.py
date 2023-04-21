@@ -114,12 +114,12 @@ if __name__ == '__main__':
     mkdir(dirpath)
     batch = []
 
-    for params in [p03, p04]:
+    for params in [p03]:  #, p04]:
         p = deepcopy(params)
         if params.counter:
             p.n_bh = params.n_poi_types + 3
         else:
-            p.n_bh = params.n_poi_types
+            p.n_bh = params.n_poi_types * 3
         p.n_agents = 1
         lp.n_stat_runs = 5
         pareto_paralell_options = ['no']  # 'no', 'pareto',, 'parallel',
@@ -135,6 +135,9 @@ if __name__ == '__main__':
 
     # This runs a single experiment / setup at a time for debugging
     # main(batch[0])
+
+    # for b in batch:
+    #     main(b)
 
 
     # This is the bad way. Don't do it this way

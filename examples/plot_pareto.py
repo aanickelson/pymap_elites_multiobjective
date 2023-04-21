@@ -111,7 +111,7 @@ if __name__ == '__main__':
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
     domain_name = 'AIC'  # What domain is being tested
-    dates = ['20230417_170533', '20230412_134629']  # Date stamp of data folder
+    dates = ['20230417_170533', '20230412_134629', '20230418_160058', '20230419_163935', '20230420_164143']  # ['20230417_170533', '20230412_134629', '20230418_160058', ]  # Date stamp of data folder
     param_set = ['003', '004']  # Distinguishing factor in the filenames of parameter you want to test (e.g. diff param files, different selection types, etc)
     all_dates = '_'.join(dates)
     # Filename setup

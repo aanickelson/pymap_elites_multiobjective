@@ -40,6 +40,7 @@
 import math
 import numpy as np
 import multiprocessing
+from datetime import datetime
 
 # from scipy.spatial import cKDTree : TODO -- faster?
 from sklearn.neighbors import KDTree
@@ -157,7 +158,9 @@ def compute(dim_map, dim_x, f,
 
         # write archive
         if b_evals >= params['dump_period'] and params['dump_period'] != -1:
-            print(f"[{n_evals}/{int(max_evals)}] - {data_fname} \n", end=" ", flush=True)
+            now = datetime.now()
+            now_str = now.strftime("%H:%M:%S")
+            print(f"[{n_evals}/{int(max_evals)}] - {now_str} - {data_fname} \n", end=" ", flush=True)
             cm.__save_archive(archive, n_evals, data_fname)
             b_evals = 0
         # write log
