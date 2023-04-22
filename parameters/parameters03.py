@@ -17,6 +17,7 @@ class Parameters:
     speed = 5.0
     map_size = 20
     counter = 3
+    counter_move = True
 
     # poi_pos = [[10, 10], [20, 10], [10, 20], [20, 20]]
     poi_pos = list(itertools.product([4, 8, 12, 16], repeat=2))

@@ -9,14 +9,14 @@ def init_fn(n):
 
 
 class Parameters:
-    param_idx = 4  # Makes it easy to differentiate results by parameter set
+    param_idx = 13  # Makes it easy to differentiate results by parameter set
 
     n_agents = 1
     battery = 30
     time_steps = 50
     speed = 5.0
     map_size = 20
-    counter = 0
+    counter = 3
     counter_move = False
 
     # poi_pos = [[10, 10], [20, 10], [10, 20], [20, 20]]

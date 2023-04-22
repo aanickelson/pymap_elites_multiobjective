@@ -41,47 +41,69 @@ import math
 import numpy as np
 import multiprocessing
 from datetime import datetime
-
+import random
 # from scipy.spatial import cKDTree : TODO -- faster?
 from sklearn.neighbors import KDTree
 
 from pymap_elites_multiobjective.map_elites import common as cm
 
 
-def __add_to_archive(s, centroid, archive, kdt):
-    niche_index = kdt.query([centroid], k=1)[1][0][0]
-    niche = kdt.data[niche_index]
-    n = cm.make_hashable(niche)
-    s.centroid = n
-    if n in archive:
-        archive[n] = is_pareto_efficient_simple(archive[n], s)
-        return
-    else:
-        archive[n] = [s]
-        return
+def __add_to_archive(slist, archive, kdt):
+    niches_changed = []
+    for s in slist:
+        centroid = s.desc
+        niche_index = kdt.query([centroid], k=1)[1][0][0]
+        niche_kdt = kdt.data[niche_index]
+        n = cm.make_hashable(niche_kdt)
+        s.centroid = n
+        if n in archive:
+            archive[n].append(s)
+            # archive[n] = is_pareto_efficient_simple(archive[n], s)
+        else:
+            archive[n] = [s]
+
+        if n not in niches_changed:
+            niches_changed.append(n)
+
+    for ni in niches_changed:
+        archive[ni] = is_pareto_efficient_simple(archive[ni])
 
 
-def is_pareto_efficient_simple(vals, new):
+def is_pareto_efficient_simple(vals):
     """
     copied and modified from https://stackoverflow.com/questions/32791911/fast-calculation-of-pareto-front-in-python
     Find the pareto-efficient points
     :param costs: An (n_points, n_costs) array
     :return: A (n_points, ) boolean array, indicating whether each point is Pareto efficient
     """
-    vals.append(new)
     fitnesses = [s.fitness for s in vals]
     costs = np.array(fitnesses)
     is_efficient = np.ones(costs.shape[0], dtype=bool)
+    err = 0.0005
     for i, c in enumerate(costs):
         if is_efficient[i]:
-            is_efficient[is_efficient] = np.any(costs[is_efficient] > c, axis=1)  # Keep any point with a lower cost
+            is_efficient[is_efficient] = np.any(costs[is_efficient] > c, axis=1)  # Keep any point with a higher cost
             # The two lines below this capture points that are equal to the current compared point
             # Without these two lines, it will only keep one of each pareto point
             # E.g. if there are two policies that both get [4,0], only the first will be kept. That's bad.
-            eff_add = np.all(costs == c, axis=1)
+            if np.all(c < err):
+                x = 1
+                is_efficient[i] = True
+                continue
+            eff_add = np.all(abs(costs - c) < err, axis=1)
             is_efficient += eff_add
             is_efficient[i] = True  # And keep self
-    final_vals = [vals[j] for j in range(len(vals)) if is_efficient[j]]
+    pareto_vals = [vals[j] for j in range(len(vals)) if is_efficient[j]]
+    pareto_costs = np.array([costs[k] for k in range(len(vals)) if is_efficient[k]])
+    if len(pareto_vals) > 50:
+        final_vals = []
+        _, idxs = np.unique(pareto_costs, axis=0, return_index=True)
+        final_vals = [pareto_vals[l] for l in idxs]
+        sample_set = random.sample(pareto_vals, 50 - len(final_vals))
+        final_vals.extend(sample_set)
+    else:
+        final_vals = pareto_vals
+
     return final_vals
 
 # evaluate a single vector (x) with a function f and return a species
@@ -150,8 +172,7 @@ def compute(dim_map, dim_x, f,
         # evaluation of the fitness for to_evaluate
         s_list = cm.parallel_eval(__evaluate, to_evaluate, pool, params)
         # natural selection
-        for s in s_list:
-            __add_to_archive(s, s.desc, archive, kdt)
+        __add_to_archive(s_list, archive, kdt)
         # count evals
         n_evals += len(to_evaluate)
         b_evals += len(to_evaluate)

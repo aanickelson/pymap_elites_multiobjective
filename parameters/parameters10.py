@@ -9,7 +9,7 @@ def init_fn(n):
 
 
 class Parameters:
-    param_idx = 4  # Makes it easy to differentiate results by parameter set
+    param_idx = 10  # Makes it easy to differentiate results by parameter set
 
     n_agents = 1
     battery = 30

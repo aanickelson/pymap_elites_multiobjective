@@ -16,9 +16,7 @@ import pymap_elites_multiobjective.map_elites.common as cm_map_elites
 import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
 
 from AIC.aic import aic as Domain
-from pymap_elites_multiobjective.parameters.parameters01 import Parameters as p01
-from pymap_elites_multiobjective.parameters.parameters03 import Parameters as p03
-from pymap_elites_multiobjective.parameters.parameters04 import Parameters as p04
+from pymap_elites_multiobjective.parameters import batch_00, batch_01
 
 from pymap_elites_multiobjective.examples.run_env import run_env
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
@@ -70,21 +68,8 @@ def main(setup):
     n_niches = px['n_niches']
 
     n_behaviors = env_p.n_bh
-    # n_behaviors = p.n_bh * p.n_poi_types
-    if with_pareto == 'pareto':
-        print(with_pareto, filepath)
-        archive = cvt_me_pareto.compute(n_behaviors, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
-                                        log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
-    elif with_pareto == 'parallel':
-        print(with_pareto, filepath)
-        archive = cvt_me_pareto_parallel.compute(n_behaviors, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
-                                                 log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
-    elif with_pareto == 'no':
-        print(with_pareto, filepath)
-        archive = cvt_me.compute(n_behaviors, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
-                                 log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
-    else:
-        print(f'{with_pareto} is not an option. Options are "parallel", "pareto", and "no"')
+    archive = cvt_me.compute(n_behaviors, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
+                             log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
 
 
 def multiprocess_main(batch_for_multi):
@@ -96,8 +81,6 @@ if __name__ == '__main__':
 
     # we do 10M evaluations, which takes a while in Python (but it is very fast in the C++ version...)
     px = cm_map_elites.default_params.copy()
-    px["dump_period"] = 10000
-    px["batch_size"] = 100
     px["min"] = -5
     px["max"] = 5
     px["parallel"] = False
@@ -105,33 +88,44 @@ if __name__ == '__main__':
     px['add_random'] = 0
     px['random_init_batch'] = 100
     px['random_init'] = 0.001    # Percent of niches that should be filled in order to start mutation
+
+    # RUN VALS:
+    px["batch_size"] = 100
+    px["dump_period"] = 10000
     px['n_niches'] = 10000
     evals = 200000
+
+    # DEBUGGING VALS:
+    # px["batch_size"] = 10
+    # px["dump_period"] = 100
+    # px['n_niches'] = 100
+    # evals = 200
 
     now = datetime.now()
     now_str = now.strftime("%Y%m%d_%H%M%S")
     dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
-    batch = []
+    for param_batch in [batch_01, batch_00]:
+        batch = []
 
-    for params in [p03]:  #, p04]:
-        p = deepcopy(params)
-        if params.counter:
-            p.n_bh = params.n_poi_types + 3
-        else:
-            p.n_bh = params.n_poi_types * 3
-        p.n_agents = 1
-        lp.n_stat_runs = 5
-        pareto_paralell_options = ['no']  # 'no', 'pareto',, 'parallel',
+        for params in param_batch:  #, p04]:
+            p = deepcopy(params)
+            if params.counter:
+                p.n_bh = params.n_poi_types + 3
+            else:
+                p.n_bh = params.n_poi_types * 3
+            p.n_agents = 1
+            lp.n_stat_runs = 5
+            pareto_paralell_options = ['no']  # 'no', 'pareto',, 'parallel',
 
-        for with_pareto in pareto_paralell_options:
-            for i in range(lp.n_stat_runs):
-                filepath = path.join(dirpath, f'{p.param_idx:03d}_{with_pareto}_run{i}')
-                mkdir(filepath)
-                batch.append([p, px, filepath, with_pareto, i])
+            for with_pareto in pareto_paralell_options:
+                for i in range(lp.n_stat_runs):
+                    filepath = path.join(dirpath, f'{p.param_idx:03d}_{with_pareto}_run{i}')
+                    mkdir(filepath)
+                    batch.append([p, px, filepath, with_pareto, i])
 
-    # Use this one
-    multiprocess_main(batch)
+        # Use this one
+        multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
     # main(batch[0])
