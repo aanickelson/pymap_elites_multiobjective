@@ -106,7 +106,7 @@ if __name__ == '__main__':
     dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
     # run one batch, then the other
-    for param_batch in [batch_move]:
+    for param_batch in [batch_move, batch_no_move, batch_0cf]:
         batch = []
 
         for params in param_batch:  #, p04]:
