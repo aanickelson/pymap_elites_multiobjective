@@ -110,15 +110,19 @@ if __name__ == '__main__':
 
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
-    domain_name = 'AIC'  # What domain is being tested
-    dates = ['20230417_170533', '20230412_134629', '20230418_160058', '20230419_163935', '20230420_164143']  # ['20230417_170533', '20230412_134629', '20230418_160058', ]  # Date stamp of data folder
-    param_set = ['003', '004']  # Distinguishing factor in the filenames of parameter you want to test (e.g. diff param files, different selection types, etc)
+    domain_name = 'AIC Move'  # What domain is being tested
+    dates = ['20230424_161451']  #, '20230412_134629', '20230418_160058', '20230419_163935', '20230420_164143']  # ['20230417_170533', '20230412_134629', '20230418_160058', ]  # Date stamp of data folder
+    param_set = ['010', '021', '022', '023']   #['010', '011',  '012', '013'] # Distinguishing factor in the filenames of parameter you want to test (e.g. diff param files, different selection types, etc)
     all_dates = '_'.join(dates)
     # Filename setup
     # rootdir = os.path.join(os.getcwd(), '_graphs' + all_dates)
     # os.mkdir(rootdir)
     graphs_fname = os.path.join(os.getcwd(), 'graphs_' + all_dates)
-    os.mkdir(graphs_fname)
+    try:
+        os.mkdir(graphs_fname)
+
+    except FileExistsError:
+        pass
 
     pareto = 'no'  # This is legacy, but currently still necessary
     evols = [(i + 1) * 10000 for i in range(n_files)]
@@ -166,8 +170,9 @@ if __name__ == '__main__':
                 is_eff = is_pareto_efficient_simple(xy)
                 # Use this line if you want to plot the evoloution of the pareto fronts over time
                 if evo == fnums[-1]:
-                    curve_area = plot_it(x, y, is_eff, f'{date}_{params_name}_{pareto}_{evo}', graphs_fname)
-                # Use this line if you only want the areas for the final plot, and not the individual pareto plots
+                    # curve_area = plot_it(x, y, is_eff, f'{date}_{params_name}_{pareto}_{evo}', graphs_fname)
+                    # Use this line if you only want the areas for the final plot, and not the individual pareto plots
+                    curve_area = get_area(x[is_eff], y[is_eff])
                 else:
                     curve_area = get_area(x[is_eff], y[is_eff])
                 areas.append(curve_area)
@@ -181,7 +186,7 @@ if __name__ == '__main__':
                     data_and_nm[i][0].append(areas)
                     it_worked = True
             if not it_worked:
-                print('something has gone horribly wrong')
+                print('This file will not be included in the final graph')
 
     # Plot the areas data for all parameters on one plot to compare
     plot_areas(evols, data_and_nm, domain_name, graphs_fname)

@@ -105,6 +105,7 @@ if __name__ == '__main__':
     now_str = now.strftime("%Y%m%d_%H%M%S")
     dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
+    # run one batch, then the other
     for param_batch in [batch_01, batch_00]:
         batch = []
 

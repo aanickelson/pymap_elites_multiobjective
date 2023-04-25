@@ -76,6 +76,7 @@ def is_pareto_efficient_simple(vals):
     :param costs: An (n_points, n_costs) array
     :return: A (n_points, ) boolean array, indicating whether each point is Pareto efficient
     """
+    n_to_keep = 50
     fitnesses = [s.fitness for s in vals]
     costs = np.array(fitnesses)
     is_efficient = np.ones(costs.shape[0], dtype=bool)
@@ -95,12 +96,25 @@ def is_pareto_efficient_simple(vals):
             is_efficient[i] = True  # And keep self
     pareto_vals = [vals[j] for j in range(len(vals)) if is_efficient[j]]
     pareto_costs = np.array([costs[k] for k in range(len(vals)) if is_efficient[k]])
-    if len(pareto_vals) > 50:
-        final_vals = []
+
+    # If the list is too big.
+    if len(pareto_vals) > n_to_keep:
+        # Find indices of unique pareto values
         _, idxs = np.unique(pareto_costs, axis=0, return_index=True)
+        # Keep those
         final_vals = [pareto_vals[l] for l in idxs]
-        sample_set = random.sample(pareto_vals, 50 - len(final_vals))
-        final_vals.extend(sample_set)
+        # If there's still room left, randomly sample from the entire list
+        if len(final_vals) < n_to_keep:
+            sample_set = random.sample(pareto_vals, n_to_keep - len(final_vals))
+            final_vals.extend(sample_set)
+        # If the list is too big, randomly sample to keep the right number
+        elif len(final_vals) > n_to_keep:
+            final_vals = random.sample(final_vals, n_to_keep)
+        # If it's exactly equal, you're good.
+        else:
+            pass
+
+    # The list is not too big, keep everything
     else:
         final_vals = pareto_vals
 
