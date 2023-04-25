@@ -16,7 +16,7 @@ import pymap_elites_multiobjective.map_elites.common as cm_map_elites
 import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
 
 from AIC.aic import aic as Domain
-from pymap_elites_multiobjective.parameters import batch_00, batch_01
+from pymap_elites_multiobjective.parameters import batch_0cf, batch_no_move, batch_move
 
 from pymap_elites_multiobjective.examples.run_env import run_env
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
     # run one batch, then the other
-    for param_batch in [batch_01, batch_00]:
+    for param_batch in [batch_move]:
         batch = []
 
         for params in param_batch:  #, p04]:
@@ -126,13 +126,13 @@ if __name__ == '__main__':
                     batch.append([p, px, filepath, with_pareto, i])
 
         # Use this one
-        multiprocess_main(batch)
+        # multiprocess_main(batch)
 
-    # This runs a single experiment / setup at a time for debugging
-    # main(batch[0])
+        # This runs a single experiment / setup at a time for debugging
+        main(batch[0])
 
-    # for b in batch:
-    #     main(b)
+        # for b in batch:
+        #     main(b)
 
 
     # This is the bad way. Don't do it this way

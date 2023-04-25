@@ -11,7 +11,8 @@ from pymap_elites_multiobjective.parameters.parameters22 import Parameters as p2
 from pymap_elites_multiobjective.parameters.parameters23 import Parameters as p23
 
 # these counterfactual agents don't move
-batch_00 = [p11, p12, p13]
+batch_0cf = [p10]
+batch_no_move = [p11, p12, p13]
 # These do move (obv. except the case with 0 agents)
-batch_01 = [p10, p21, p22, p23]
+batch_move = [p21, p22, p23]
 
