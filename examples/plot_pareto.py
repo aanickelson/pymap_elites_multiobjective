@@ -73,11 +73,8 @@ def load_data(filename):
 
 def process(data):
     from scipy.stats import sem
-    try:
-        mu = np.mean(data, axis=0)
-        ste = sem(data, axis=0)
-    except RuntimeWarning:
-        print(data)
+    mu = np.mean(data, axis=0)
+    ste = sem(data, axis=0)
     # mu = data[0]
     # ste = data[0]
     return mu, ste
@@ -91,20 +88,19 @@ def plot_areas(evos, data_and_names, dirname, area_fname):
     for [data, nm] in data_and_names:
         if not data:
             continue
-        try:
-            means, sterr = process(data)
-            plt.plot(evos, means)
-        except RuntimeWarning:
-            print("'tis here, mlord")
-            continue
-        plt.fill_between(evos, means-sterr, means+sterr, alpha=0.5, label=nm)
-    plt.title(f"{dirname} areas")
-    plt.legend()
-    try:
-        os.mkdir(area_fname)
-    except FileExistsError:
-        pass
-    plt.savefig(os.path.join(area_fname, dirname + '.png'))
+        means, sterr = process(data)
+        print(nm)
+        print(means)
+        print(sterr)
+    #     plt.plot(evos, means)
+    #     plt.fill_between(evos, means-sterr, means+sterr, alpha=0.5, label=nm)
+    # plt.title(f"{dirname} areas")
+    # plt.legend()
+    # try:
+    #     os.mkdir(area_fname)
+    # except FileExistsError:
+    #     pass
+    # plt.savefig(os.path.join(area_fname, dirname + '.png'))
 
 
 if __name__ == '__main__':
@@ -112,9 +108,9 @@ if __name__ == '__main__':
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
     domain_name = 'AIC Counters'  # What domain is being tested
-    dates = ['20230425_120638']  #, '20230412_134629', '20230418_160058', '20230419_163935', '20230420_164143']  # ['20230417_170533', '20230412_134629', '20230418_160058', ]  # Date stamp of data folder
+    dates = ['20230425_121131']
     param_set = ['010', '021', '022', '023']  #['010', '011',  '012', '013']    # Distinguishing factor in the filenames of parameter you want to test (e.g. diff param files, different selection types, etc)
-    param_sets = [['010'], ['021', '022', '023'], ['011',  '012', '013']]
+    param_sets = [['010'], ['011',  '012', '013'], ['021', '022', '023']]
     all_dates = '_'.join(dates)
     # Filename setup
     # rootdir = os.path.join(os.getcwd(), '_graphs' + all_dates)

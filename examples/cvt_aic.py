@@ -73,12 +73,12 @@ def main(setup):
 
 
 def multiprocess_main(batch_for_multi):
-    with multiprocessing.Pool(processes=multiprocessing.cpu_count()-1) as pool:
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count() - 2) as pool:
         pool.map(main, batch_for_multi)
 
 
 if __name__ == '__main__':
-
+    x = multiprocessing.cpu_count()
     # we do 10M evaluations, which takes a while in Python (but it is very fast in the C++ version...)
     px = cm_map_elites.default_params.copy()
     px["min"] = -5
@@ -126,10 +126,10 @@ if __name__ == '__main__':
                     batch.append([p, px, filepath, with_pareto, i])
 
         # Use this one
-        # multiprocess_main(batch)
+        multiprocess_main(batch)
 
         # This runs a single experiment / setup at a time for debugging
-        main(batch[0])
+        # main(batch[0])
 
         # for b in batch:
         #     main(b)
