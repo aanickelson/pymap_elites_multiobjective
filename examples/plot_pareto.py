@@ -86,6 +86,7 @@ def process(data):
 def plot_areas(evos, data_and_names, dirname, area_fname):
     print('We made it to plotting')
     plt.clf()
+    plt.ylim([-0.1, 1.8])
     evos = np.array(evos)
     for [data, nm] in data_and_names:
         if not data:
@@ -110,9 +111,10 @@ if __name__ == '__main__':
 
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
-    domain_name = 'AIC Move'  # What domain is being tested
-    dates = ['20230424_161451']  #, '20230412_134629', '20230418_160058', '20230419_163935', '20230420_164143']  # ['20230417_170533', '20230412_134629', '20230418_160058', ]  # Date stamp of data folder
-    param_set = ['010', '021', '022', '023']   #['010', '011',  '012', '013'] # Distinguishing factor in the filenames of parameter you want to test (e.g. diff param files, different selection types, etc)
+    domain_name = 'AIC Counters'  # What domain is being tested
+    dates = ['20230425_120638']  #, '20230412_134629', '20230418_160058', '20230419_163935', '20230420_164143']  # ['20230417_170533', '20230412_134629', '20230418_160058', ]  # Date stamp of data folder
+    param_set = ['010', '021', '022', '023']  #['010', '011',  '012', '013']    # Distinguishing factor in the filenames of parameter you want to test (e.g. diff param files, different selection types, etc)
+    param_sets = [['010'], ['021', '022', '023'], ['011',  '012', '013']]
     all_dates = '_'.join(dates)
     # Filename setup
     # rootdir = os.path.join(os.getcwd(), '_graphs' + all_dates)
@@ -126,7 +128,8 @@ if __name__ == '__main__':
 
     pareto = 'no'  # This is legacy, but currently still necessary
     evols = [(i + 1) * 10000 for i in range(n_files)]
-    data_and_nm = [[[], p] for p in param_set]
+    # data_and_nm = [[[], p] for p in param_set]
+    data_and_nm = [[[], p] for p in param_sets]
 
     for date in dates:
         rootdir = os.path.join(os.getcwd(), date)
@@ -181,8 +184,8 @@ if __name__ == '__main__':
 
             # Save the areas to the appropriate parameter set
             it_worked = False
-            for i, p_name in enumerate(param_set):
-                if p_num == p_name:
+            for i, p_name in enumerate(param_sets):
+                if p_num in p_name:
                     data_and_nm[i][0].append(areas)
                     it_worked = True
             if not it_worked:
