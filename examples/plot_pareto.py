@@ -89,18 +89,20 @@ def plot_areas(evos, data_and_names, dirname, area_fname):
         if not data:
             continue
         means, sterr = process(data)
-        print(nm)
-        print(means)
-        print(sterr)
-    #     plt.plot(evos, means)
-    #     plt.fill_between(evos, means-sterr, means+sterr, alpha=0.5, label=nm)
-    # plt.title(f"{dirname} areas")
-    # plt.legend()
-    # try:
-    #     os.mkdir(area_fname)
-    # except FileExistsError:
-    #     pass
-    # plt.savefig(os.path.join(area_fname, dirname + '.png'))
+        # these are print statements if you want to print & combine data across machines
+        # It's far easier this way than trying to migrate 2-3GB of raw data across machines.
+        # print(nm)
+        # print(repr(means))
+        # print(repr(sterr))
+        plt.plot(evos, means)
+        plt.fill_between(evos, means-sterr, means+sterr, alpha=0.5, label=nm)
+    plt.title(f"{dirname} areas")
+    plt.legend()
+    try:
+        os.mkdir(area_fname)
+    except FileExistsError:
+        pass
+    plt.savefig(os.path.join(area_fname, dirname + '.png'))
 
 
 if __name__ == '__main__':
@@ -109,7 +111,7 @@ if __name__ == '__main__':
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
     domain_name = 'AIC Counters'  # What domain is being tested
     dates = ['20230425_121131']
-    param_set = ['010', '021', '022', '023']  #['010', '011',  '012', '013']    # Distinguishing factor in the filenames of parameter you want to test (e.g. diff param files, different selection types, etc)
+    param_set = ['010', '021', '022', '023']  # ['010', '011',  '012', '013']    # Distinguishing factor in the filenames of parameter you want to test (e.g. diff param files, different selection types, etc)
     param_sets = [['010'], ['011',  '012', '013'], ['021', '022', '023']]
     all_dates = '_'.join(dates)
     # Filename setup

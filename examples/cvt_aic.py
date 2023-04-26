@@ -98,7 +98,7 @@ if __name__ == '__main__':
     # DEBUGGING VALS:
     # px["batch_size"] = 10
     # px["dump_period"] = 100
-    # px['n_niches'] = 100
+    # px['n_niches'] = 10
     # evals = 200
 
     now = datetime.now()
