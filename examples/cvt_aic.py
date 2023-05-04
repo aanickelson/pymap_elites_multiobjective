@@ -16,7 +16,7 @@ import pymap_elites_multiobjective.map_elites.common as cm_map_elites
 import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
 
 from AIC.aic import aic as Domain
-from pymap_elites_multiobjective.parameters import batch_0cf, batch_no_move, batch_move
+from pymap_elites_multiobjective.parameters import batch_0cf, batch_no_move, batch_move, batch_poi_impact
 
 from pymap_elites_multiobjective.examples.run_env import run_env
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     # RUN VALS:
     px["batch_size"] = 100
     px["dump_period"] = 10000
-    px['n_niches'] = 10000
+    px['n_niches'] = 5000
     evals = 200000
 
     # DEBUGGING VALS:
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
     # run one batch, then the other
-    for param_batch in [batch_move, batch_no_move, batch_0cf]:
+    for param_batch in [batch_poi_impact]:  #, batch_no_move, batch_0cf]:
         batch = []
 
         for params in param_batch:  #, p04]:
@@ -126,10 +126,10 @@ if __name__ == '__main__':
                     batch.append([p, px, filepath, with_pareto, i])
 
         # Use this one
-        multiprocess_main(batch)
+        # multiprocess_main(batch)
 
         # This runs a single experiment / setup at a time for debugging
-        # main(batch[0])
+        main(batch[0])
 
         # for b in batch:
         #     main(b)
