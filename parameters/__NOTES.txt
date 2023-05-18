@@ -1,0 +1,18 @@
+Parameters naming scheme
+
+parametersXYZ.py
+
+X - CF agents' impact on POIs
+0 - No impact
+1 - Add to completeness when visited (DO NOT IMPACT G)
+2 - No impact, POIs in a slightly different configuration
+3 - No impact, POIs in a slightly different configuration
+     (I changed the param file number so I knew not to directly compare these to the 000 and 100 sets)
+
+Y - CF agents movement
+1 - Do not move
+2 - Move, start close to center (2 units in x and y direction from center)
+3 - Don't move, start further from center
+4 - Move, start further from center (8 units in x and y direction from center)
+
+Z - Number of counterfactual agents [0, 1, 2, 3, 5, 7, 9]

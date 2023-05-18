@@ -9,7 +9,7 @@ def init_fn(n):
 
 
 class Parameters:
-    param_idx = 21  # Makes it easy to differentiate results by parameter set
+    param_idx = 121  # Makes it easy to differentiate results by parameter set
 
     n_agents = 1
     battery = 30
@@ -18,6 +18,10 @@ class Parameters:
     map_size = 20
     counter = 1
     counter_move = True
+
+    # ADDED THINGS:
+    poi_visit = True    # Flag to determine if agent impacts POI completeness, but NOT the rewards
+    counter_locs = [[12, 12], [8, 8], [8, 12], [12, 8]]
 
     # poi_pos = [[10, 10], [20, 10], [10, 20], [20, 20]]
     poi_pos = list(itertools.product([4, 8, 12, 16], repeat=2))

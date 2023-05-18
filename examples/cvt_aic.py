@@ -16,7 +16,7 @@ import pymap_elites_multiobjective.map_elites.common as cm_map_elites
 import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
 
 from AIC.aic import aic as Domain
-from pymap_elites_multiobjective.parameters import batch_0cf, batch_no_move, batch_move, batch_poi_impact
+from pymap_elites_multiobjective.parameters import new_batches, just_one
 
 from pymap_elites_multiobjective.examples.run_env import run_env
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
@@ -56,7 +56,7 @@ class RoverWrapper:
 
 
 def main(setup):
-    [env_p, cvt_p, filepath, with_pareto, stat_num] = setup
+    [env_p, cvt_p, filepath, stat_num] = setup
     numpy.random.seed(stat_num + random.randint(0, 10000))
     archive = {}
     env = Domain(env_p)
@@ -73,7 +73,8 @@ def main(setup):
 
 
 def multiprocess_main(batch_for_multi):
-    with multiprocessing.Pool(processes=multiprocessing.cpu_count() - 2) as pool:
+    cpus = multiprocessing.cpu_count() - 1
+    with multiprocessing.Pool(processes=cpus) as pool:
         pool.map(main, batch_for_multi)
 
 
@@ -105,9 +106,8 @@ if __name__ == '__main__':
     now_str = now.strftime("%Y%m%d_%H%M%S")
     dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
-    # run one batch, then the other
-    for param_batch in [batch_poi_impact]:  #, batch_no_move, batch_0cf]:
-        batch = []
+    batch = []
+    for param_batch in just_one:
 
         for params in param_batch:  #, p04]:
             p = deepcopy(params)
@@ -116,23 +116,20 @@ if __name__ == '__main__':
             else:
                 p.n_bh = params.n_poi_types * 3
             p.n_agents = 1
-            lp.n_stat_runs = 5
-            pareto_paralell_options = ['no']  # 'no', 'pareto',, 'parallel',
+            lp.n_stat_runs = 10
+            for i in range(lp.n_stat_runs):
+                filepath = path.join(dirpath, f'{p.param_idx:03d}_run{i}')
+                mkdir(filepath)
+                batch.append([p, px, filepath, i])
 
-            for with_pareto in pareto_paralell_options:
-                for i in range(lp.n_stat_runs):
-                    filepath = path.join(dirpath, f'{p.param_idx:03d}_{with_pareto}_run{i}')
-                    mkdir(filepath)
-                    batch.append([p, px, filepath, with_pareto, i])
+    # Use this one
+    multiprocess_main(batch)
 
-        # Use this one
-        # multiprocess_main(batch)
+    # This runs a single experiment / setup at a time for debugging
+    # main(batch[0])
 
-        # This runs a single experiment / setup at a time for debugging
-        main(batch[0])
-
-        # for b in batch:
-        #     main(b)
+    # for b in batch:
+    #     main(b)
 
 
     # This is the bad way. Don't do it this way

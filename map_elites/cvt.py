@@ -88,7 +88,6 @@ def is_pareto_efficient_simple(vals):
             # Without these two lines, it will only keep one of each pareto point
             # E.g. if there are two policies that both get [4,0], only the first will be kept. That's bad.
             if np.all(c < err):
-                x = 1
                 is_efficient[i] = True
                 continue
             eff_add = np.all(abs(costs - c) < err, axis=1)

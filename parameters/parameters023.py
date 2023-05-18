@@ -21,6 +21,7 @@ class Parameters:
 
     # ADDED THINGS:
     poi_visit = False    # Flag to determine if agent impacts POI completeness, but NOT the rewards
+    counter_locs = [[12, 12], [8, 8], [8, 12], [12, 8]]
 
     # poi_pos = [[10, 10], [20, 10], [10, 20], [20, 20]]
     poi_pos = list(itertools.product([4, 8, 12, 16], repeat=2))
