@@ -32,20 +32,22 @@ from pymap_elites_multiobjective.parameters.parameters343 import Parameters as p
 from pymap_elites_multiobjective.parameters.parameters345 import Parameters as p345
 from pymap_elites_multiobjective.parameters.parameters347 import Parameters as p347
 from pymap_elites_multiobjective.parameters.parameters349 import Parameters as p349
-no_cf = [p010,]
-no_close = [p011,p012,p013,]
-move_close = [p021,p022,p023,]
-no_far = [p031,p032,p033,]
-move_far = [p041,p042,p043,]
-poi_close = [p121,p122,p123,]
-poi_far = [p141,p142,p143,]
-no_far_new = [p231,p233,p235,p237,p239,]
-no_far_new_sm = [p231,p235,p239]
 
-move_far_new = [p241,p243,p245,p247,p249,]
-move_far_new_sm = [p241,p245,p249]
-poi_far_new = [p341,p343,p345,p347,p349,]
+no_cf = [p010, ]
+no_close = [p011, p012, p013, ]
+move_close = [p021, p022, p023, ]
+no_far = [p031, p032, p033, ]
+move_far = [p041, p042, p043, ]
+poi_close = [p121, p122, p123, ]
+poi_far = [p141, p142, p143, ]
+no_far_new = [p231, p233, p235, p237, p239, ]
+no_far_new_sm = [p231, p235, p239]
+
+move_far_new = [p241, p243, p245, p247, p249, ]
+move_far_new_sm = [p241, p245, p249]
+poi_far_new = [p341, p343, p345, p347, p349, ]
 poi_far_new_sm = [p341, p345, p349]
+test_sm = [[p245, p345]]
 
 new_batches = [poi_far_new_sm, no_far_new_sm, move_far_new_sm]
 just_one = [poi_far_new_sm]

@@ -219,23 +219,29 @@ def __save_archive(archive, gen, data_fname, final=False):
     filename = 'archive_' + str(gen) + '.dat'
 
     if data_fname:
-        filename = path.join(data_fname, 'archive_' + str(gen) + '.dat')
+        filename = path.join(data_fname, f'archive_{gen}.dat')
     else:
         warnings.warn("No longer saving data")
         return False
 
-    def write_array(a, f):
+    def write_array(a, fl):
         for i in a:
-            f.write(str(i) + ' ')
+            fl.write(str(i) + ' ')
+
     with open(filename, 'w') as f:
         for lst in archive.values():
             for k in lst:
                 write_array(k.fitness, f)
                 write_array(k.centroid, f)
-                # Only save the full weights set and behavior description for the final result
-                if final:
-                    write_array(k.desc, f)
-                    write_array(k.x, f)
                 f.write("\n")
+
+    if final:
+        wts_fname = path.join(data_fname, f'weights_{gen}.dat')
+        with open(wts_fname, 'w') as fw:
+            for lst in archive.values():
+                for k in lst:
+                    write_array(k.desc, fw)
+                    write_array(k.x, fw)
+                    fw.write("\n")
 
     return True
