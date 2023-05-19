@@ -193,12 +193,9 @@ if __name__ == '__main__':
                             except FileNotFoundError:
                                 continue
                             is_eff = is_pareto_efficient_simple(xy)
-                            if evo == fnums[-1]:
-                                # Use this line if you want to plot the evoloution of the pareto fronts over time
-                                # curve_area = plot_pareto_scatter(x, y, is_eff, f'{p_num}_{evo}',
-                                #                                  f'{date}_{params_name}_{evo}', graphs_fname, ftypes)
-                                # Use this line if you only want the areas for the final plot, and not the individual pareto plots
-                                curve_area = get_area(x[is_eff], y[is_eff])
+                            if evo == fnums[-1] and plot_scatters:
+                                curve_area = plot_pareto_scatter(x, y, is_eff, f'{p_num}_{evo}',
+                                                                 f'{date}_{params_name}_{evo}', graphs_fname, ftypes)
                             else:
                                 curve_area = get_area(x[is_eff], y[is_eff])
                             areas.append(curve_area)

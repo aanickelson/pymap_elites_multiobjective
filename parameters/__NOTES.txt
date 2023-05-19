@@ -4,9 +4,9 @@ parametersXYZ.py
 
 X - CF agents' impact on POIs
 0 - No impact
-1 - Add to completeness when visited (DO NOT IMPACT G)
+1 - Impact POIs
 2 - No impact, POIs in a slightly different configuration
-3 - No impact, POIs in a slightly different configuration
+3 - Impact POIs, POIs in a slightly different configuration
      (I changed the param file number so I knew not to directly compare these to the 000 and 100 sets)
 
 Y - CF agents movement
