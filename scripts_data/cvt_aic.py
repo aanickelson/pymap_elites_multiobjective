@@ -26,6 +26,7 @@ from torch import from_numpy
 from datetime import datetime
 from os import path, getcwd, mkdir
 import multiprocessing
+import re
 
 
 class RoverWrapper:
@@ -78,6 +79,25 @@ def multiprocess_main(batch_for_multi):
         pool.map(main, batch_for_multi)
 
 
+def get_unique_fname(rootdir, date_time=None):
+    greatest = 0
+    # Walk through all the files in the given directory
+    for sub, dirs, files in os.walk(rootdir):
+        for d in dirs:
+            pos = 3
+            splitstr = re.split('_|/', d)
+            try:
+                int_str = int(splitstr[-pos])
+            except (ValueError, IndexError):
+                continue
+
+            if int_str > greatest:
+                greatest = int_str
+        break
+
+    return os.path.join(rootdir, f'{greatest + 1:03d}{date_time}')
+
+
 if __name__ == '__main__':
     x = multiprocessing.cpu_count()
     # we do 10M evaluations, which takes a while in Python (but it is very fast in the C++ version...)
@@ -88,7 +108,7 @@ if __name__ == '__main__':
     px['cvt_use_cache'] = False
     px['add_random'] = 0
     px['random_init_batch'] = 100
-    px['random_init'] = 0.001    # Percent of niches that should be filled in order to start mutation
+    px['random_init'] = 0.001  # Percent of niches that should be filled in order to start mutation
 
     # RUN VALS:
     px["batch_size"] = 100
@@ -103,13 +123,18 @@ if __name__ == '__main__':
     # evals = 200
 
     now = datetime.now()
-    now_str = now.strftime("%Y%m%d_%H%M%S")
-    dirpath = path.join(getcwd(), now_str)
+    base_path = path.join(getcwd(), 'data')
+    if not os.path.exists(base_path):
+        mkdir(base_path)
+
+    now_str = now.strftime("_%Y%m%d_%H%M%S")
+    dirpath = get_unique_fname(base_path, now_str)
+    # dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
     batch = []
     for param_batch in just_one:
 
-        for params in param_batch:  #, p04]:
+        for params in param_batch:  # , p04]:
             p = deepcopy(params)
             if params.counter:
                 p.n_bh = params.n_poi_types + 3
@@ -131,10 +156,8 @@ if __name__ == '__main__':
     # for b in batch:
     #     main(b)
 
-
     # This is the bad way. Don't do it this way
     # num_cores = multiprocessing.cpu_count()
     # pool = multiprocessing.Pool(num_cores)
     # with multiprocessing.Pool(num_cores=multiprocessing.cpu_count()-1) as pool:
     #     pool.map(main, batch)
-

@@ -3,13 +3,7 @@ from pylab import *
 import brewer2mpl
 import numpy as np
 import sys
-import math
-import gzip
-import matplotlib.gridspec as gridspec
-from scipy import stats
-
-from collections import defaultdict
-from matplotlib import pyplot as plt
+from pymap_elites_multiobjective.scripts_data.often_used import is_pareto_efficient_simple
 from matplotlib.ticker import AutoMinorLocator
 
 def customize_axis(ax):

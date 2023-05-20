@@ -20,17 +20,9 @@ if __name__ == '__main__':
 
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
-    dates = ['10_to_13', '20230518_163348']  # Change the dates to match the date code on the data set(s) you want to use
+    dates = ['000_10to_13', '004_20230518_163348']  # Change the dates to match the date code on the data set(s) you want to use
     param_sets = ['010', '011', '012', '013', '245', '345']
     final_num = 20000
-
-    all_dates = '_'.join(dates)
-    # Filename setup
-    graphs_fname = os.path.join(os.getcwd(), 'graphs_' + all_dates)
-    try:
-        os.mkdir(graphs_fname)
-    except FileExistsError:
-        pass
 
     params_dict = {pname: [] for pname in param_sets}
 
