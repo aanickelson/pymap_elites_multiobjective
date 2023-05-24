@@ -18,7 +18,7 @@ import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pare
 from AIC.aic import aic as Domain
 from pymap_elites_multiobjective.parameters import new_batches, just_one
 
-from pymap_elites_multiobjective.examples.run_env import run_env
+from pymap_elites_multiobjective.scripts_data.run_env import run_env
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
 # from evo_playground.learning.neuralnet_no_hid import NeuralNetwork as NN
 from evo_playground.learning.neuralnet import NeuralNetwork as NN
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     # dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
     batch = []
-    for param_batch in just_one:
+    for param_batch in new_batches:
 
         for params in param_batch:  # , p04]:
             p = deepcopy(params)
@@ -141,17 +141,17 @@ if __name__ == '__main__':
             else:
                 p.n_bh = params.n_poi_types * 3
             p.n_agents = 1
-            lp.n_stat_runs = 10
+            lp.n_stat_runs = 15
             for i in range(lp.n_stat_runs):
                 filepath = path.join(dirpath, f'{p.param_idx:03d}_run{i}')
                 mkdir(filepath)
                 batch.append([p, px, filepath, i])
 
     # Use this one
-    multiprocess_main(batch)
+    # multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
-    # main(batch[0])
+    main(batch[0])
 
     # for b in batch:
     #     main(b)

@@ -154,6 +154,7 @@ def plot_areas(evos, data_and_names, dirname, area_fname, filetypes):
         if not data:
             continue
         means, sterr = process(data)
+        print(nm, means[-1])
         # these are print statements if you want to print & combine data across machines
         # It's far easier this way than trying to migrate 2-3GB of raw data across machines.
         # print(nm)
@@ -177,7 +178,7 @@ if __name__ == '__main__':
 
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
-    dates = ['005_20230518_174201', '004_20230518_163348']  # Change the dates to match the date code on the data set(s) you want to use
+    dates = ['005_20230518_104517', '004_20230509_182108', '003_20230505_171536']  # Change the dates to match the date code on the data set(s) you want to use
 
     ftypes = ['.svg', '.png']   # What file type(s) do you want for the plots
 
@@ -189,11 +190,14 @@ if __name__ == '__main__':
     # Each set is [[param file numbers], [param names for plot], 'graph title']
     # Param names provides the name of each parameter being compared. Should line up with the files
     # In this example, the names are consistent across all the plots, but they won't always be depending on what you want to run
-    nms = ['0 cf', '1 cf', '5 cf', '9 cf']
+    # nms = ['0 cf', '1 cf', '5 cf', '9 cf']
+    #
+    # all_sets = [[['010', '231', '235',  '239'], nms, 'Num Counterfactuals, Static'],
+    #             [['010', '241', '245', '249'], nms, 'Num Counterfactuals, Move, no POI'],
+    #             [['010', '341', '345', '349'], nms, 'Num Counterfactuals, Move, POI']]
 
-    all_sets = [[['010', '231', '235',  '239'], nms, 'Num Counterfactuals, Static'],
-                [['010', '241', '245', '249'], nms, 'Num Counterfactuals, Move, no POI'],
-                [['010', '341', '345', '349'], nms, 'Num Counterfactuals, Move, POI']]
+    nms = ['No cf', 'Static', 'Move', 'Task']
+    all_sets = [[['010', '239', '249', '349'], nms, '9 CF, All cases']]
 
     # all_sets = [[['010', '239', '249', '349'], ['0 cf', 'Static', 'Move', 'POI'], '9 Counterfactuals']]
 
@@ -220,7 +224,6 @@ if __name__ == '__main__':
 
         # Walk through all the files in the given directory
         for sub, date, params_name, fnums in files:
-            print(params_name)
             # Pulls the parameter file number
             p_num = params_name[:3]
             # Save the areas to the appropriate parameter set

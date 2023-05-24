@@ -38,15 +38,15 @@
 # | had knowledge of the CeCILL license and that you accept its terms.
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
+import matplotlib as mpl
 from scipy.spatial import Voronoi, voronoi_plot_2d
 import sys
 from matplotlib.ticker import FuncFormatter
 from sklearn.neighbors import KDTree
 import matplotlib.cm as cm
 import pymap_elites_multiobjective.scripts_data.often_used as util
+import re
 
-my_cmap = cm.viridis
 
 
 def voronoi_finite_polygons_2d(vor, radius=None):
@@ -135,7 +135,7 @@ def voronoi_finite_polygons_2d(vor, radius=None):
 
 
 def load_data(filename, dim, dim_x, n_fit):
-    print("Loading ", filename)
+    print("\nLoading ", filename)
     data = np.loadtxt(filename)
     fit = data[:, 0:n_fit]
     desc = data[:, n_fit: dim + n_fit]
@@ -149,14 +149,20 @@ def load_centroids(filename):
     return points
 
 
-def plot_cvt(ax, centroids, fit, desc, x, dim1, dim2, min_fit, max_fit):
+def plot_cvt(ax, centroids, fit, desc, dim1, min_fit, max_fit):
+    # getting the original colormap using cm.get_cmap() function
+    orig_map = plt.cm.get_cmap('viridis')
+
+    # reversing the original colormap using reversed() function
+    my_cmap = orig_map.reversed()
+
     # compute Voronoi tesselation
-    print("Voronoi...")
-    vor = Voronoi(centroids[:, 0:2])
+    # print("Voronoi...")
+    vor = Voronoi(centroids[:, dim1:dim1+2])
     regions, vertices = voronoi_finite_polygons_2d(vor)
-    print("fit:", min_fit, max_fit)
-    norm = matplotlib.colors.Normalize(vmin=min_fit, vmax=max_fit)
-    print("KD-Tree...")
+    # print("fit:", min_fit, max_fit)
+    norm = mpl.colors.Normalize(vmin=min_fit, vmax=max_fit)
+    # print("KD-Tree...")
     kdt = KDTree(centroids, leaf_size=30, metric='euclidean')
 
     print("plotting contour...")
@@ -181,36 +187,46 @@ def plot_cvt(ax, centroids, fit, desc, x, dim1, dim2, min_fit, max_fit):
         if k % 100 == 0:
             print(k, end=" ", flush=True)
     fit_reshaped = fit.reshape((len(fit),))
-    sc = ax.scatter(desc[:, 0], desc[:, 1], c=fit_reshaped, cmap=my_cmap, s=10, zorder=0)
+    norm = mpl.colors.Normalize(vmin=0, vmax=max_fit)
+
+    fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap),
+                 ax=ax, orientation='vertical', label='Distance to global Pareto front')
+    sc = ax.scatter(desc[:, 0], desc[:, 1], c='b', s=1, zorder=0)
 
 
 def mk_files(rootdir, subd, niches, pols):
+    # Get the name of the sub-directory
+    p_num = re.split('_|/', subd)[0]
     pth = os.path.join(rootdir, subd)
 
-    cent_f = os.path.join(pth, f'centroids_{niches}_5.dat')
+    bh_size = 5
+    if '010' in subd:
+        bh_size = 6
+
+    cent_f = os.path.join(pth, f'centroids_{niches}_{bh_size}.dat')
     dat_f = os.path.join(pth, f'archive_{pols}.dat')
 
     if not os.path.exists(dat_f):
-        print("File does not exist")
-        print(dat_f)
-        exit()
+        print(f"File does not exist: {dat_f}")
+        return False
 
     gr_f = os.path.join(pth, 'graphs')
     util.make_a_directory(gr_f)
     if not os.path.exists(gr_f):
         os.mkdir(gr_f)
 
-    return pth, cent_f, dat_f, gr_f
+    return pth, cent_f, dat_f, gr_f, p_num
 
 
 def calc_fit_data(fitnesses, layers):
-
-    fit = np.zeros(fitnesses.shape[0])
+    fit = np.ones(fitnesses.shape[0])
     fits = fitnesses.copy()
     for lay in range(layers, 0, -1):
         pareto = util.is_pareto_efficient_simple(fits)
-        fit[pareto] = lay
+        fit[pareto] = lay + 5
         fits[pareto] = [0, 0]
+        if np.max(fitnesses) < 0.0001:
+            break
     return fit
 
 
@@ -218,32 +234,63 @@ if __name__ == "__main__":
     # if len(sys.argv) < 3:
     #     sys.exit('Usage: %s centroids_file archive.dat [min_fit] [max_fit]' % sys.argv[0])
     import os
-    dates = ['002_20230426_153441']
-    ext = ['.svg', '.png']
-    n_niches = 1000
+    dates = ['003_20230505_171536']
+    ext = ['.png']  # '.svg',
+    n_niches = 5000
     n_pols = 200000
     n_objectives = 2
-    n_pareto_layers = 10
+    n_pareto_layers = 50
     dim_x = 24
 
-    print(os.getcwd())
+    param_sets = ['231', '233', '235', '237', '239',
+                  '241', '243', '245', '247', '249',
+                  '341', '343', '345', '347', '349']
+
+    final_num = 200000
+
+    params_dict = {pname: [] for pname in param_sets}
+
+
     for date in dates:
         root_dir = os.path.join(os.getcwd(), 'data', date)
         bh_pth = os.path.join(root_dir, 'bh_vis')
         util.make_a_directory(bh_pth)
-
+        print(root_dir)
         sub_dirs = list(os.walk(root_dir))[0][1]
         for d in sub_dirs:
-            fpath, centroids_f, data_f, graphs_f = mk_files(root_dir, d, n_niches, n_pols)
+            if '010' not in d:
+                continue
+            files_info = mk_files(root_dir, d, n_niches, n_pols)
+            if not files_info:
+                print(f'### SKIPPING {d}')
+                continue
+
+            print(f'processing {d}')
+            fpath, centroids_f, data_f, graphs_f, p_num = files_info
             centroids = load_centroids(centroids_f)
             ftns, beh, x = load_data(data_f, centroids.shape[1], dim_x, n_objectives)
+            _, counts = np.unique(beh, return_counts=True, axis=0)
+            pct_bh = len(counts) / centroids.shape[0]
             fit = calc_fit_data(ftns, n_pareto_layers)
 
+            if p_num in params_dict:
+                params_dict[p_num].append(pct_bh)
+            else:
+                params_dict[p_num] = [pct_bh]
+
             # Plot
-            plt.clf()
             fig, axes = plt.subplots(1, 1, figsize=(10, 10), facecolor='white', edgecolor='white')
             axes.set_xlim(0, 1)
             axes.set_ylim(0, 1)
-            plot_cvt(axes, centroids, fit, beh, x, 2, 4, 0, n_pareto_layers)
+
+            dim01 = 3
+
+            plot_cvt(axes, centroids, fit, beh, dim01, 0, (n_pareto_layers + 5))
             for ex in ext:
+                plt.title(f'Behavior Space, {pct_bh*100:.02f}% filled')
                 fig.savefig(os.path.join(bh_pth, f'bh_{d}_{ex}'))
+                plt.clf()
+
+    for key, value in params_dict.items():
+        print(key, np.mean(value))
+
