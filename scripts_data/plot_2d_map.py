@@ -252,6 +252,8 @@ if __name__ == "__main__":
         root_dir = os.path.join(os.getcwd(), 'data', date)
 
         bh_pth = os.path.join(root_dir, 'bh_vis')
+        if not os.path.exists(graphs_f):
+            os.mkdir(graphs_f)
         util.make_a_directory(bh_pth)
         print(root_dir)
         sub_dirs = list(os.walk(root_dir))[0][1]
@@ -293,7 +295,7 @@ if __name__ == "__main__":
             plot_cvt(axes, centroids, fit, beh, dim01, dim02, 0, (n_pareto_layers + 5))
             for ex in ext:
                 plt.title(f'Behavior Space, {pct_bh*100:.02f}% filled')
-                fig.savefig(os.path.join(bh_pth, f'bh_{d}_{ex}'))
+                fig.savefig(os.path.join(graphs_f, f'bh_{d}_{ex}'))
                 plt.clf()
 
     text_f = os.path.join(graphs_f, 'NOTES_bh.txt')
