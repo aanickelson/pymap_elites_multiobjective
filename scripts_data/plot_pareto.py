@@ -23,11 +23,12 @@ def file_setup(f_dates):
     if not os.path.exists(graphs_f):
         os.mkdir(graphs_f)
 
-    text_f = os.path.join(graphs_f, 'NOTES.txt')
-    with open(text_f, 'w') as f:
-        f.write('Dates: ')
-        for dt in f_dates:
-            f.write(f'{dt}, ')
+        text_f = os.path.join(graphs_f, 'NOTES.txt')
+        with open(text_f, 'w') as f:
+            f.write('Dates: ')
+            for dt in f_dates:
+                f.write(f'{dt}, ')
+            f.write('\n')
 
     return graphs_f
 
@@ -145,44 +146,50 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes):
     return curve_area
 
 
-def plot_areas(evos, data_and_names, dirname, area_fname, filetypes):
+def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
     print('We made it to plotting')
     plt.clf()
     plt.ylim([-0.1, 2.1])
     evos = np.array(evos)
+    text_f = os.path.join(graphs_dir_fname, f'NOTES_{dirname}_means.txt')
+    with open(text_f, 'w') as f:
+        f.write(f'Final Means, {dirname}\n')
+
     for [data, nm] in data_and_names:
         if not data:
             continue
         means, sterr = process(data)
-        print(nm, means[-1])
+        with open(text_f, 'a') as f:
+            f.write(f'{nm}: {(means[-1])} \n')
+
         # these are print statements if you want to print & combine data across machines
         # It's far easier this way than trying to migrate 2-3GB of raw data across machines.
         # print(nm)
         # print(repr(means))
         # print(repr(sterr))
-        plt.plot(evos, means)
-        plt.fill_between(evos, means-sterr, means+sterr, alpha=0.5, label=nm)
-    plt.title(f"{dirname}")
-    plt.xlabel('Number of Policies Tested')
-    plt.ylabel('Hypervolume of resulting Pareto front')
-    plt.legend()
-    try:
-        os.mkdir(area_fname)
-    except FileExistsError:
-        pass
-    for ext in filetypes:
-        plt.savefig(os.path.join(area_fname, dirname + ext))
+    #     plt.plot(evos, means)
+    #     plt.fill_between(evos, means-sterr, means+sterr, alpha=0.5, label=nm)
+    # plt.title(f"{dirname}")
+    # plt.xlabel('Number of Policies Tested')
+    # plt.ylabel('Hypervolume of resulting Pareto front')
+    # plt.legend()
+    # try:
+    #     os.mkdir(graphs_dir_fname)
+    # except FileExistsError:
+    #     pass
+    # for ext in filetypes:
+    #     plt.savefig(os.path.join(graphs_dir_fname, dirname + ext))
 
 
 if __name__ == '__main__':
 
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
-    dates = ['005_20230518_104517', '004_20230509_182108', '003_20230505_171536']  # Change the dates to match the date code on the data set(s) you want to use
+    dates = ['003_20230505_171536', '007_20230522_123227']  # Change the dates to match the date code on the data set(s) you want to use
 
-    ftypes = ['.svg', '.png']   # What file type(s) do you want for the plots
+    ftypes = ['.svg']  #, '.png']   # What file type(s) do you want for the plots
 
-    plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
+    plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
 
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
@@ -191,15 +198,13 @@ if __name__ == '__main__':
     # Param names provides the name of each parameter being compared. Should line up with the files
     # In this example, the names are consistent across all the plots, but they won't always be depending on what you want to run
     # nms = ['0 cf', '1 cf', '5 cf', '9 cf']
-    #
+    # nms_9 = ['No cf', 'Static', 'Move', 'Task']
     # all_sets = [[['010', '231', '235',  '239'], nms, 'Num Counterfactuals, Static'],
     #             [['010', '241', '245', '249'], nms, 'Num Counterfactuals, Move, no POI'],
-    #             [['010', '341', '345', '349'], nms, 'Num Counterfactuals, Move, POI']]
+    #             [['010', '341', '345', '349'], nms, 'Num Counterfactuals, Move, POI'],
+    #             [['010', '239', '249', '349'], nms_9, '9 CF, All cases']]
 
-    nms = ['No cf', 'Static', 'Move', 'Task']
-    all_sets = [[['010', '239', '249', '349'], nms, '9 CF, All cases']]
-
-    # all_sets = [[['010', '239', '249', '349'], ['0 cf', 'Static', 'Move', 'POI'], '9 Counterfactuals']]
+    all_sets = [[['010', '239', '249', '349'], ['0 cf', 'Static', 'Move', 'POI'], '9 Counterfactuals']]
 
     # If you want to collect multiple parameter sets into one set, use this style
     # batch_0cf = ['010']
@@ -214,10 +219,10 @@ if __name__ == '__main__':
 
     files = get_file_info(dates)
 
+    graphs_fname = file_setup(dates)
     for param_sets, param_names, nm in all_sets:
+        print(param_sets)
         plot_fname = f'{nm}'  # What domain is being tested
-
-        graphs_fname = file_setup(dates)
 
         evols = [(i + 1) * 1000 for i in range(n_files)]
         data_and_nm = [[[], p] for p in param_names]
@@ -227,18 +232,17 @@ if __name__ == '__main__':
             # Pulls the parameter file number
             p_num = params_name[:3]
             # Save the areas to the appropriate parameter set
-            it_worked = False
             for i, p_name in enumerate(param_sets):
                 if p_num in p_name:
+                    print(sub)
                     # This block goes through each file, gets the data, finds the pareto front, gets the area, then saves the area
                     areas = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes)
                     if len(areas) < n_files:
                         continue
 
                     data_and_nm[i][0].append(areas)
-                    it_worked = True
-            if not it_worked:
-                print('This file will not be included in the final graph')
+            # if not it_worked:
+            #     print('This file will not be included in the final graph')
 
         # Plot the areas data for all parameters on one plot to compare
         plot_areas(evols, data_and_nm, plot_fname, graphs_fname, ftypes)
