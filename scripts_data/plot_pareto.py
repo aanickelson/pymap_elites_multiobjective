@@ -208,7 +208,7 @@ if __name__ == '__main__':
 
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
-    dates = ['005_20230518_104517', '004_20230509_182108', '003_20230505_171536']  # Change the dates to match the date code on the data set(s) you want to use
+    # dates = ['005_20230518_104517', '004_20230509_182108', '003_20230505_171536']  # Change the dates to match the date code on the data set(s) you want to use
 
     ftypes = ['.svg', '.png']   # What file type(s) do you want for the plots
 
@@ -218,7 +218,11 @@ if __name__ == '__main__':
     basedir_n = '/home/anna/PycharmProjects/MOO_playground'
     basedir_qd = os.getcwd()
     dates_qd = ['507_20230523_180028']
-    files_info = [[['001_20230524_183015'], basedir_n, 'fits'], [['507_20230523_180028'], basedir_qd, 'archive_']]
+    dates_n = ['001_20230524_183015', '003_20230525_122729']
+    # dates_all = dates_qd.copy()
+    # dates_all.extend(dates_n)
+    dates_all = dates_n
+    files_info = [[dates_n, basedir_n, 'fits']]  #, [dates_qd, basedir_qd, 'archive_']]
 
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
@@ -235,8 +239,8 @@ if __name__ == '__main__':
     # nms = ['No cf', 'Static', 'Move', 'Task']
     # all_sets = [[['010', '239', '249', '349'], nms, '9 CF, All cases']]
 
-    nms = ['No cf MOME', '9cf MOME', 'No cf NSGA', '9cf NSGA']
-    all_sets = [[['010_qd', '349_qd', '010_n', '349_n'], nms, 'No vs 9 task CF']]
+    nms = ['No cf MOME', 'Static cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Task cf NSGA']
+    all_sets = [[['010_qd', '239_qd', '349_qd', '010_n', '239_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
 
     # all_sets = [[['010', '239', '249', '349'], ['0 cf', 'Static', 'Move', 'POI'], '9 Counterfactuals']]
 
@@ -251,7 +255,7 @@ if __name__ == '__main__':
     # You shouldn't need to change anything beyond here
     # ---------------------------------------------------------
 
-    graphs_fname = file_setup(dates_qd, basedir_qd)
+    graphs_fname = file_setup(dates_all, basedir_qd)
     evols = [(i + 1) * 1000 for i in range(n_files)]
     for param_sets, param_names, nm in all_sets:
         data_and_nm = {p: [param_names[i]] for i, p in enumerate(param_sets)}
@@ -272,8 +276,6 @@ if __name__ == '__main__':
                     print('Something went wrong here')
 
                 p_num += app
-                print(p_num)
-                print(data_and_nm[p_num])
                 # Save the areas to the appropriate parameter set
                 it_worked = False
                 for i, p_name in enumerate(param_sets):
