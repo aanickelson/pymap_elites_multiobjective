@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import numpy as np
 import math
 from copy import deepcopy
+from time import time
 
 import pymap_elites_multiobjective.map_elites.cvt_plus_pareto as cvt_me_pareto
 import pymap_elites_multiobjective.map_elites.cvt as cvt_me
@@ -16,7 +17,7 @@ import pymap_elites_multiobjective.map_elites.common as cm_map_elites
 import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
 
 from AIC.aic import aic as Domain
-from pymap_elites_multiobjective.parameters import new_batches, just_one
+import pymap_elites_multiobjective.parameters as Params
 
 from pymap_elites_multiobjective.scripts_data.run_env import run_env
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
@@ -69,12 +70,17 @@ def main(setup):
     n_niches = px['n_niches']
 
     n_behaviors = env_p.n_bh
+    start = time()
     archive = cvt_me.compute(n_behaviors, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
                              log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
+    tot_time = time() - start
+    with open(filepath + '_time.txt', 'w') as f:
+        f.write(str(tot_time))
 
 
 def multiprocess_main(batch_for_multi):
     cpus = multiprocessing.cpu_count() - 1
+    # cpus = 2
     with multiprocessing.Pool(processes=cpus) as pool:
         pool.map(main, batch_for_multi)
 
@@ -132,7 +138,7 @@ if __name__ == '__main__':
     # dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
     batch = []
-    for param_batch in new_batches:
+    for param_batch in [[Params.p249]]:
 
         for params in param_batch:  # , p04]:
             p = deepcopy(params)
@@ -141,17 +147,17 @@ if __name__ == '__main__':
             else:
                 p.n_bh = params.n_poi_types * 3
             p.n_agents = 1
-            lp.n_stat_runs = 15
+            lp.n_stat_runs = 10
             for i in range(lp.n_stat_runs):
                 filepath = path.join(dirpath, f'{p.param_idx:03d}_run{i}')
                 mkdir(filepath)
                 batch.append([p, px, filepath, i])
 
     # Use this one
-    # multiprocess_main(batch)
+    multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
-    main(batch[0])
+    # main(batch[0])
 
     # for b in batch:
     #     main(b)

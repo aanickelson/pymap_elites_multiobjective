@@ -10,12 +10,15 @@ from pymap_elites_multiobjective.scripts_data.often_used import is_pareto_effici
 # This block is for file i/o #
 ##############################
 
-def file_setup(f_dates):
+def file_setup(f_dates, cwd=None):
     fnums = [re.split('_|/', d)[0] for d in f_dates]
 
     all_fnums = '_'.join(fnums)
+
+    if not cwd:
+        cwd = os.getcwd()
     # Filename setup
-    graphs_dir = os.path.join(os.getcwd(), 'data', 'graphs')
+    graphs_dir = os.path.join(cwd, 'data', 'graphs')
     if not os.path.exists(graphs_dir):
         os.mkdir(graphs_dir)
 
@@ -32,11 +35,13 @@ def file_setup(f_dates):
     return graphs_f
 
 
-def get_file_info(dates):
+def get_file_info(dates, a_or_f, cwd=None):
+    if not cwd:
+        cwd = os.getcwd()
 
     files_to_use = []
     for date in dates:
-        root_dir = os.path.join(os.getcwd(), 'data', date)
+        root_dir = os.path.join(cwd, 'data', date)
         sub_dirs = list(os.walk(root_dir))[0][1]
         for s in sub_dirs:
             sub = os.path.join(root_dir, s)
@@ -48,7 +53,7 @@ def get_file_info(dates):
             fnums = []
             for file in files:
                 # 'archive' is what all the data is saved to
-                if 'archive' not in file:
+                if a_or_f not in file:
                     continue
                 try:
                     # Find all file numbers (the final number appended, which is the number of policies tested so far)
@@ -93,14 +98,30 @@ def get_area(x, y):
     return pgon.area
 
 
-def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types):
+def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, a_or_f):
     areas = []
     for evo in fnms:
-        fname = os.path.join(sub, f'archive_{evo}.dat')
+        if evo == 0:
+            continue
+
+        if a_or_f == 'archive_':
+            ext = '.dat'
+        elif a_or_f == 'fits':
+            ext = '.npy'
+        else:
+            print('something went wrong in the areas')
+            return
+
+        fname = os.path.join(sub, f'{a_or_f}{evo}{ext}')
         if not os.path.exists(fname):
             continue
         x, y, xy = load_data(fname)
         is_eff = is_pareto_efficient_simple(xy)
+
+        if evo == 1998:
+            evo = 2000
+        if a_or_f == 'fits':
+            evo *= 100
         if evo == fnums[-1] and plot_sc:
             curve_area = plot_pareto_scatter(x, y, is_eff, f'{pnum}_{evo}',
                                              f'{dt}_{paramsnm}_{evo}', graphs_f, f_types)
@@ -148,9 +169,11 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes):
 def plot_areas(evos, data_and_names, dirname, area_fname, filetypes):
     print('We made it to plotting')
     plt.clf()
-    plt.ylim([-0.1, 2.1])
+    plt.ylim([-0.1, 3.0])
     evos = np.array(evos)
-    for [data, nm] in data_and_names:
+    for _, vals in data_and_names.items():
+        nm = vals[0]
+        data = vals[1:]
         if not data:
             continue
         means, sterr = process(data)
@@ -178,11 +201,17 @@ if __name__ == '__main__':
 
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
-    dates = ['005_20230518_104517', '004_20230509_182108', '003_20230505_171536']  # Change the dates to match the date code on the data set(s) you want to use
+    # dates = ['001_20230524_183015']  # Change the dates to match the date code on the data set(s) you want to use
 
-    ftypes = ['.svg', '.png']   # What file type(s) do you want for the plots
+    ftypes = ['.svg']  #, '.png']   # What file type(s) do you want for the plots
 
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
+
+    # If you don't define this, it will use the current working directory of this file
+    basedir_n = '/home/anna/PycharmProjects/MOO_playground'
+    basedir_qd = os.getcwd()
+    dates_qd = ['507_20230523_180028']
+    files_info = [[['001_20230524_183015'], basedir_n, 'fits'], [['507_20230523_180028'], basedir_qd, 'archive_']]
 
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
@@ -196,8 +225,11 @@ if __name__ == '__main__':
     #             [['010', '241', '245', '249'], nms, 'Num Counterfactuals, Move, no POI'],
     #             [['010', '341', '345', '349'], nms, 'Num Counterfactuals, Move, POI']]
 
-    nms = ['No cf', 'Static', 'Move', 'Task']
-    all_sets = [[['010', '239', '249', '349'], nms, '9 CF, All cases']]
+    # nms = ['No cf', 'Static', 'Move', 'Task']
+    # all_sets = [[['010', '239', '249', '349'], nms, '9 CF, All cases']]
+
+    nms = ['No cf MOME', '9cf MOME', 'No cf NSGA', '9cf NSGA']
+    all_sets = [[['010_qd', '349_qd', '010_n', '349_n'], nms, 'No vs 9 task CF']]
 
     # all_sets = [[['010', '239', '249', '349'], ['0 cf', 'Static', 'Move', 'POI'], '9 Counterfactuals']]
 
@@ -212,33 +244,42 @@ if __name__ == '__main__':
     # You shouldn't need to change anything beyond here
     # ---------------------------------------------------------
 
-    files = get_file_info(dates)
-
+    graphs_fname = file_setup(dates_qd, basedir_qd)
+    evols = [(i + 1) * 1000 for i in range(n_files)]
     for param_sets, param_names, nm in all_sets:
+        data_and_nm = {p: [param_names[i]] for i, p in enumerate(param_sets)}
         plot_fname = f'{nm}'  # What domain is being tested
 
-        graphs_fname = file_setup(dates)
+        for dates, basedir, arch_or_fits in files_info:
+            files = get_file_info(dates, arch_or_fits, basedir)
 
-        evols = [(i + 1) * 1000 for i in range(n_files)]
-        data_and_nm = [[[], p] for p in param_names]
+            # Walk through all the files in the given directory
+            for sub, date, params_name, fnums in files:
+                # Pulls the parameter file number
+                p_num = params_name[:3]
+                if 'arch' in arch_or_fits:
+                    app = '_qd'
+                elif 'fits' in arch_or_fits:
+                    app = '_n'
+                else:
+                    print('Something went wrong here')
 
-        # Walk through all the files in the given directory
-        for sub, date, params_name, fnums in files:
-            # Pulls the parameter file number
-            p_num = params_name[:3]
-            # Save the areas to the appropriate parameter set
-            it_worked = False
-            for i, p_name in enumerate(param_sets):
-                if p_num in p_name:
-                    # This block goes through each file, gets the data, finds the pareto front, gets the area, then saves the area
-                    areas = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes)
-                    if len(areas) < n_files:
-                        continue
+                p_num += app
+                print(p_num)
+                print(data_and_nm[p_num])
+                # Save the areas to the appropriate parameter set
+                it_worked = False
+                for i, p_name in enumerate(param_sets):
+                    if p_num in p_name:
+                        # This block goes through each file, gets the data, finds the pareto front, gets the area, then saves the area
+                        areas = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits)
+                        if len(areas) < n_files:
+                            continue
 
-                    data_and_nm[i][0].append(areas)
-                    it_worked = True
-            if not it_worked:
-                print('This file will not be included in the final graph')
+                        data_and_nm[p_num].append(areas)
+                        it_worked = True
+                if not it_worked:
+                    print('This file will not be included in the final graph')
 
-        # Plot the areas data for all parameters on one plot to compare
-        plot_areas(evols, data_and_nm, plot_fname, graphs_fname, ftypes)
+    # Plot the areas data for all parameters on one plot to compare
+    plot_areas(evols, data_and_nm, plot_fname, graphs_fname, ftypes)
