@@ -45,6 +45,7 @@ from matplotlib.ticker import FuncFormatter
 from sklearn.neighbors import KDTree
 import matplotlib.cm as cm
 import pymap_elites_multiobjective.scripts_data.often_used as util
+from pymap_elites_multiobjective.scripts_data.plot_pareto import file_setup
 import re
 
 
@@ -149,7 +150,7 @@ def load_centroids(filename):
     return points
 
 
-def plot_cvt(ax, centroids, fit, desc, dim1, min_fit, max_fit):
+def plot_cvt(ax, centroids, fit, desc, dim1, dim2, min_fit, max_fit):
     # getting the original colormap using cm.get_cmap() function
     orig_map = plt.cm.get_cmap('viridis')
 
@@ -158,7 +159,7 @@ def plot_cvt(ax, centroids, fit, desc, dim1, min_fit, max_fit):
 
     # compute Voronoi tesselation
     # print("Voronoi...")
-    vor = Voronoi(centroids[:, dim1:dim1+2])
+    vor = Voronoi(centroids[:, [dim1, dim2]])
     regions, vertices = voronoi_finite_polygons_2d(vor)
     # print("fit:", min_fit, max_fit)
     norm = mpl.colors.Normalize(vmin=min_fit, vmax=max_fit)
@@ -210,12 +211,7 @@ def mk_files(rootdir, subd, niches, pols):
         print(f"File does not exist: {dat_f}")
         return False
 
-    gr_f = os.path.join(pth, 'graphs')
-    util.make_a_directory(gr_f)
-    if not os.path.exists(gr_f):
-        os.mkdir(gr_f)
-
-    return pth, cent_f, dat_f, gr_f, p_num
+    return pth, cent_f, dat_f
 
 
 def calc_fit_data(fitnesses, layers):
@@ -234,39 +230,45 @@ if __name__ == "__main__":
     # if len(sys.argv) < 3:
     #     sys.exit('Usage: %s centroids_file archive.dat [min_fit] [max_fit]' % sys.argv[0])
     import os
-    dates = ['003_20230505_171536']
-    ext = ['.png']  # '.svg',
+    dates = ['003_20230505_171536', '007_20230522_123227']
+    ext = ['.svg']  # ,'.png'
     n_niches = 5000
     n_pols = 200000
     n_objectives = 2
     n_pareto_layers = 50
     dim_x = 24
 
-    param_sets = ['231', '233', '235', '237', '239',
-                  '241', '243', '245', '247', '249',
-                  '341', '343', '345', '347', '349']
+    # param_sets = ['231', '233', '235', '237', '239',
+    #               '241', '243', '245', '247', '249',
+    #               '341', '343', '345', '347', '349']
 
+    param_sets = ['010', '239', '249', '349']
     final_num = 200000
 
     params_dict = {pname: [] for pname in param_sets}
 
-
+    graphs_f = os.path.join(file_setup(dates), 'bh')
     for date in dates:
         root_dir = os.path.join(os.getcwd(), 'data', date)
+
         bh_pth = os.path.join(root_dir, 'bh_vis')
+        if not os.path.exists(graphs_f):
+            os.mkdir(graphs_f)
         util.make_a_directory(bh_pth)
         print(root_dir)
         sub_dirs = list(os.walk(root_dir))[0][1]
         for d in sub_dirs:
-            if '010' not in d:
+            p_num = re.split('_|/', d)[0]
+            if p_num not in params_dict:
                 continue
+
             files_info = mk_files(root_dir, d, n_niches, n_pols)
             if not files_info:
                 print(f'### SKIPPING {d}')
                 continue
 
             print(f'processing {d}')
-            fpath, centroids_f, data_f, graphs_f, p_num = files_info
+            fpath, centroids_f, data_f = files_info
             centroids = load_centroids(centroids_f)
             ftns, beh, x = load_data(data_f, centroids.shape[1], dim_x, n_objectives)
             _, counts = np.unique(beh, return_counts=True, axis=0)
@@ -283,14 +285,20 @@ if __name__ == "__main__":
             axes.set_xlim(0, 1)
             axes.set_ylim(0, 1)
 
-            dim01 = 3
+            if p_num == '010':
+                dim01 = 1
+                dim02 = 2
+            else:
+                dim01 = 0
+                dim02 = 1
 
-            plot_cvt(axes, centroids, fit, beh, dim01, 0, (n_pareto_layers + 5))
+            plot_cvt(axes, centroids, fit, beh, dim01, dim02, 0, (n_pareto_layers + 5))
             for ex in ext:
                 plt.title(f'Behavior Space, {pct_bh*100:.02f}% filled')
-                fig.savefig(os.path.join(bh_pth, f'bh_{d}_{ex}'))
+                fig.savefig(os.path.join(graphs_f, f'bh_{d}_{ex}'))
                 plt.clf()
 
-    for key, value in params_dict.items():
-        print(key, np.mean(value))
-
+    text_f = os.path.join(graphs_f, 'NOTES_bh.txt')
+    with open(text_f, 'w') as f:
+        for key, value in params_dict.items():
+            f.write(f'{key}, {np.mean(value)}\n')

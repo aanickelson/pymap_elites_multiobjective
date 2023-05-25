@@ -26,11 +26,12 @@ def file_setup(f_dates, cwd=None):
     if not os.path.exists(graphs_f):
         os.mkdir(graphs_f)
 
-    text_f = os.path.join(graphs_f, 'NOTES.txt')
-    with open(text_f, 'w') as f:
-        f.write('Dates: ')
-        for dt in f_dates:
-            f.write(f'{dt}, ')
+        text_f = os.path.join(graphs_f, 'NOTES.txt')
+        with open(text_f, 'w') as f:
+            f.write('Dates: ')
+            for dt in f_dates:
+                f.write(f'{dt}, ')
+            f.write('\n')
 
     return graphs_f
 
@@ -166,18 +167,24 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes):
     return curve_area
 
 
-def plot_areas(evos, data_and_names, dirname, area_fname, filetypes):
+def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
     print('We made it to plotting')
     plt.clf()
     plt.ylim([-0.1, 3.0])
     evos = np.array(evos)
+    text_f = os.path.join(graphs_dir_fname, f'NOTES_{dirname}_means.txt')
+    with open(text_f, 'w') as f:
+        f.write(f'Final Means, {dirname}\n')
+
     for _, vals in data_and_names.items():
         nm = vals[0]
         data = vals[1:]
         if not data:
             continue
         means, sterr = process(data)
-        print(nm, means[-1])
+        with open(text_f, 'a') as f:
+            f.write(f'{nm}: {(means[-1])} \n')
+
         # these are print statements if you want to print & combine data across machines
         # It's far easier this way than trying to migrate 2-3GB of raw data across machines.
         # print(nm)
@@ -190,20 +197,20 @@ def plot_areas(evos, data_and_names, dirname, area_fname, filetypes):
     plt.ylabel('Hypervolume of resulting Pareto front')
     plt.legend()
     try:
-        os.mkdir(area_fname)
+        os.mkdir(graphs_dir_fname)
     except FileExistsError:
         pass
     for ext in filetypes:
-        plt.savefig(os.path.join(area_fname, dirname + ext))
+        plt.savefig(os.path.join(graphs_dir_fname, dirname + ext))
 
 
 if __name__ == '__main__':
 
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
-    # dates = ['001_20230524_183015']  # Change the dates to match the date code on the data set(s) you want to use
+    dates = ['005_20230518_104517', '004_20230509_182108', '003_20230505_171536']  # Change the dates to match the date code on the data set(s) you want to use
 
-    ftypes = ['.svg']  #, '.png']   # What file type(s) do you want for the plots
+    ftypes = ['.svg', '.png']   # What file type(s) do you want for the plots
 
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
 
