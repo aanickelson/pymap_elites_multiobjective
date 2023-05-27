@@ -170,8 +170,8 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes):
 def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
     print('We made it to plotting')
     plt.clf()
-    # plt.ylim([-0.1, 3.1])
-    plt.ylim([-0.1, 2.1])
+    plt.ylim([-0.1, 3.1])
+    # plt.ylim([-0.1, 2.1])
     evos = np.array(evos)
     text_f = os.path.join(graphs_dir_fname, f'NOTES_{dirname}_means.txt')
     with open(text_f, 'w') as f:
@@ -220,12 +220,12 @@ if __name__ == '__main__':
     basedir_qd = os.getcwd()
     dates_qd = ['003_20230505_171536', '004_20230509_182108', '007_20230522_123227', '507_20230523_180028']
     dates_n = ['001_20230524_183015', '003_20230525_122729', '004_20230525_144332']  #, '003_20230525_122729']
-    # dates_all = dates_qd.copy()
-    # dates_all.extend(dates_n)
-    dates_all = dates_qd
+    dates_all = dates_qd.copy()
+    dates_all.extend(dates_n)
+    # dates_all = dates_qd
     # files_info = [[dates_n, basedir_n, 'fits']]
-    files_info = [[dates_qd, basedir_qd, 'archive_']]
-
+    # files_info = [[dates_qd, basedir_qd, 'archive_']]
+    files_info = [[dates_n, basedir_n, 'fits'], [dates_qd, basedir_qd, 'archive_']]
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
     # all_sets is a little wonky, I'll admit.
@@ -239,11 +239,11 @@ if __name__ == '__main__':
     #             [['010', '341', '345', '349'], nms, 'Num Counterfactuals, Move, POI']]
 
     # nms = ['No cf', 'Static', 'Move', 'Task']
-    nms = ['0 cf', '1 cf', '5 cf', '9 cf']
-    all_sets = [[['010_qd', '341_qd', '345_qd', '349_qd'], nms, 'Comparison of Number of Task CFs']]
+    # nms = ['0 cf', '1 cf', '5 cf', '9 cf']
+    # all_sets = [[['010_qd', '341_qd', '345_qd', '349_qd'], nms, 'Comparison of Number of Task CFs']]
 
-    # nms = ['No cf MOME', 'Static cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Move cf NSGA', 'Task cf NSGA']
-    # all_sets = [[['010_qd', '239_qd', '349_qd', '010_n', '239_n', '249_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
+    nms = ['No cf MOME', 'Static cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Task cf NSGA']
+    all_sets = [[['010_qd', '239_qd', '349_qd', '010_n', '239_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
 
     # all_sets = [[['010', '239', '249', '349'], ['0 cf', 'Static', 'Move', 'POI'], '9 Counterfactuals']]
 
