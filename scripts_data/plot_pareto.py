@@ -183,7 +183,7 @@ def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
             continue
         means, sterr = process(data)
         with open(text_f, 'a') as f:
-            f.write(f'{nm}: {(means[-1])} \n')
+            f.write(f'{nm}: {means[-1]}, {sterr[-1]} \n')
 
         # these are print statements if you want to print & combine data across machines
         # It's far easier this way than trying to migrate 2-3GB of raw data across machines.
@@ -215,14 +215,15 @@ if __name__ == '__main__':
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
 
     # If you don't define this, it will use the current working directory of this file
-    basedir_n = '/home/anna/PycharmProjects/MOO_playground'
+    basedir_n = '/home/toothless/workspaces/MOO_playground/'
     basedir_qd = os.getcwd()
-    dates_qd = ['507_20230523_180028']
-    dates_n = ['001_20230524_183015', '003_20230525_122729']
+    dates_qd = ['003_20230505_171536', '004_20230509_182108', '007_20230522_123227', '507_20230523_180028']
+    dates_n = ['001_20230524_183015', '003_20230525_122729', '004_20230525_144332']  #, '003_20230525_122729']
     # dates_all = dates_qd.copy()
     # dates_all.extend(dates_n)
-    dates_all = dates_n
-    files_info = [[dates_n, basedir_n, 'fits']]  #, [dates_qd, basedir_qd, 'archive_']]
+    dates_all = dates_qd
+    # files_info = [[dates_n, basedir_n, 'fits']]
+    files_info = [[dates_qd, basedir_qd, 'archive_']]
 
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
@@ -236,11 +237,11 @@ if __name__ == '__main__':
     #             [['010', '241', '245', '249'], nms, 'Num Counterfactuals, Move, no POI'],
     #             [['010', '341', '345', '349'], nms, 'Num Counterfactuals, Move, POI']]
 
-    # nms = ['No cf', 'Static', 'Move', 'Task']
-    # all_sets = [[['010', '239', '249', '349'], nms, '9 CF, All cases']]
+    nms = ['No cf', 'Static', 'Move', 'Task']
+    all_sets = [[['010_qd', '239_qd', '249_qd', '349_qd'], nms, '9 CF, All cases']]
 
-    nms = ['No cf MOME', 'Static cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Task cf NSGA']
-    all_sets = [[['010_qd', '239_qd', '349_qd', '010_n', '239_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
+    # nms = ['No cf MOME', 'Static cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Move cf NSGA', 'Task cf NSGA']
+    # all_sets = [[['010_qd', '239_qd', '349_qd', '010_n', '239_n', '249_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
 
     # all_sets = [[['010', '239', '249', '349'], ['0 cf', 'Static', 'Move', 'POI'], '9 Counterfactuals']]
 
@@ -277,18 +278,15 @@ if __name__ == '__main__':
 
                 p_num += app
                 # Save the areas to the appropriate parameter set
-                it_worked = False
                 for i, p_name in enumerate(param_sets):
                     if p_num in p_name:
                         # This block goes through each file, gets the data, finds the pareto front, gets the area, then saves the area
-                        areas = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits)
+                        areas = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits)[:n_files]
                         if len(areas) < n_files:
                             continue
 
                         data_and_nm[p_num].append(areas)
-                        it_worked = True
-                if not it_worked:
-                    print('This file will not be included in the final graph')
+                        print(f'including {p_num}, {sub}')
 
     # Plot the areas data for all parameters on one plot to compare
     plot_areas(evols, data_and_nm, plot_fname, graphs_fname, ftypes)
