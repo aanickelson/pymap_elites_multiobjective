@@ -170,7 +170,8 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes):
 def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
     print('We made it to plotting')
     plt.clf()
-    plt.ylim([-0.1, 3.0])
+    # plt.ylim([-0.1, 3.1])
+    plt.ylim([-0.1, 2.1])
     evos = np.array(evos)
     text_f = os.path.join(graphs_dir_fname, f'NOTES_{dirname}_means.txt')
     with open(text_f, 'w') as f:
@@ -212,7 +213,7 @@ if __name__ == '__main__':
 
     ftypes = ['.svg', '.png']   # What file type(s) do you want for the plots
 
-    plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
+    plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
 
     # If you don't define this, it will use the current working directory of this file
     basedir_n = '/home/toothless/workspaces/MOO_playground/'
@@ -237,8 +238,9 @@ if __name__ == '__main__':
     #             [['010', '241', '245', '249'], nms, 'Num Counterfactuals, Move, no POI'],
     #             [['010', '341', '345', '349'], nms, 'Num Counterfactuals, Move, POI']]
 
-    nms = ['No cf', 'Static', 'Move', 'Task']
-    all_sets = [[['010_qd', '239_qd', '249_qd', '349_qd'], nms, '9 CF, All cases']]
+    # nms = ['No cf', 'Static', 'Move', 'Task']
+    nms = ['0 cf', '1 cf', '5 cf', '9 cf']
+    all_sets = [[['010_qd', '341_qd', '345_qd', '349_qd'], nms, 'Comparison of Number of Task CFs']]
 
     # nms = ['No cf MOME', 'Static cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Move cf NSGA', 'Task cf NSGA']
     # all_sets = [[['010_qd', '239_qd', '349_qd', '010_n', '239_n', '249_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
