@@ -230,7 +230,7 @@ if __name__ == "__main__":
     # if len(sys.argv) < 3:
     #     sys.exit('Usage: %s centroids_file archive.dat [min_fit] [max_fit]' % sys.argv[0])
     import os
-    dates = ['003_20230505_171536', '007_20230522_123227']
+    dates = ['003_20230505_171536', '004_20230509_182108', '006_20230518_161237', '007_20230522_123227', '507_20230523_180028']
     ext = ['.svg']  # ,'.png'
     n_niches = 5000
     n_pols = 200000
@@ -287,7 +287,7 @@ if __name__ == "__main__":
 
             if p_num == '010':
                 dim01 = 1
-                dim02 = 2
+                dim02 = 4
             else:
                 dim01 = 0
                 dim02 = 1

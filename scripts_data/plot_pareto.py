@@ -119,15 +119,16 @@ def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, 
         x, y, xy = load_data(fname)
         is_eff = is_pareto_efficient_simple(xy)
 
-        if evo == 1998:
-            evo = 2000
-        if a_or_f == 'fits':
-            evo *= 100
+        # if evo == 1998:
+        #     evo = 2000
+        # if a_or_f == 'fits':
+        #     evo *= 100
         if evo == fnums[-1] and plot_sc:
             curve_area = plot_pareto_scatter(x, y, is_eff, f'{pnum}_{evo}',
                                              f'{dt}_{paramsnm}_{evo}', graphs_f, f_types)
         else:
             curve_area = get_area(x[is_eff], y[is_eff])
+
         areas.append(curve_area)
 
     return areas
@@ -153,7 +154,8 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes):
 
     plt.clf()
     max_vals = [max(x), max(y)]
-    plt_max = 2.3
+    # plt_max = 2.3
+    plt_max = 3.3
     # plt_max = 90
     plt.xlim([-0.1, plt_max])
     plt.ylim([-0.1, plt_max])
@@ -213,19 +215,20 @@ if __name__ == '__main__':
 
     ftypes = ['.svg', '.png']   # What file type(s) do you want for the plots
 
-    plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
+    plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
 
     # If you don't define this, it will use the current working directory of this file
     basedir_n = '/home/toothless/workspaces/MOO_playground/'
     basedir_qd = os.getcwd()
     dates_qd = ['003_20230505_171536', '004_20230509_182108', '007_20230522_123227', '507_20230523_180028']
-    dates_n = ['001_20230524_183015', '003_20230525_122729', '004_20230525_144332']  #, '003_20230525_122729']
-    dates_all = dates_qd.copy()
+    dates_n = ['001_20230524_183015', '003_20230525_122729', '004_20230525_144332', '005_20230526_193538']
+    # dates_all = dates_qd.copy()
+    dates_all = []
     dates_all.extend(dates_n)
     # dates_all = dates_qd
     # files_info = [[dates_n, basedir_n, 'fits']]
     # files_info = [[dates_qd, basedir_qd, 'archive_']]
-    files_info = [[dates_n, basedir_n, 'fits'], [dates_qd, basedir_qd, 'archive_']]
+    files_info = [[dates_n, basedir_n, 'fits']]  #, [dates_qd, basedir_qd, 'archive_']]
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
     # all_sets is a little wonky, I'll admit.
@@ -242,8 +245,11 @@ if __name__ == '__main__':
     # nms = ['0 cf', '1 cf', '5 cf', '9 cf']
     # all_sets = [[['010_qd', '341_qd', '345_qd', '349_qd'], nms, 'Comparison of Number of Task CFs']]
 
-    nms = ['No cf MOME', 'Static cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Task cf NSGA']
-    all_sets = [[['010_qd', '239_qd', '349_qd', '010_n', '239_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
+    # nms = ['No cf MOME', 'Static cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Task cf NSGA']
+    # all_sets = [[['010_qd', '239_qd', '349_qd', '010_n', '239_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
+
+    nms = ['No cf NSGA', 'Static cf NSGA', 'Task cf NSGA']
+    all_sets = [[['010_n', '239_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
 
     # all_sets = [[['010', '239', '249', '349'], ['0 cf', 'Static', 'Move', 'POI'], '9 Counterfactuals']]
 
