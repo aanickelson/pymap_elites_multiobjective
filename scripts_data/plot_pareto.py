@@ -5,6 +5,8 @@ from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
 import os
 from pymap_elites_multiobjective.scripts_data.often_used import is_pareto_efficient_simple
+import pygmo
+# import platypus
 
 ##############################
 # This block is for file i/o #
@@ -95,8 +97,16 @@ def get_area(x, y):
     unique_xy = np.unique(xy, axis=0)
 
     pgon = Polygon(unique_xy)
-
+    hyper = get_hypervolume(xy)
+    print(f"{pgon.area:.04f}, {hyper:.04f}")
     return pgon.area
+
+def get_hypervolume(xy_vals):
+
+
+    hv = pygmo.hypervolume(xy_vals)
+    return hv.exclusive(p_idx=0, r=[0, 0])  # returns the exclusive volume by point 0
+    # hv.least_contributor(r=[0, ])  # returns the index of the least contributor
 
 
 def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, a_or_f):
@@ -215,20 +225,20 @@ if __name__ == '__main__':
 
     ftypes = ['.svg', '.png']   # What file type(s) do you want for the plots
 
-    plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
+    plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
 
     # If you don't define this, it will use the current working directory of this file
     basedir_n = '/home/toothless/workspaces/MOO_playground/'
     basedir_qd = os.getcwd()
     dates_qd = ['003_20230505_171536', '004_20230509_182108', '007_20230522_123227', '507_20230523_180028']
     dates_n = ['001_20230524_183015', '003_20230525_122729', '004_20230525_144332', '005_20230526_193538']
-    # dates_all = dates_qd.copy()
-    dates_all = []
-    dates_all.extend(dates_n)
+    dates_all = dates_qd.copy()
+    # dates_all = []
+    # dates_all.extend(dates_n)
     # dates_all = dates_qd
     # files_info = [[dates_n, basedir_n, 'fits']]
-    # files_info = [[dates_qd, basedir_qd, 'archive_']]
-    files_info = [[dates_n, basedir_n, 'fits']]  #, [dates_qd, basedir_qd, 'archive_']]
+    files_info = [[dates_qd, basedir_qd, 'archive_']]
+    # files_info = [[dates_n, basedir_n, 'fits'], [dates_qd, basedir_qd, 'archive_']]
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
     # all_sets is a little wonky, I'll admit.
@@ -297,4 +307,4 @@ if __name__ == '__main__':
                         print(f'including {p_num}, {sub}')
 
     # Plot the areas data for all parameters on one plot to compare
-    plot_areas(evols, data_and_nm, plot_fname, graphs_fname, ftypes)
+    # plot_areas(evols, data_and_nm, plot_fname, graphs_fname, ftypes)
