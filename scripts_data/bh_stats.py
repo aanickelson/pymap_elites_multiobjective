@@ -21,8 +21,10 @@ if __name__ == '__main__':
 
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
-    dates = ['004_20230509_182108', '006_20230518_161237']  # Change the dates to match the date code on the data set(s) you want to use
-    param_sets = ['239', '249', '349']
+    # dates = ['004_20230509_182108', '006_20230518_161237']  # Change the dates to match the date code on the data set(s) you want to use
+    dates = ['003_20230505_171536', '004_20230509_182108', '006_20230518_161237', '007_20230522_123227', '507_20230523_180028']
+
+    param_sets = ['010', '239', '249', '349']
 
 
     # param_sets = ['231', '233', '235', '237', '239',
