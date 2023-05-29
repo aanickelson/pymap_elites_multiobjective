@@ -154,8 +154,8 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes):
 
     plt.clf()
     max_vals = [max(x), max(y)]
-    # plt_max = 2.3
-    plt_max = 3.3
+    plt_max = 2.3
+    # plt_max = 3.3
     # plt_max = 90
     plt.xlim([-0.1, plt_max])
     plt.ylim([-0.1, plt_max])
