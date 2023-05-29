@@ -6,6 +6,7 @@ from shapely.geometry import Polygon
 import os
 from pymap_elites_multiobjective.scripts_data.often_used import is_pareto_efficient_simple
 import pygmo
+from pymap_elites_multiobjective.scripts_data.bh_stats import process
 # import platypus
 
 ##############################
@@ -102,7 +103,6 @@ def get_area(x, y):
     return pgon.area
 
 def get_hypervolume(xy_vals):
-
 
     hv = pygmo.hypervolume(xy_vals)
     return hv.exclusive(p_idx=0, r=[0, 0])  # returns the exclusive volume by point 0
