@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
 import os
 from pymap_elites_multiobjective.scripts_data.plot_pareto import get_area
+from pymap_elites_multiobjective.scripts_data.often_used import is_pareto_efficient_simple
 
 
 def load_data(filename):
@@ -26,16 +27,6 @@ if __name__ == '__main__':
 
     param_sets = ['010', '239', '249', '349']
 
-
-    # param_sets = ['231', '233', '235', '237', '239',
-    #               '241', '243', '245', '247', '249',
-    #               '341', '343', '345', '347', '349']
-    # '010', '011', '013',
-    #                   '021', '023',
-    #                   '031', '033',
-    #                   '041', '043',
-    #                   '121', '123',
-    #                   '141', '143',
     final_num = 200000
 
     bh_stats_dict = {pname: [] for pname in param_sets}
@@ -55,11 +46,10 @@ if __name__ == '__main__':
 
             params_name = re.split('_|/', sub)[-num_to_grab]
             if not params_name in bh_stats_dict:
-                print(f'## SKIPPING {sub}')
+                # print(f'## SKIPPING {sub}')
                 continue
 
-            print(f'processing {sub}')
-
+            # print(f'processing {sub}')
 
             c_ = False
             p_ = False
@@ -71,14 +61,21 @@ if __name__ == '__main__':
                 if 'centroids' in file:
                     c_data = load_data(full_fpath)
                     c_ = True
-                    print(file)
+                    # print(file)
 
                 elif str(final_num) in file:
                     policy_data = load_data(full_fpath)
                     p_data = policy_data[:, 2:7]
-                    pareto_area = get_area(policy_data[:, 0], policy_data[:, 1])
+                    objectives = policy_data[:, :2]
+                    x = policy_data[:, 0]
+                    y = policy_data[:, 1]
+                    is_eff = is_pareto_efficient_simple(objectives)
+                    pareto_area = get_area(x[is_eff], y[is_eff])
                     p_ = True
-                    print(file)
+                    if abs(pareto_area - 1.0) < 0.00005:
+                        r = 1
+                        pareto_area = get_area(x[is_eff], y[is_eff])
+                    # print(file)
                 else:
                     continue
 
@@ -86,6 +83,7 @@ if __name__ == '__main__':
                 print(f"not enough data in {sub}")
                 continue
             pct_filled = process(c_data, p_data)
+            print(f'{params_name}, {pct_filled:.04f}, {pareto_area:.04f}')
             if params_name in bh_stats_dict:
                 bh_stats_dict[params_name].append(pct_filled)
                 area_stats_dict[params_name].append(pareto_area)

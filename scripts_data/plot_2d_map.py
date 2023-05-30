@@ -242,12 +242,12 @@ if __name__ == "__main__":
     #               '241', '243', '245', '247', '249',
     #               '341', '343', '345', '347', '349']
 
-    param_sets = ['010', '239', '249', '349']
+    param_sets = ['010', '239', '249', '349']  #'010',
     final_num = 200000
 
     params_dict = {pname: [] for pname in param_sets}
 
-    graphs_f = os.path.join(file_setup(dates), 'bh')
+    graphs_f = os.path.join(file_setup(dates, 'bh_'), 'bh')
     for date in dates:
         root_dir = os.path.join(os.getcwd(), 'data', date)
 
@@ -286,8 +286,8 @@ if __name__ == "__main__":
             axes.set_ylim(0, 1)
 
             if p_num == '010':
-                dim01 = 1
-                dim02 = 4
+                dim01 = 0
+                dim02 = 3
             else:
                 dim01 = 0
                 dim02 = 1
@@ -295,7 +295,7 @@ if __name__ == "__main__":
             plot_cvt(axes, centroids, fit, beh, dim01, dim02, 0, (n_pareto_layers + 5))
             for ex in ext:
                 plt.title(f'Behavior Space, {pct_bh*100:.02f}% filled')
-                fig.savefig(os.path.join(graphs_f, f'bh_{d}_{ex}'))
+                fig.savefig(os.path.join(graphs_f, f'bh_{d}_{date}_{ex}'))
                 plt.clf()
 
     text_f = os.path.join(graphs_f, 'NOTES_bh.txt')

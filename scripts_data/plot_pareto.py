@@ -6,14 +6,13 @@ from shapely.geometry import Polygon
 import os
 from pymap_elites_multiobjective.scripts_data.often_used import is_pareto_efficient_simple
 import pygmo
-from pymap_elites_multiobjective.scripts_data.bh_stats import process
 # import platypus
 
 ##############################
 # This block is for file i/o #
 ##############################
 
-def file_setup(f_dates, cwd=None):
+def file_setup(f_dates, pre='', cwd=None):
     fnums = [re.split('_|/', d)[0] for d in f_dates]
 
     all_fnums = '_'.join(fnums)
@@ -25,7 +24,7 @@ def file_setup(f_dates, cwd=None):
     if not os.path.exists(graphs_dir):
         os.mkdir(graphs_dir)
 
-    graphs_f = os.path.join(graphs_dir, 'graphs_' + all_fnums)
+    graphs_f = os.path.join(graphs_dir, f'{pre}graphs_{all_fnums}')
     if not os.path.exists(graphs_f):
         os.mkdir(graphs_f)
 
@@ -81,32 +80,22 @@ def load_data(filename):
     xyvals = data[:, 0:2]
     return xvals, yvals, xyvals
 
+def load_centroids(filename):
+    data = np.loadtxt(filename)
+    return data
+
+def process_centroids(c_vals, p_vals):
+    centroids, counts = np.unique(p_vals, return_counts=True, axis=0)
+    return len(counts) / c_vals.shape[0]
 
 ##############################################
 # This block is for calculating pareto areas #
 ##############################################
 
-def get_area(x, y):
-    xy = list(zip(x, y))
-    # Add the origin
-    xy.append((0, 0))
-    # Add the x-axis intercept
-    xy.append((max(x), 0))
-    # Add the y-axis intercept
-    xy.append((0, max(y)))
-
-    unique_xy = np.unique(xy, axis=0)
-
-    pgon = Polygon(unique_xy)
-    hyper = get_hypervolume(xy)
-    print(f"{pgon.area:.04f}, {hyper:.04f}")
-    return pgon.area
-
-def get_hypervolume(xy_vals):
-
-    hv = pygmo.hypervolume(xy_vals)
-    return hv.exclusive(p_idx=0, r=[0, 0])  # returns the exclusive volume by point 0
-    # hv.least_contributor(r=[0, ])  # returns the index of the least contributor
+def get_area(xy_v):
+    xy = -1 * np.array(xy_v)
+    hv = pygmo.hypervolume(xy)
+    return hv.compute([0.0]*2)  # returns the exclusive volume by point 0
 
 
 def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, a_or_f):
@@ -135,13 +124,13 @@ def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, 
         #     evo *= 100
         if evo == fnums[-1] and plot_sc:
             curve_area = plot_pareto_scatter(x, y, is_eff, f'{pnum}_{evo}',
-                                             f'{dt}_{paramsnm}_{evo}', graphs_f, f_types)
+                                             f'{pnum}_{dt}_{paramsnm}', graphs_f, f_types)
         else:
-            curve_area = get_area(x[is_eff], y[is_eff])
+            curve_area = get_area(xy[is_eff])
 
         areas.append(curve_area)
 
-    return areas
+    return areas, x[is_eff], y[is_eff]
 
 
 def process(data):
@@ -223,22 +212,24 @@ if __name__ == '__main__':
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
     # dates = ['005_20230518_104517', '004_20230509_182108', '003_20230505_171536']  # Change the dates to match the date code on the data set(s) you want to use
 
-    ftypes = ['.svg', '.png']   # What file type(s) do you want for the plots
+    ftypes = ['.svg']  #, '.png']   # What file type(s) do you want for the plots
 
     plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
 
     # If you don't define this, it will use the current working directory of this file
     basedir_n = '/home/toothless/workspaces/MOO_playground/'
     basedir_qd = os.getcwd()
-    dates_qd = ['003_20230505_171536', '004_20230509_182108', '007_20230522_123227', '507_20230523_180028']
-    dates_n = ['001_20230524_183015', '003_20230525_122729', '004_20230525_144332', '005_20230526_193538']
+    # dates_qd = ['003_20230505_171536', '004_20230509_182108', '007_20230522_123227', '507_20230523_180028']
+    dates_qd = ['507_20230523_180028']
+    # dates_n = ['001_20230524_183015', '003_20230525_122729', '004_20230525_144332', '005_20230526_193538']
+    dates_n = []
     dates_all = dates_qd.copy()
     # dates_all = []
-    # dates_all.extend(dates_n)
+    dates_all.extend(dates_n)
     # dates_all = dates_qd
     # files_info = [[dates_n, basedir_n, 'fits']]
-    files_info = [[dates_qd, basedir_qd, 'archive_']]
-    # files_info = [[dates_n, basedir_n, 'fits'], [dates_qd, basedir_qd, 'archive_']]
+    # files_info = [[dates_qd, basedir_qd, 'archive_']]
+    files_info = [[dates_n, basedir_n, 'fits'], [dates_qd, basedir_qd, 'archive_']]
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
     # all_sets is a little wonky, I'll admit.
@@ -255,11 +246,11 @@ if __name__ == '__main__':
     # nms = ['0 cf', '1 cf', '5 cf', '9 cf']
     # all_sets = [[['010_qd', '341_qd', '345_qd', '349_qd'], nms, 'Comparison of Number of Task CFs']]
 
-    # nms = ['No cf MOME', 'Static cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Task cf NSGA']
-    # all_sets = [[['010_qd', '239_qd', '349_qd', '010_n', '239_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
+    nms = ['No cf MOME', 'Static cf MOME', 'Move cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Move cf NSGA', 'Task cf NSGA']
+    all_sets = [[['010_qd', '239_qd', '249_qd', '349_qd', '010_n', '239_n', '249_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
 
-    nms = ['No cf NSGA', 'Static cf NSGA', 'Task cf NSGA']
-    all_sets = [[['010_n', '239_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
+    # nms = ['No cf NSGA', 'Static cf NSGA', 'Task cf NSGA']
+    # all_sets = [[['010_n', '239_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
 
     # all_sets = [[['010', '239', '249', '349'], ['0 cf', 'Static', 'Move', 'POI'], '9 Counterfactuals']]
 
@@ -299,12 +290,17 @@ if __name__ == '__main__':
                 for i, p_name in enumerate(param_sets):
                     if p_num in p_name:
                         # This block goes through each file, gets the data, finds the pareto front, gets the area, then saves the area
-                        areas = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits)[:n_files]
+                        areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits)[:n_files]
                         if len(areas) < n_files:
                             continue
-
+                        if app == '_qd':
+                            bh_size = 5
+                            if '010' in p_num:
+                                bh_size = 6
+                            cent_data = load_centroids(os.path.join(sub, f'centroids_5000_{bh_size}.dat'))
+                            c_pct = process_centroids(cent_data, list(zip(x_p, y_p)))
+                            print(f'{p_num}, {areas[-1]}, {c_pct}')
                         data_and_nm[p_num].append(areas)
-                        print(f'including {p_num}, {sub}')
-
+                        # print(f'including {p_num}, {sub}')
     # Plot the areas data for all parameters on one plot to compare
     # plot_areas(evols, data_and_nm, plot_fname, graphs_fname, ftypes)
