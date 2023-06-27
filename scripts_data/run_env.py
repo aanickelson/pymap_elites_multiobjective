@@ -1,11 +1,15 @@
 import numpy as np
+from AIC.view import view
 
 
-def run_env(env, policies, p, use_bh=False):
+def run_env(env, policies, p, use_bh=False, vis=False):
     bh_space = [[] for _ in range(p.n_agents)]
     n_behaviors = 3
     for i in range(p.time_steps):
         state = env.state()
+        if vis:
+            g = sum(env.G())
+            view(env, i, g)
         actions = []
         for i, policy in enumerate(policies):
             action = policy(state[i]).detach().numpy()
@@ -15,7 +19,9 @@ def run_env(env, policies, p, use_bh=False):
                 bh_space[i].append(action_space(action, p, n_behaviors))
 
         env.action(actions)
-
+    if vis:
+        g = sum(env.G())
+        view(env, i + 1, g)
     if not use_bh:
         return env.G()
     else:
