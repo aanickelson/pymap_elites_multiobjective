@@ -233,6 +233,7 @@ def __save_archive(archive, gen, data_fname, final=False):
             for k in lst:
                 write_array(k.fitness, f)
                 write_array(k.centroid, f)
+                write_array(k.desc, f)
                 f.write("\n")
 
     if final:
@@ -240,6 +241,8 @@ def __save_archive(archive, gen, data_fname, final=False):
         with open(wts_fname, 'w') as fw:
             for lst in archive.values():
                 for k in lst:
+                    write_array(k.fitness, fw)
+                    write_array(k.centroid, fw)
                     write_array(k.desc, fw)
                     write_array(k.x, fw)
                     fw.write("\n")

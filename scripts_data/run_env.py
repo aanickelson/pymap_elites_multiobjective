@@ -8,7 +8,7 @@ def run_env(env, policies, p, use_bh=False, vis=False):
     for i in range(p.time_steps):
         state = env.state()
         if vis:
-            g = sum(env.G())
+            g = env.G()
             view(env, i, g)
         actions = []
         for i, policy in enumerate(policies):
@@ -20,8 +20,8 @@ def run_env(env, policies, p, use_bh=False, vis=False):
 
         env.action(actions)
     if vis:
-        g = sum(env.G())
-        view(env, i + 1, g)
+        g = env.G()
+        view(env, p.time_steps, g)
     if not use_bh:
         return env.G()
     else:

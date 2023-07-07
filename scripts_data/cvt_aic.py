@@ -37,23 +37,37 @@ class RoverWrapper:
         self.st_size = env.state_size()
         self.hid = lp.hid
         self.act_size = env.action_size()
-        self.l1_size = self.st_size * self.hid
-        self.l2_size = self.hid * self.act_size
+        self.w0_size = self.st_size * self.hid
+        self.w2_size = self.hid * self.act_size
+        self.b0_size = self.hid
+        self.b2_size = self.act_size
         self.model = NN(self.st_size, self.hid, self.act_size)
         self.n_evals = 0
+        self.vis = False
 
     def evaluate(self, x):
         self.env.reset()
-        l1_wts = from_numpy(np.reshape(x[:self.l1_size], (self.hid, self.st_size)))
-        l2_wts = from_numpy(np.reshape(x[self.l1_size:], (self.act_size, self.hid)))
-        self.model.set_weights([l1_wts, l2_wts])
-        fitness, bh = run_env(self.env, [self.model], self.p, use_bh=True)
-        # fitness = self.env.multiG()
-        # rmtime = self.env.agent_room_times()[0]
+
+        # Use this block to set the weights AND the biases. Like a real puppet.
+        cut0 = self.b0_size
+        cut1 = cut0 + self.b2_size
+        cut2 = cut1 + self.w0_size
+
+        b0_wts = from_numpy(np.array(x[:cut0]))
+        b1_wts = from_numpy(np.array(x[cut0:cut1]))
+        w0_wts = from_numpy(np.reshape(x[cut1:cut2], (self.hid, self.st_size)))
+        w2_wts = from_numpy(np.reshape(x[cut2:], (self.act_size, self.hid)))
+        self.model.set_biases([b0_wts, b1_wts])
+
+        # Use these ONLY if you're using the old data (before 7/7/2023)
+        # w0_wts = from_numpy(np.reshape(x[:self.w0_size], (self.hid, self.st_size)))
+        # w2_wts = from_numpy(np.reshape(x[self.w0_size:], (self.act_size, self.hid)))
+
+        self.model.set_weights([w0_wts, w2_wts])
+
+        fitness, bh = run_env(self.env, [self.model], self.p, use_bh=True, vis=self.vis)
 
         self.n_evals += 1
-        # if not self.n_evals % 1000:
-        #     print(f"Number of values tested: {self.n_evals}")
         return fitness, bh[0]
 
 
@@ -62,11 +76,9 @@ def main(setup):
     numpy.random.seed(stat_num + random.randint(0, 10000))
     archive = {}
     env = Domain(env_p)
-    in_size = env.state_size()
-    hid_size = lp.hid
-    out_size = env.action_size()
-    wts_dim = (in_size * hid_size) + (hid_size * out_size)
     dom = RoverWrapper(env, env_p)
+    # Dimension of x to be tested is the sum of the sizes of the weights vectors and bias vectors
+    wts_dim = dom.w0_size + dom.w2_size + dom.b0_size + dom.b2_size
     n_niches = px['n_niches']
 
     n_behaviors = env_p.n_bh
@@ -117,16 +129,16 @@ if __name__ == '__main__':
     px['random_init'] = 0.001  # Percent of niches that should be filled in order to start mutation
 
     # RUN VALS:
-    px["batch_size"] = 100
-    px["dump_period"] = 10000
-    px['n_niches'] = 5000
-    evals = 200000
+    # px["batch_size"] = 100
+    # px["dump_period"] = 10000
+    # px['n_niches'] = 5000
+    # evals = 200000
 
     # DEBUGGING VALS:
-    # px["batch_size"] = 10
-    # px["dump_period"] = 100
-    # px['n_niches'] = 10
-    # evals = 200
+    px["batch_size"] = 10
+    px["dump_period"] = 100
+    px['n_niches'] = 10
+    evals = 200
 
     now = datetime.now()
     base_path = path.join(getcwd(), 'data')
@@ -138,20 +150,20 @@ if __name__ == '__main__':
     # dirpath = path.join(getcwd(), now_str)
     mkdir(dirpath)
     batch = []
-    for param_batch in [[Params.p249]]:
 
-        for params in param_batch:  # , p04]:
-            p = deepcopy(params)
-            if params.counter:
-                p.n_bh = params.n_poi_types + 3
-            else:
-                p.n_bh = params.n_poi_types * 3
-            p.n_agents = 1
-            lp.n_stat_runs = 10
-            for i in range(lp.n_stat_runs):
-                filepath = path.join(dirpath, f'{p.param_idx:03d}_run{i}')
-                mkdir(filepath)
-                batch.append([p, px, filepath, i])
+    for params in [Params.p010]:  #, Params.p345]:  # , p04]:
+        p = deepcopy(params)
+        p.speed = 2.0
+        if params.counter:
+            p.n_bh = params.n_poi_types + 3
+        else:
+            p.n_bh = params.n_poi_types * 3
+        p.n_agents = 1
+        lp.n_stat_runs = 10
+        for i in range(lp.n_stat_runs):
+            filepath = path.join(dirpath, f'{p.param_idx:03d}_run{i}')
+            mkdir(filepath)
+            batch.append([p, px, filepath, i])
 
     # Use this one
     multiprocess_main(batch)

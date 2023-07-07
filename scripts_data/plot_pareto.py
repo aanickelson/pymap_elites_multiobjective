@@ -171,7 +171,7 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes):
 def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
     print('We made it to plotting')
     plt.clf()
-    plt.ylim([-0.1, 3.1])
+    plt.ylim([-0.1, 1.6])
     # plt.ylim([-0.1, 2.1])
     evos = np.array(evos)
     text_f = os.path.join(graphs_dir_fname, f'NOTES_{dirname}_means.txt')
@@ -217,10 +217,10 @@ if __name__ == '__main__':
     plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
 
     # If you don't define this, it will use the current working directory of this file
-    basedir_n = '/home/toothless/workspaces/MOO_playground/'
+    basedir_n = '/home/anna/workspaces/MOO_playground/'
     basedir_qd = os.getcwd()
     # dates_qd = ['003_20230505_171536', '004_20230509_182108', '007_20230522_123227', '507_20230523_180028']
-    dates_qd = ['507_20230523_180028']
+    dates_qd = ['511_20230626_172709', '512_20230628_140629']
     # dates_n = ['001_20230524_183015', '003_20230525_122729', '004_20230525_144332', '005_20230526_193538']
     dates_n = []
     dates_all = dates_qd.copy()
@@ -228,8 +228,8 @@ if __name__ == '__main__':
     dates_all.extend(dates_n)
     # dates_all = dates_qd
     # files_info = [[dates_n, basedir_n, 'fits']]
-    # files_info = [[dates_qd, basedir_qd, 'archive_']]
-    files_info = [[dates_n, basedir_n, 'fits'], [dates_qd, basedir_qd, 'archive_']]
+    files_info = [[dates_qd, basedir_qd, 'archive_']]
+    # files_info = [[dates_n, basedir_n, 'fits'], [dates_qd, basedir_qd, 'archive_']]
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
     # all_sets is a little wonky, I'll admit.
@@ -243,12 +243,13 @@ if __name__ == '__main__':
     #             [['010', '341', '345', '349'], nms, 'Num Counterfactuals, Move, POI']]
 
     # nms = ['No cf', 'Static', 'Move', 'Task']
-    # nms = ['0 cf', '1 cf', '5 cf', '9 cf']
-    # all_sets = [[['010_qd', '341_qd', '345_qd', '349_qd'], nms, 'Comparison of Number of Task CFs']]
+    nms = ['0 cf', '5 cf']
+    all_sets = [[['010_qd', '345_qd'], nms, 'Comparison of Number of Task CFs']]
 
-    nms = ['No cf MOME', 'Static cf MOME', 'Move cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Move cf NSGA', 'Task cf NSGA']
-    all_sets = [[['010_qd', '239_qd', '249_qd', '349_qd', '010_n', '239_n', '249_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
+    # nms = ['No cf MOME', 'Static cf MOME', 'Move cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Move cf NSGA', 'Task cf NSGA']
+    # all_sets = [[['010_qd', '239_qd', '249_qd', '349_qd', '010_n', '239_n', '249_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
 
+    # all_sets = [[['345_qd'], ['345'], 'just the one']]
     # nms = ['No cf NSGA', 'Static cf NSGA', 'Task cf NSGA']
     # all_sets = [[['010_n', '239_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
 
@@ -302,5 +303,5 @@ if __name__ == '__main__':
                             print(f'{p_num}, {areas[-1]}, {c_pct}')
                         data_and_nm[p_num].append(areas)
                         # print(f'including {p_num}, {sub}')
-    # Plot the areas data for all parameters on one plot to compare
-    # plot_areas(evols, data_and_nm, plot_fname, graphs_fname, ftypes)
+        # Plot the areas data for all parameters on one plot to compare
+        plot_areas(evols, data_and_nm, plot_fname, graphs_fname, ftypes)

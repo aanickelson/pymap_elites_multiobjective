@@ -230,7 +230,7 @@ if __name__ == "__main__":
     # if len(sys.argv) < 3:
     #     sys.exit('Usage: %s centroids_file archive.dat [min_fit] [max_fit]' % sys.argv[0])
     import os
-    dates = ['003_20230505_171536', '004_20230509_182108', '006_20230518_161237', '007_20230522_123227', '507_20230523_180028']
+    dates = ['510_20230626_153034']
     ext = ['.svg']  # ,'.png'
     n_niches = 5000
     n_pols = 200000
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     #               '241', '243', '245', '247', '249',
     #               '341', '343', '345', '347', '349']
 
-    param_sets = ['010', '239', '249', '349']  #'010',
+    param_sets = ['345']  #'010',
     final_num = 200000
 
     params_dict = {pname: [] for pname in param_sets}
@@ -289,8 +289,8 @@ if __name__ == "__main__":
                 dim01 = 0
                 dim02 = 3
             else:
-                dim01 = 0
-                dim02 = 1
+                dim01 = 2
+                dim02 = 3
 
             plot_cvt(axes, centroids, fit, beh, dim01, dim02, 0, (n_pareto_layers + 5))
             for ex in ext:
