@@ -76,7 +76,7 @@ default_params = \
 
 class Species:
     def __init__(self, x, desc, fitness, centroid=None):
-        self.x = x  # NN weights
+        self.x = x  # NN biases & weights
         self.desc = desc    # Full description of the location in behavior space
         self.fitness = fitness  # Evaluated fitness
         self.centroid = centroid    # Centroid of the niche in the behavior space
@@ -241,9 +241,9 @@ def __save_archive(archive, gen, data_fname, final=False):
         with open(wts_fname, 'w') as fw:
             for lst in archive.values():
                 for k in lst:
-                    write_array(k.fitness, fw)
-                    write_array(k.centroid, fw)
-                    write_array(k.desc, fw)
+                    write_array(k.fitness, fw)  # 2 dim
+                    write_array(k.centroid, fw)  # 5-6 dim
+                    write_array(k.desc, fw)  # 5-6 dim
                     write_array(k.x, fw)
                     fw.write("\n")
 

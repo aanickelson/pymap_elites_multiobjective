@@ -160,7 +160,8 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes):
     plt.ylim([-0.1, plt_max])
     plt.scatter(x, y, c='red')
     plt.scatter(x[iseff], y[iseff], c="blue")
-    curve_area = get_area(x[iseff], y[iseff])
+    xy = np.array([x, y]).T
+    curve_area = get_area(xy[iseff])
     plt.locator_params(axis="both", integer=True, tight=True)
     plt.title(f"{graph_title} AREA: {curve_area:.03f}")
     for ext in filetypes:
@@ -214,18 +215,18 @@ if __name__ == '__main__':
 
     ftypes = ['.svg']  #, '.png']   # What file type(s) do you want for the plots
 
-    plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
+    plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
 
     # If you don't define this, it will use the current working directory of this file
     basedir_n = '/home/anna/workspaces/MOO_playground/'
     basedir_qd = os.getcwd()
     # dates_qd = ['003_20230505_171536', '004_20230509_182108', '007_20230522_123227', '507_20230523_180028']
-    dates_qd = ['511_20230626_172709', '512_20230628_140629']
+    dates_qd = ['006_20230710_161023']
     # dates_n = ['001_20230524_183015', '003_20230525_122729', '004_20230525_144332', '005_20230526_193538']
     dates_n = []
     dates_all = dates_qd.copy()
     # dates_all = []
-    dates_all.extend(dates_n)
+    # dates_all.extend(dates_n)
     # dates_all = dates_qd
     # files_info = [[dates_n, basedir_n, 'fits']]
     files_info = [[dates_qd, basedir_qd, 'archive_']]

@@ -4,8 +4,6 @@ import sys, os
 
 import numpy.random
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 import numpy as np
 import math
 from copy import deepcopy
@@ -29,6 +27,8 @@ from os import path, getcwd, mkdir
 import multiprocessing
 import re
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 class RoverWrapper:
     def __init__(self, env, param):
@@ -44,9 +44,14 @@ class RoverWrapper:
         self.model = NN(self.st_size, self.hid, self.act_size)
         self.n_evals = 0
         self.vis = False
+        self.use_bh = True
 
     def evaluate(self, x):
         self.env.reset()
+
+        # Use these ONLY if you're using the old data (before 7/7/2023)
+        # w0_wts = from_numpy(np.reshape(x[:self.w0_size], (self.hid, self.st_size)))
+        # w2_wts = from_numpy(np.reshape(x[self.w0_size:], (self.act_size, self.hid)))
 
         # Use this block to set the weights AND the biases. Like a real puppet.
         cut0 = self.b0_size
@@ -57,18 +62,18 @@ class RoverWrapper:
         b1_wts = from_numpy(np.array(x[cut0:cut1]))
         w0_wts = from_numpy(np.reshape(x[cut1:cut2], (self.hid, self.st_size)))
         w2_wts = from_numpy(np.reshape(x[cut2:], (self.act_size, self.hid)))
+
         self.model.set_biases([b0_wts, b1_wts])
-
-        # Use these ONLY if you're using the old data (before 7/7/2023)
-        # w0_wts = from_numpy(np.reshape(x[:self.w0_size], (self.hid, self.st_size)))
-        # w2_wts = from_numpy(np.reshape(x[self.w0_size:], (self.act_size, self.hid)))
-
         self.model.set_weights([w0_wts, w2_wts])
 
-        fitness, bh = run_env(self.env, [self.model], self.p, use_bh=True, vis=self.vis)
-
+        out_vals = run_env(self.env, [self.model], self.p, use_bh=self.use_bh, vis=self.vis)
         self.n_evals += 1
-        return fitness, bh[0]
+
+        if self.use_bh:
+            fitness, bh = out_vals
+            return fitness, bh[0]
+        else:
+            return out_vals
 
 
 def main(setup):
@@ -129,16 +134,16 @@ if __name__ == '__main__':
     px['random_init'] = 0.001  # Percent of niches that should be filled in order to start mutation
 
     # RUN VALS:
-    # px["batch_size"] = 100
-    # px["dump_period"] = 10000
-    # px['n_niches'] = 5000
-    # evals = 200000
+    px["batch_size"] = 100
+    px["dump_period"] = 10000
+    px['n_niches'] = 5000
+    evals = 200000
 
     # DEBUGGING VALS:
-    px["batch_size"] = 10
-    px["dump_period"] = 100
-    px['n_niches'] = 10
-    evals = 200
+    # px["batch_size"] = 10
+    # px["dump_period"] = 100
+    # px['n_niches'] = 100
+    # evals = 200
 
     now = datetime.now()
     base_path = path.join(getcwd(), 'data')
@@ -151,7 +156,7 @@ if __name__ == '__main__':
     mkdir(dirpath)
     batch = []
 
-    for params in [Params.p010]:  #, Params.p345]:  # , p04]:
+    for params in [Params.p345]:  #, Params.p345]:  # , p04]:
         p = deepcopy(params)
         p.speed = 2.0
         if params.counter:
@@ -159,17 +164,18 @@ if __name__ == '__main__':
         else:
             p.n_bh = params.n_poi_types * 3
         p.n_agents = 1
-        lp.n_stat_runs = 10
+        lp.n_stat_runs = 3
         for i in range(lp.n_stat_runs):
             filepath = path.join(dirpath, f'{p.param_idx:03d}_run{i}')
             mkdir(filepath)
             batch.append([p, px, filepath, i])
 
     # Use this one
-    multiprocess_main(batch)
+    # multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
-    # main(batch[0])
+    px["parallel"] = True
+    main(batch[0])
 
     # for b in batch:
     #     main(b)

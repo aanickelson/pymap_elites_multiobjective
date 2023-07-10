@@ -5,7 +5,8 @@ from AIC.agent import agent
 
 
 def init_fn(n):
-    return n + random(), n + random()
+    # return n + random(), n + random()
+    return n, n
 
 
 class Parameters:
