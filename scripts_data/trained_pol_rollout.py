@@ -2,8 +2,7 @@ from AIC.aic import aic
 from pymap_elites_multiobjective.parameters.parameters010 import Parameters as params
 from cvt_aic import RoverWrapper
 import numpy as np
-from matplotlib import pyplot as plt
-import random
+
 
 def get_weights(fpath):
     data = np.loadtxt(fpath)

@@ -10,7 +10,7 @@ def string_to_save(i, n_cf, map_size, move, poi, cf_locs, poi_locs, n_poi, agent
     s += f"    n_agents = 1\n"
     s += f"    battery = 30\n"
     s += f"    time_steps = 50\n"
-    s += f"    speed = 5.0\n"
+    s += f"    speed = 2.0\n"
     s += f"    map_size = {map_size}\n"
     s += f"    counter = {n_cf}\n"
     s += f"    counter_move = {move}\n\n"

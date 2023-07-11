@@ -51,9 +51,9 @@ def corners(n, world, d):
 
 def gen_all_files():
     # Values to iterate over
-    n_cf = [1, 3, 5, 7, 9]
+    n_cf = [0, 1, 5, 9]
     dist_to_center = [8]
-    move_poi = [[30, False, False], [40, True, False], [140, True, True]]
+    move_poi = [[0, False, False], [0, False, False], [10, True, False], [110, True, True]]
     vals_to_iterate = [n_cf, dist_to_center, move_poi]
     combos = list(product(*vals_to_iterate))
 
@@ -65,7 +65,7 @@ def gen_all_files():
     agent_loc = corners(1, world_size, 0)
 
     for combo in combos:
-        start_num = 200
+        start_num = 0
         cf, d, [add_val, move, poi] = combo
         cf_locs = corners(cf, world_size, d)
         trial_num = start_num + add_val + cf

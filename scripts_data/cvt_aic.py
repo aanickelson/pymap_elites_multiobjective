@@ -156,7 +156,7 @@ if __name__ == '__main__':
     mkdir(dirpath)
     batch = []
 
-    for params in [Params.p345]:  #, Params.p345]:  # , p04]:
+    for params in [Params.p000, Params.p009, Params.p019, Params.p119]:
         p = deepcopy(params)
         p.speed = 2.0
         if params.counter:
@@ -164,18 +164,18 @@ if __name__ == '__main__':
         else:
             p.n_bh = params.n_poi_types * 3
         p.n_agents = 1
-        lp.n_stat_runs = 3
+        lp.n_stat_runs = 5
         for i in range(lp.n_stat_runs):
             filepath = path.join(dirpath, f'{p.param_idx:03d}_run{i}')
             mkdir(filepath)
             batch.append([p, px, filepath, i])
 
     # Use this one
-    # multiprocess_main(batch)
+    multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
-    px["parallel"] = True
-    main(batch[0])
+    # px["parallel"] = True
+    # main(batch[0])
 
     # for b in batch:
     #     main(b)
