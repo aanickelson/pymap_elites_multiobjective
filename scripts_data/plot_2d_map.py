@@ -232,14 +232,14 @@ if __name__ == "__main__":
     # if len(sys.argv) < 3:
     #     sys.exit('Usage: %s centroids_file archive.dat [min_fit] [max_fit]' % sys.argv[0])
     import os
-    dates = ['515_20230711_114138']
+    dates = ['015_20230711_151938']
     ext = ['.png']  # ,'.png'
     n_niches = 5000
     n_pols = 200000
     final_num = 200000
     bh_size = 5
     n_objectives = 2
-    n_pareto_layers = 50
+    n_pareto_layers = 150
     dim_x = 24
     param_sets = ['000', '009', '019', '119', '129']
 
@@ -278,24 +278,27 @@ if __name__ == "__main__":
             else:
                 params_dict[p_num] = [pct_bh]
 
-            # Plot
-            fig, axes = plt.subplots(1, 1, figsize=(10, 10), facecolor='white', edgecolor='white')
-            axes.set_xlim(0, 1)
-            axes.set_ylim(0, 1)
 
-            if p_num == '000':
-                dim01 = 0
-                dim02 = 3
-            else:
-                dim01 = 0
-                dim02 = 3
+            # if p_num == '000':
+            #     dim01 = 0
+            #     dim02 = 3
+            # else:
+            #     dim01 = 1
+            #     dim02 = 3
+            ds = [[2, 3], [4, 2]]  # , [6, 7], [0, 8]]
 
-            plot_cvt(axes, centroids, fit, beh, dim01, dim02, 0, (n_pareto_layers + 5))
-            for ex in ext:
-                plt.title(f'Behavior Space, {pct_bh*100:.02f}% filled')
-                figpath = os.path.join(graphs_f, f'bh_{d}_dims{dim01}{dim02}_{date}_{ex}')
-                fig.savefig(figpath)
-                plt.clf()
+            for dim01, dim02 in ds:
+                # Plot
+                fig, axes = plt.subplots(1, 1, figsize=(10, 10), facecolor='white', edgecolor='white')
+                axes.set_xlim(0, 1)
+                axes.set_ylim(0, 1)
+
+                plot_cvt(axes, centroids, fit, beh, dim01, dim02, 0, (n_pareto_layers + 5))
+                for ex in ext:
+                    plt.title(f'Behavior Space, {pct_bh*100:.02f}% filled')
+                    figpath = os.path.join(graphs_f, f'bh_{d}_dims{dim01}{dim02}_{date}_{ex}')
+                    fig.savefig(figpath)
+                    plt.clf()
 
     text_f = os.path.join(graphs_f, 'NOTES_bh.txt')
     with open(text_f, 'w') as f:
