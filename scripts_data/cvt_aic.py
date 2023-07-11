@@ -156,10 +156,11 @@ if __name__ == '__main__':
     mkdir(dirpath)
     batch = []
 
-    for params in [Params.p000, Params.p009, Params.p019, Params.p119]:
+    for params in [Params.p119]:
         p = deepcopy(params)
+        p.cf_bh = False
         p.speed = 2.0
-        if params.counter:
+        if p.cf_bh:
             p.n_bh = params.n_poi_types + 3
         else:
             p.n_bh = params.n_poi_types * 3

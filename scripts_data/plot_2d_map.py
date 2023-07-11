@@ -195,18 +195,20 @@ def plot_cvt(ax, centroids, fit, desc, dim1, dim2, min_fit, max_fit):
     sc = ax.scatter(desc[:, 0], desc[:, 1], c='b', s=1, zorder=0)
 
 
-def mk_files(rootdir, subd, niches, pols):
+def mk_files(rootdir, subd, niches, pols, bh_size=5):
     # Get the name of the sub-directory
     p_num = re.split('_|/', subd)[0]
     pth = os.path.join(rootdir, subd)
 
-    bh_size = 5
-    if '010' in subd:
-        bh_size = 6
-
     cent_f = os.path.join(pth, f'centroids_{niches}_{bh_size}.dat')
     dat_f = os.path.join(pth, f'archive_{pols}.dat')
 
+    if not os.path.exists(cent_f):
+        bh_size = 6
+        print("Trying behavior size 6")
+        cent_f = os.path.join(pth, f'centroids_{niches}_{bh_size}.dat')
+        if not os.path.exists(cent_f):
+            return False
     if not os.path.exists(dat_f):
         print(f"File does not exist: {dat_f}")
         return False
@@ -230,20 +232,16 @@ if __name__ == "__main__":
     # if len(sys.argv) < 3:
     #     sys.exit('Usage: %s centroids_file archive.dat [min_fit] [max_fit]' % sys.argv[0])
     import os
-    dates = ['510_20230626_153034']
-    ext = ['.svg']  # ,'.png'
+    dates = ['512_20230710_172520']
+    ext = ['.png']  # ,'.png'
     n_niches = 5000
     n_pols = 200000
+    final_num = 200000
+    bh_size = 5
     n_objectives = 2
     n_pareto_layers = 50
     dim_x = 24
-
-    # param_sets = ['231', '233', '235', '237', '239',
-    #               '241', '243', '245', '247', '249',
-    #               '341', '343', '345', '347', '349']
-
-    param_sets = ['345']  #'010',
-    final_num = 200000
+    param_sets = ['000', '009', '019', '119']
 
     params_dict = {pname: [] for pname in param_sets}
 
@@ -262,7 +260,7 @@ if __name__ == "__main__":
             if p_num not in params_dict:
                 continue
 
-            files_info = mk_files(root_dir, d, n_niches, n_pols)
+            files_info = mk_files(root_dir, d, n_niches, n_pols, bh_size)
             if not files_info:
                 print(f'### SKIPPING {d}')
                 continue
@@ -295,7 +293,8 @@ if __name__ == "__main__":
             plot_cvt(axes, centroids, fit, beh, dim01, dim02, 0, (n_pareto_layers + 5))
             for ex in ext:
                 plt.title(f'Behavior Space, {pct_bh*100:.02f}% filled')
-                fig.savefig(os.path.join(graphs_f, f'bh_{d}_{date}_{ex}'))
+                figpath = os.path.join(graphs_f, f'bh_{d}_{date}_{ex}')
+                fig.savefig(figpath)
                 plt.clf()
 
     text_f = os.path.join(graphs_f, 'NOTES_bh.txt')

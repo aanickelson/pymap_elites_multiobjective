@@ -67,9 +67,12 @@ def gen_all_files():
     for combo in combos:
         start_num = 0
         cf, d, [add_val, move, poi] = combo
+        cf_bh = False
+        if cf:
+            cf_bh = True
         cf_locs = corners(cf, world_size, d)
         trial_num = start_num + add_val + cf
-        generated_string = str_gen(trial_num, cf, world_size, move, poi, cf_locs, poi_locs, n_poi, agent_loc)
+        generated_string = str_gen(trial_num, cf, cf_bh, world_size, move, poi, cf_locs, poi_locs, n_poi, agent_loc)
         filesave(generated_string, trial_num)
 
 

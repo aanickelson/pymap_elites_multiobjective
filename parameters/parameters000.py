@@ -11,6 +11,7 @@ class Parameters:
     speed = 2.0
     map_size = 20
     counter = 0
+    cf_bh = False
     counter_move = False
 
     poi_visit = False    # Flag to determine if agent impacts POI completeness, but NOT the rewards
@@ -22,7 +23,7 @@ class Parameters:
     n_poi_types = 2
 
     agent_class = [agent] * n_agents
-    agent_pos =[[10.802552714796493, 9.881289509824887]]
+    agent_pos =[[9.011948381043402, 10.401692868409176]]
 
     interact_range = 2.0
     n_sensors = 4

@@ -1,5 +1,5 @@
 
-def string_to_save(i, n_cf, map_size, move, poi, cf_locs, poi_locs, n_poi, agent_locs):
+def string_to_save(i, n_cf, cf_bh, map_size, move, poi, cf_locs, poi_locs, n_poi, agent_locs):
     s = ""
     s += "import numpy as np\n"
     s += "from AIC.poi import tanh_poi, linear_poi\n"
@@ -13,6 +13,7 @@ def string_to_save(i, n_cf, map_size, move, poi, cf_locs, poi_locs, n_poi, agent
     s += f"    speed = 2.0\n"
     s += f"    map_size = {map_size}\n"
     s += f"    counter = {n_cf}\n"
+    s += f"    cf_bh = {cf_bh}\n"
     s += f"    counter_move = {move}\n\n"
 
     s += f"    poi_visit = {poi}    # Flag to determine if agent impacts POI completeness, but NOT the rewards\n"

@@ -25,7 +25,7 @@ def run_env(env, policies, p, use_bh=False, vis=False):
     if not use_bh:
         return env.G()
     else:
-        return env.G(), calc_bh(bh_space, p.n_poi_types, p.n_agents, n_behaviors, env.agents, p.counter)
+        return env.G(), calc_bh(bh_space, p.n_poi_types, p.n_agents, n_behaviors, env.agents, p.cf_bh)
 
 
 def action_space(act_vec, p, n_beh):
