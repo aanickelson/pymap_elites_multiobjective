@@ -8,6 +8,7 @@ from pymap_elites_multiobjective.parameters.parameters019 import Parameters as p
 from pymap_elites_multiobjective.parameters.parameters111 import Parameters as p111
 from pymap_elites_multiobjective.parameters.parameters115 import Parameters as p115
 from pymap_elites_multiobjective.parameters.parameters119 import Parameters as p119
+from pymap_elites_multiobjective.parameters.parameters129 import Parameters as p129
 
 params_1s = [p001, p011, p111]
 params_5s = [p005, p015, p115]

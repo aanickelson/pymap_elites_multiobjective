@@ -60,7 +60,7 @@ def calc_bh(bh_vec, n_poi_types, n_agents, n_beh, agents, counter):
                     bh[ag_i][poi_bh_idxs[poi]:poi_bh_idxs[poi + 1]] = poi_bh
 
         if counter:
-           bh[ag_i][-3:] = np.array([agent.min_dist, agent.max_dist, (agent.avg_dist[0] / agent.avg_dist[1])])
+           bh[ag_i][-3:] = np.array([min(agent.min_dist), max(agent.max_dist), np.average(agent.avg_dist)])
 
     bh = np.nan_to_num(bh, np.nan)
     # bh = np.reshape(bh, (n_agents, n_poi_types * n_beh))

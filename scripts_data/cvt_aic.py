@@ -156,16 +156,15 @@ if __name__ == '__main__':
     mkdir(dirpath)
     batch = []
 
-    for params in [Params.p119]:
+    for params in [Params.p129, Params.p000, Params.p119]:
         p = deepcopy(params)
-        p.cf_bh = False
         p.speed = 2.0
         if p.cf_bh:
             p.n_bh = params.n_poi_types + 3
         else:
             p.n_bh = params.n_poi_types * 3
         p.n_agents = 1
-        lp.n_stat_runs = 5
+        lp.n_stat_runs = 10
         for i in range(lp.n_stat_runs):
             filepath = path.join(dirpath, f'{p.param_idx:03d}_run{i}')
             mkdir(filepath)

@@ -4,7 +4,7 @@ from AIC.agent import agent
 
 class Parameters:
 
-    param_idx = 119
+    param_idx = 129
     n_agents = 1
     battery = 30
     time_steps = 50

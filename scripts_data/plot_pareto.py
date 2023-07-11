@@ -212,14 +212,14 @@ if __name__ == '__main__':
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
 
-    ftypes = ['.svg']  #, '.png']   # What file type(s) do you want for the plots
+    ftypes = ['.png']   # What file type(s) do you want for the plots
 
-    plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
+    plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
 
     # If you don't define this, it will use the current working directory of this file
     basedir_n = '/home/anna/workspaces/MOO_playground/'
     basedir_qd = os.getcwd()
-    dates_qd = ['012_20230711_123339']
+    dates_qd = ['512_20230710_172520', '515_20230711_114138']
     dates_n = []
     dates_all = dates_qd.copy()
     files_info = [[dates_qd, basedir_qd, 'archive_']]
