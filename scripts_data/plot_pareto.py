@@ -219,7 +219,7 @@ if __name__ == '__main__':
     # If you don't define this, it will use the current working directory of this file
     basedir_n = '/home/anna/workspaces/MOO_playground/'
     basedir_qd = os.getcwd()
-    dates_qd = ['512_20230710_172520', '515_20230711_114138']
+    dates_qd = ['012_20230711_123339']
     dates_n = []
     dates_all = dates_qd.copy()
     files_info = [[dates_qd, basedir_qd, 'archive_']]
@@ -231,7 +231,7 @@ if __name__ == '__main__':
     # In this example, the names are consistent across all the plots, but they won't always be depending on what you want to run
 
     nms = ['No cf', 'Cf in bh', 'Cf not in bh']
-    all_sets = [[['000_qd','119_qd', '129_qd'], nms, 'Cf in bh space comparison']]
+    all_sets = [[['000_qd', '119_qd', '129_qd'], nms, 'Cf in bh space comparison']]
 
 
     # You shouldn't need to change anything beyond here
@@ -266,15 +266,18 @@ if __name__ == '__main__':
                         if len(areas) < n_files:
                             continue
                         if app == '_qd':
-                            bh_size = 5
-                            cent_fname = os.path.join(sub, f'centroids_5000_{bh_size}.dat')
-                            if not os.path.exists(cent_fname):
-                                bh_size = 6
-                                cent_fname = os.path.join(sub, f'centroids_5000_{bh_size}.dat')
-                                if not os.path.exists(cent_fname):
-                                    print('Cannot find file with 5 or 6 bh size')
-                                    print(cent_fname)
-                                    continue
+                            bh_sz = [5, 6, 9]
+                            bh_size = 0
+                            for b in bh_sz:
+                                if os.path.exists(os.path.join(sub, f'centroids_5000_{b}.dat')):
+                                    bh_size = b
+                                    cent_fname = os.path.join(sub, f'centroids_5000_{bh_size}.dat')
+                                    break
+                            if bh_size == 0:
+                                print('Cannot find file with 5, 6, or 9 bh size')
+                                print(sub)
+                                continue
+
                             cent_data = load_centroids(cent_fname)
 
                             c_pct = process_centroids(cent_data, list(zip(x_p, y_p)))

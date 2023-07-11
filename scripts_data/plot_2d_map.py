@@ -232,7 +232,7 @@ if __name__ == "__main__":
     # if len(sys.argv) < 3:
     #     sys.exit('Usage: %s centroids_file archive.dat [min_fit] [max_fit]' % sys.argv[0])
     import os
-    dates = ['512_20230710_172520']
+    dates = ['012_20230711_123339']
     ext = ['.png']  # ,'.png'
     n_niches = 5000
     n_pols = 200000
@@ -283,17 +283,17 @@ if __name__ == "__main__":
             axes.set_xlim(0, 1)
             axes.set_ylim(0, 1)
 
-            if p_num == '010':
+            if p_num == '000':
                 dim01 = 0
                 dim02 = 3
             else:
-                dim01 = 2
+                dim01 = 1
                 dim02 = 3
 
             plot_cvt(axes, centroids, fit, beh, dim01, dim02, 0, (n_pareto_layers + 5))
             for ex in ext:
                 plt.title(f'Behavior Space, {pct_bh*100:.02f}% filled')
-                figpath = os.path.join(graphs_f, f'bh_{d}_{date}_{ex}')
+                figpath = os.path.join(graphs_f, f'bh_{d}_dims{dim01}{dim02}_{date}_{ex}')
                 fig.savefig(figpath)
                 plt.clf()
 
