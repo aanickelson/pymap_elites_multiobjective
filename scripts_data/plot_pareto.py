@@ -211,58 +211,28 @@ if __name__ == '__main__':
 
     # Change these parameters to run the script
     n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
-    # dates = ['005_20230518_104517', '004_20230509_182108', '003_20230505_171536']  # Change the dates to match the date code on the data set(s) you want to use
 
     ftypes = ['.svg']  #, '.png']   # What file type(s) do you want for the plots
 
-    plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
+    plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
 
     # If you don't define this, it will use the current working directory of this file
     basedir_n = '/home/anna/workspaces/MOO_playground/'
     basedir_qd = os.getcwd()
-    # dates_qd = ['003_20230505_171536', '004_20230509_182108', '007_20230522_123227', '507_20230523_180028']
-    dates_qd = ['512_20230710_172520']
-    # dates_n = ['001_20230524_183015', '003_20230525_122729', '004_20230525_144332', '005_20230526_193538']
+    dates_qd = ['512_20230710_172520', '515_20230711_114138']
     dates_n = []
     dates_all = dates_qd.copy()
-    # dates_all = []
-    # dates_all.extend(dates_n)
-    # dates_all = dates_qd
-    # files_info = [[dates_n, basedir_n, 'fits']]
     files_info = [[dates_qd, basedir_qd, 'archive_']]
-    # files_info = [[dates_n, basedir_n, 'fits'], [dates_qd, basedir_qd, 'archive_']]
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
     # all_sets is a little wonky, I'll admit.
     # Each set is [[param file numbers], [param names for plot], 'graph title']
     # Param names provides the name of each parameter being compared. Should line up with the files
     # In this example, the names are consistent across all the plots, but they won't always be depending on what you want to run
-    # nms = ['0 cf', '1 cf', '5 cf', '9 cf']
-    #
-    # all_sets = [[['010', '231', '235',  '239'], nms, 'Num Counterfactuals, Static'],
-    #             [['010', '241', '245', '249'], nms, 'Num Counterfactuals, Move, no POI'],
-    #             [['010', '341', '345', '349'], nms, 'Num Counterfactuals, Move, POI']]
 
-    nms = ['No cf', 'Static', 'Move', 'Task']
-    # nms = ['0 cf', 'Static']
-    all_sets = [[['000_qd', '009_qd', '019_qd', '119_qd'], nms, 'Comparison of Number of Task CFs']]
+    nms = ['No cf', 'Cf in bh', 'Cf not in bh']
+    all_sets = [[['000_qd','119_qd', '129_qd'], nms, 'Cf in bh space comparison']]
 
-    # nms = ['No cf MOME', 'Static cf MOME', 'Move cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Move cf NSGA', 'Task cf NSGA']
-    # all_sets = [[['010_qd', '239_qd', '249_qd', '349_qd', '010_n', '239_n', '249_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
-
-    # all_sets = [[['345_qd'], ['345'], 'just the one']]
-    # nms = ['No cf NSGA', 'Static cf NSGA', 'Task cf NSGA']
-    # all_sets = [[['010_n', '239_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
-
-    # all_sets = [[['010', '239', '249', '349'], ['0 cf', 'Static', 'Move', 'POI'], '9 Counterfactuals']]
-
-    # If you want to collect multiple parameter sets into one set, use this style
-    # batch_0cf = ['010']
-    # batch_no_3 = ['013', '033']
-    # batch_move_3 = ['023', '043']
-    # batch_poi_3 = ['123', '143']
-    # nms = ['No cf', 'Static cf', 'Moving cf', 'Task cf']
-    # all_sets = [[[batch_0cf, batch_no_3, batch_move_3, batch_poi_3], nms, '3 Counterfactuals']]
 
     # You shouldn't need to change anything beyond here
     # ---------------------------------------------------------
@@ -297,9 +267,16 @@ if __name__ == '__main__':
                             continue
                         if app == '_qd':
                             bh_size = 5
-                            if '000' in p_num:
+                            cent_fname = os.path.join(sub, f'centroids_5000_{bh_size}.dat')
+                            if not os.path.exists(cent_fname):
                                 bh_size = 6
-                            cent_data = load_centroids(os.path.join(sub, f'centroids_5000_{bh_size}.dat'))
+                                cent_fname = os.path.join(sub, f'centroids_5000_{bh_size}.dat')
+                                if not os.path.exists(cent_fname):
+                                    print('Cannot find file with 5 or 6 bh size')
+                                    print(cent_fname)
+                                    continue
+                            cent_data = load_centroids(cent_fname)
+
                             c_pct = process_centroids(cent_data, list(zip(x_p, y_p)))
                             print(f'{p_num}, {areas[-1]}, {c_pct}')
                         data_and_nm[p_num].append(areas)
