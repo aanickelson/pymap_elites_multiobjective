@@ -221,7 +221,7 @@ if __name__ == '__main__':
     basedir_n = '/home/anna/workspaces/MOO_playground/'
     basedir_qd = os.getcwd()
     # dates_qd = ['003_20230505_171536', '004_20230509_182108', '007_20230522_123227', '507_20230523_180028']
-    dates_qd = ['006_20230710_161023']
+    dates_qd = ['512_20230710_172520']
     # dates_n = ['001_20230524_183015', '003_20230525_122729', '004_20230525_144332', '005_20230526_193538']
     dates_n = []
     dates_all = dates_qd.copy()
@@ -243,9 +243,9 @@ if __name__ == '__main__':
     #             [['010', '241', '245', '249'], nms, 'Num Counterfactuals, Move, no POI'],
     #             [['010', '341', '345', '349'], nms, 'Num Counterfactuals, Move, POI']]
 
-    # nms = ['No cf', 'Static', 'Move', 'Task']
-    nms = ['0 cf', '5 cf']
-    all_sets = [[['010_qd', '345_qd'], nms, 'Comparison of Number of Task CFs']]
+    nms = ['No cf', 'Static', 'Move', 'Task']
+    # nms = ['0 cf', 'Static']
+    all_sets = [[['000_qd', '009_qd', '019_qd', '119_qd'], nms, 'Comparison of Number of Task CFs']]
 
     # nms = ['No cf MOME', 'Static cf MOME', 'Move cf MOME', 'Task cf MOME', 'No cf NSGA', 'Static cf NSGA', 'Move cf NSGA', 'Task cf NSGA']
     # all_sets = [[['010_qd', '239_qd', '249_qd', '349_qd', '010_n', '239_n', '249_n', '349_n'], nms, 'NSGA - No vs 9 Static or Task CF']]
@@ -297,7 +297,7 @@ if __name__ == '__main__':
                             continue
                         if app == '_qd':
                             bh_size = 5
-                            if '010' in p_num:
+                            if '000' in p_num:
                                 bh_size = 6
                             cent_data = load_centroids(os.path.join(sub, f'centroids_5000_{bh_size}.dat'))
                             c_pct = process_centroids(cent_data, list(zip(x_p, y_p)))
