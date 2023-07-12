@@ -40,13 +40,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from scipy.spatial import Voronoi, voronoi_plot_2d
-import sys
-from matplotlib.ticker import FuncFormatter
 from sklearn.neighbors import KDTree
-import matplotlib.cm as cm
 import pymap_elites_multiobjective.scripts_data.often_used as util
 from pymap_elites_multiobjective.scripts_data.plot_pareto import file_setup
 import re
+import os
 
 
 
@@ -135,14 +133,13 @@ def voronoi_finite_polygons_2d(vor, radius=None):
     return new_regions, np.asarray(new_vertices)
 
 
-def load_data(filename, dim, dim_x, n_fit):
+def load_data(filename, dim, n_fit):
     print("\nLoading ", filename)
     data = np.loadtxt(filename)
     fit = data[:, 0:n_fit]
     desc = data[:, n_fit: dim + n_fit]
-    x = data[:, dim + n_fit:dim + n_fit + dim_x]
 
-    return fit, desc, x
+    return fit, desc
 
 
 def load_centroids(filename):
@@ -150,7 +147,11 @@ def load_centroids(filename):
     return points
 
 
-def plot_cvt(ax, centroids, fit, desc, dim1, dim2, min_fit, max_fit):
+def plot_cvt(centroids, fit, desc, dim1, dim2, min_fit, max_fit, e, graph_f, sub_d, reduced=False):
+    fig, axes = plt.subplots(1, 1, figsize=(10, 10), facecolor='white', edgecolor='white')
+    axes.set_xlim(0, 1)
+    axes.set_ylim(0, 1)
+
     # getting the original colormap using cm.get_cmap() function
     orig_map = plt.cm.get_cmap('viridis')
 
@@ -171,7 +172,7 @@ def plot_cvt(ax, centroids, fit, desc, dim1, dim2, min_fit, max_fit):
     # contours
     for i, region in enumerate(regions):
         polygon = vertices[region]
-        ax.fill(*zip(*polygon), alpha=0.05, edgecolor='black', facecolor='white', lw=1)
+        axes.fill(*zip(*polygon), alpha=0.05, edgecolor='black', facecolor='white', lw=1)
 
     print("plotting data...")
     k = 0
@@ -183,7 +184,7 @@ def plot_cvt(ax, centroids, fit, desc, dim1, dim2, min_fit, max_fit):
         polygon = vertices[region]
         if cols[index] < fit[i]:
             cols[index] = fit[i]
-            ax.fill(*zip(*polygon), alpha=0.9, color=my_cmap(norm(cols[index])))
+            axes.fill(*zip(*polygon), alpha=0.9, color=my_cmap(norm(cols[index])))
         k += 1
         if k % 100 == 0:
             print(k, end=" ", flush=True)
@@ -191,29 +192,44 @@ def plot_cvt(ax, centroids, fit, desc, dim1, dim2, min_fit, max_fit):
     norm = mpl.colors.Normalize(vmin=0, vmax=max_fit)
 
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap),
-                 ax=ax, orientation='vertical', label='Distance to global Pareto front')
-    sc = ax.scatter(desc[:, 0], desc[:, 1], c='b', s=1, zorder=0)
+                 ax=axes, orientation='vertical', label='Distance to global Pareto front')
+    sc = axes.scatter(desc[:, 0], desc[:, 1], c='b', s=1, zorder=0)
+    plt.title(f'Behavior Space')
+    pre = 'bh_'
+    if reduced:
+        pre = 'red_bh_'
+    for ex in e:
+        figpath = os.path.join(graph_f, f'{pre}{sub_d}_dims{dim1}{dim2}_{ex}')
+        fig.savefig(figpath)
+    plt.clf()
 
 
-def mk_files(rootdir, subd, niches, pols, bh_size=5):
+def mk_files(rootdir, subd, niches, pols):
     # Get the name of the sub-directory
     p_num = re.split('_|/', subd)[0]
     pth = os.path.join(rootdir, subd)
 
-    cent_f = os.path.join(pth, f'centroids_{niches}_{bh_size}.dat')
-    dat_f = os.path.join(pth, f'archive_{pols}.dat')
+    graphs_f = os.path.join(file_setup(dates, 'bh_'), 'bh')
+    if not os.path.exists(graphs_f):
+        os.mkdir(graphs_f)
 
-    if not os.path.exists(cent_f):
-        bh_size = 6
-        print("Trying behavior size 6")
+    bhs = [5, 6, 9]
+    did_it = False
+    for bh_size in bhs:
         cent_f = os.path.join(pth, f'centroids_{niches}_{bh_size}.dat')
-        if not os.path.exists(cent_f):
-            return False
+        dat_f = os.path.join(pth, f'archive_{pols}.dat')
+        if os.path.exists(cent_f):
+            did_it = True
+            break
+
+    if not did_it:
+        return False
+
     if not os.path.exists(dat_f):
         print(f"File does not exist: {dat_f}")
         return False
 
-    return pth, cent_f, dat_f
+    return pth, cent_f, dat_f, graphs_f
 
 
 def calc_fit_data(fitnesses, layers):
@@ -228,15 +244,32 @@ def calc_fit_data(fitnesses, layers):
     return fit
 
 
+def process_and_plot(files_info, ds, ext, sub, red=False):
+    if not files_info:
+        print(f'### SKIPPING')
+        return
+    n_pareto_layers = 150
+    fpath, centroids_f, data_f, grph_f = files_info
+    print(f'processing {fpath}')
+    centroids = load_centroids(centroids_f)
+    ftns, beh = load_data(data_f, centroids.shape[1], 2)
+    _, counts = np.unique(beh, return_counts=True, axis=0)
+    pct_bh = len(counts) / centroids.shape[0]
+    fit = calc_fit_data(ftns, n_pareto_layers)
+
+    for dim01, dim02 in ds:
+        # Plot
+        plot_cvt(centroids, fit, beh, dim01, dim02, 0, (n_pareto_layers + 5), ext, grph_f, sub, red)
+
+
 if __name__ == "__main__":
     # if len(sys.argv) < 3:
     #     sys.exit('Usage: %s centroids_file archive.dat [min_fit] [max_fit]' % sys.argv[0])
-    import os
     dates = ['015_20230711_151938']
-    ext = ['.png']  # ,'.png'
+    exts = ['.png']  # ,'.png'
     n_niches = 5000
-    n_pols = 200000
-    final_num = 200000
+    n_pols = 100000
+    final_num = 100000
     bh_size = 5
     n_objectives = 2
     n_pareto_layers = 150
@@ -245,13 +278,10 @@ if __name__ == "__main__":
 
     params_dict = {pname: [] for pname in param_sets}
 
-    graphs_f = os.path.join(file_setup(dates, 'bh_'), 'bh')
     for date in dates:
         root_dir = os.path.join(os.getcwd(), 'data', date)
 
         bh_pth = os.path.join(root_dir, 'bh_vis')
-        if not os.path.exists(graphs_f):
-            os.mkdir(graphs_f)
         util.make_a_directory(bh_pth)
         print(root_dir)
         sub_dirs = list(os.walk(root_dir))[0][1]
@@ -259,48 +289,9 @@ if __name__ == "__main__":
             p_num = re.split('_|/', d)[0]
             if p_num not in params_dict:
                 continue
-
-            files_info = mk_files(root_dir, d, n_niches, n_pols, bh_size)
-            if not files_info:
-                print(f'### SKIPPING {d}')
-                continue
-
-            print(f'processing {d}')
-            fpath, centroids_f, data_f = files_info
-            centroids = load_centroids(centroids_f)
-            ftns, beh, x = load_data(data_f, centroids.shape[1], dim_x, n_objectives)
-            _, counts = np.unique(beh, return_counts=True, axis=0)
-            pct_bh = len(counts) / centroids.shape[0]
-            fit = calc_fit_data(ftns, n_pareto_layers)
-
-            if p_num in params_dict:
-                params_dict[p_num].append(pct_bh)
-            else:
-                params_dict[p_num] = [pct_bh]
+            dims = [[2, 3], [4, 2]]
+            f_info = mk_files(root_dir, d, n_niches, n_pols)
+            process_and_plot(f_info, dims, exts, d)
 
 
-            # if p_num == '000':
-            #     dim01 = 0
-            #     dim02 = 3
-            # else:
-            #     dim01 = 1
-            #     dim02 = 3
-            ds = [[2, 3], [4, 2]]  # , [6, 7], [0, 8]]
 
-            for dim01, dim02 in ds:
-                # Plot
-                fig, axes = plt.subplots(1, 1, figsize=(10, 10), facecolor='white', edgecolor='white')
-                axes.set_xlim(0, 1)
-                axes.set_ylim(0, 1)
-
-                plot_cvt(axes, centroids, fit, beh, dim01, dim02, 0, (n_pareto_layers + 5))
-                for ex in ext:
-                    plt.title(f'Behavior Space, {pct_bh*100:.02f}% filled')
-                    figpath = os.path.join(graphs_f, f'bh_{d}_dims{dim01}{dim02}_{date}_{ex}')
-                    fig.savefig(figpath)
-                    plt.clf()
-
-    text_f = os.path.join(graphs_f, 'NOTES_bh.txt')
-    with open(text_f, 'w') as f:
-        for key, value in params_dict.items():
-            f.write(f'{key}, {np.mean(value)}\n')
