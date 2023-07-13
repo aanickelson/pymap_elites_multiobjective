@@ -235,10 +235,12 @@ def mk_files(rootdir, subd, niches, pols):
 def calc_fit_data(fitnesses, layers):
     fit = np.ones(fitnesses.shape[0])
     fits = fitnesses.copy()
+    x = 1
     for lay in range(layers, 0, -1):
         pareto = util.is_pareto_efficient_simple(fits)
-        fit[pareto] = lay + 5
+        fit[pareto] = x
         fits[pareto] = [0, 0]
+        x *= 0.99
         if np.max(fitnesses) < 0.0001:
             break
     return fit

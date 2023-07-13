@@ -1,6 +1,6 @@
 from AIC.aic import aic
 from pymap_elites_multiobjective.parameters.parameters010 import Parameters as params
-from cvt_aic import RoverWrapper
+from evo_playground.learning.rover_wrapper import RoverWrapper
 import numpy as np
 
 

@@ -1,4 +1,4 @@
-# only required to run python3 examples/cvt_rastrigin.py
+# only required to run python3 Archive/cvt_rastrigin.py
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 

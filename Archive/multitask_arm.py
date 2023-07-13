@@ -62,7 +62,7 @@ def arm(angles, task):
 
 
 if len(sys.argv) == 1 or ('help' in sys.argv):
-    print("Usage: \"python3 ./examples/multitask_arm.py 10 [no_distance]\"")
+    print("Usage: \"python3 ./Archive/multitask_arm.py 10 [no_distance]\"")
     exit(0)
 
 
