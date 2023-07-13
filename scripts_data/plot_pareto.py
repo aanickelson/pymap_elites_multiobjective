@@ -210,18 +210,15 @@ def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
 if __name__ == '__main__':
 
     # Change these parameters to run the script
-    n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
+    n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
 
     ftypes = ['.png']   # What file type(s) do you want for the plots
 
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
 
     # If you don't define this, it will use the current working directory of this file
-    basedir_n = '/home/anna/workspaces/MOO_playground/'
     basedir_qd = os.getcwd()
-    dates_qd = ['512_20230710_172520', '515_20230711_114138']
-    dates_n = []
-    dates_all = dates_qd.copy()
+    dates_qd = ['015_20230711_151938']
     files_info = [[dates_qd, basedir_qd, 'archive_']]
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
@@ -231,58 +228,35 @@ if __name__ == '__main__':
     # In this example, the names are consistent across all the plots, but they won't always be depending on what you want to run
 
     nms = ['No cf', 'Cf in bh', 'Cf not in bh']
-    all_sets = [[['000_qd', '119_qd', '129_qd'], nms, 'Cf in bh space comparison']]
-
+    param_sets, param_names, nm = [['000', '119', '129'], nms, 'Cf in bh space comparison']
 
     # You shouldn't need to change anything beyond here
     # ---------------------------------------------------------
 
-    graphs_fname = file_setup(dates_all, basedir_qd)
+    graphs_fname = file_setup(dates_qd, basedir_qd)
     evols = [(i + 1) * 1000 for i in range(n_files)]
-    for param_sets, param_names, nm in all_sets:
-        data_and_nm = {p: [param_names[i]] for i, p in enumerate(param_sets)}
-        plot_fname = f'{nm}'  # What domain is being tested
+    data_and_nm = {p: [param_names[i]] for i, p in enumerate(param_sets)}
+    plot_fname = f'{nm}'  # What domain is being tested
 
-        for dates, basedir, arch_or_fits in files_info:
-            files = get_file_info(dates, arch_or_fits, basedir)
+    for dates, basedir, arch_or_fits in files_info:
+        files = get_file_info(dates, arch_or_fits, basedir)
 
-            # Walk through all the files in the given directory
-            for sub, date, params_name, fnums in files:
-                # Pulls the parameter file number
-                p_num = params_name[:3]
-                if 'arch' in arch_or_fits:
-                    app = '_qd'
-                elif 'fits' in arch_or_fits:
-                    app = '_n'
-                else:
-                    print('Something went wrong here')
+        # Walk through all the files in the given directory
+        for sub, date, params_name, fnums in files:
+            # Pulls the parameter file number
+            p_num = params_name[:3]
 
-                p_num += app
-                # Save the areas to the appropriate parameter set
-                for i, p_name in enumerate(param_sets):
-                    if p_num in p_name:
-                        # This block goes through each file, gets the data, finds the pareto front, gets the area, then saves the area
-                        areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits)[:n_files]
-                        if len(areas) < n_files:
-                            continue
-                        if app == '_qd':
-                            bh_sz = [5, 6, 9]
-                            bh_size = 0
-                            for b in bh_sz:
-                                if os.path.exists(os.path.join(sub, f'centroids_5000_{b}.dat')):
-                                    bh_size = b
-                                    cent_fname = os.path.join(sub, f'centroids_5000_{bh_size}.dat')
-                                    break
-                            if bh_size == 0:
-                                print('Cannot find file with 5, 6, or 9 bh size')
-                                print(sub)
-                                continue
+            # This block goes through each file, gets the data, finds the pareto front, gets the area, then saves the area
+            areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits)[:n_files]
+            if len(areas) < n_files:
+                continue
 
-                            cent_data = load_centroids(cent_fname)
+            print(f'{p_num}, {areas[-1]}')
+            try:
+                data_and_nm[p_num].append(areas)
+            except KeyError:
+                print(f'Did not save data for {params_name} in {sub}')
+                continue
 
-                            c_pct = process_centroids(cent_data, list(zip(x_p, y_p)))
-                            print(f'{p_num}, {areas[-1]}, {c_pct}')
-                        data_and_nm[p_num].append(areas)
-                        # print(f'including {p_num}, {sub}')
-        # Plot the areas data for all parameters on one plot to compare
-        plot_areas(evols, data_and_nm, plot_fname, graphs_fname, ftypes)
+    # Plot the areas data for all parameters on one plot to compare
+    plot_areas(evols, data_and_nm, plot_fname, graphs_fname, ftypes)

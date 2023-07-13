@@ -1,5 +1,5 @@
 from AIC.aic import aic
-from pymap_elites_multiobjective.parameters.parameters010 import Parameters as params
+from pymap_elites_multiobjective.parameters.parameters000 import Parameters as params
 from evo_playground.learning.rover_wrapper import RoverWrapper
 import numpy as np
 
@@ -9,10 +9,11 @@ def get_weights(fpath):
     # if CFs, then use 12. If no cfs, use 14. Because hard coding is easy. kinda.
     return data
 
-def init_setup():
+def init_setup(pol_idxs):
 
     data_path = '/home/anna/PycharmProjects/pymap_elites_multiobjective/scripts_data/data/002_20230710_222455/010_run5/weights_200.dat'
     params.speed = 2.0
+    params.n_agents = len(pol_idxs)
     en = aic(params)
     wra = RoverWrapper(en, params)
     wra.vis = False
@@ -35,6 +36,7 @@ def main(env, wrap, file_data):
 
 
 if __name__ == '__main__':
-    e, w, f = init_setup()
+    pol_nums = []
+    e, w, f = init_setup(pol_nums)
     # for _ in range(100):
     main(e, w, f)
