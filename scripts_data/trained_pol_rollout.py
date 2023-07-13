@@ -9,34 +9,37 @@ def get_weights(fpath):
     # if CFs, then use 12. If no cfs, use 14. Because hard coding is easy. kinda.
     return data
 
+
 def init_setup(pol_idxs):
 
-    data_path = '/home/anna/PycharmProjects/pymap_elites_multiobjective/scripts_data/data/002_20230710_222455/010_run5/weights_200.dat'
-    params.speed = 2.0
-    params.n_agents = len(pol_idxs)
+    data_path = '/home/anna/PycharmProjects/pymap_elites_multiobjective/scripts_data/data/015_20230711_151938/501_119_run0_min/weights_100000.dat'
     en = aic(params)
     wra = RoverWrapper(en, params)
     wra.vis = False
     wra.use_bh = False
 
     file_dat = get_weights(data_path)
-    return en, wra, file_dat
+    return wra, file_dat
 
-def main(env, wrap, file_data):
 
-    i = 0
+def main(wrap, file_data, pnums):
+
+    i = pnums[0]
     w = file_data[i]
     og = w[:2]
-    wts = w[14:]
-    fit = wrap.evaluate(wts)
-    x = fit
+
+    # This will be 12 if the behavior space is size 5; 14 if size 6
+    # 2 objectives + bh description + centroid (2 + 5/6 + 5/6)
+    wts = w[12:]
+    fit = wrap.evaluate([wts])
     # print(og)
-    # print(x)
-    print(abs(x - og))
+    print(fit)
+    # print(fit - (og))
 
 
 if __name__ == '__main__':
-    pol_nums = []
-    e, w, f = init_setup(pol_nums)
-    # for _ in range(100):
-    main(e, w, f)
+    pol_nums = [273, 84, 61, 136, 22, 466, 409, 98, 282, 149, 63, 716, 717]
+    for pol in pol_nums:
+        w, f = init_setup([pol])
+        # for _ in range(100):
+        main(w, f, [pol])

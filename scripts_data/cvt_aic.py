@@ -35,7 +35,7 @@ def main(setup):
     env = Domain(env_p)
     dom = RoverWrapper(env, env_p)
     # Dimension of x to be tested is the sum of the sizes of the weights vectors and bias vectors
-    wts_dim = dom.w0_size + dom.w2_size + dom.b0_size + dom.b2_size
+    wts_dim = dom.agents[0].w0_size + dom.agents[0].w2_size + dom.agents[0].b0_size + dom.agents[0].b2_size
     n_niches = px['n_niches']
 
     n_behaviors = env_p.n_bh
