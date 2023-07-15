@@ -233,7 +233,7 @@ def mk_files(rootdir, subd, niches, pols):
 
 
 def calc_fit_data(fitnesses, layers):
-    fit = np.ones(fitnesses.shape[0])
+    fit = np.zeros(fitnesses.shape[0])
     fits = fitnesses.copy()
     x = 1
     for lay in range(layers, 0, -1):
@@ -241,6 +241,8 @@ def calc_fit_data(fitnesses, layers):
         fit[pareto] = x
         fits[pareto] = [0, 0]
         x *= 0.99
+        if not lay % 100:
+            print(lay)
         if np.max(fitnesses) < 0.0001:
             break
     return fit
@@ -250,7 +252,7 @@ def process_and_plot(files_info, ds, ext, sub, red=False):
     if not files_info:
         print(f'### SKIPPING')
         return
-    n_pareto_layers = 150
+    n_pareto_layers = 1000
     fpath, centroids_f, data_f, grph_f = files_info
     print(f'processing {fpath}')
     centroids = load_centroids(centroids_f)
@@ -261,18 +263,18 @@ def process_and_plot(files_info, ds, ext, sub, red=False):
 
     for dim01, dim02 in ds:
         # Plot
-        plot_cvt(centroids, fit, beh, dim01, dim02, 0, (n_pareto_layers + 5), ext, grph_f, sub, red)
+        plot_cvt(centroids, fit, beh, dim01, dim02, 0, 1, ext, grph_f, sub, red)
 
 
 if __name__ == "__main__":
     # if len(sys.argv) < 3:
     #     sys.exit('Usage: %s centroids_file archive.dat [min_fit] [max_fit]' % sys.argv[0])
-    dates = ['015_20230711_151938']
+    dates = ['517_20230712_160934']
     exts = ['.png']  # ,'.png'
-    n_niches = 5000
-    n_pols = 100000
-    final_num = 100000
-    bh_size = 5
+    n_niches = 2000
+    n_pols = 200000
+    final_num = n_pols
+    bh_size = 6
     n_objectives = 2
     n_pareto_layers = 150
     dim_x = 24
@@ -291,7 +293,7 @@ if __name__ == "__main__":
             p_num = re.split('_|/', d)[0]
             if p_num not in params_dict:
                 continue
-            dims = [[2, 3], [4, 2]]
+            dims = [[0, 3], [1, 4], [2, 5]]  #, [4, 2]]
             f_info = mk_files(root_dir, d, n_niches, n_pols)
             process_and_plot(f_info, dims, exts, d)
 

@@ -10,6 +10,7 @@ def is_pareto_efficient_simple(xyvals):
     """
     costs = np.array(xyvals)
     is_efficient = np.ones(costs.shape[0], dtype=bool)
+    is_efficient[np.sum(costs, axis=1) < 0.0001] = False
     for i, c in enumerate(costs):
         if is_efficient[i]:
             is_efficient[is_efficient] = np.any(costs[is_efficient] > c, axis=1)  # Keep any point with a lower cost

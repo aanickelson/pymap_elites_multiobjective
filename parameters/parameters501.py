@@ -4,18 +4,18 @@ from AIC.agent import agent
 
 class Parameters:
 
-    param_idx = 500
+    param_idx = 501
     n_agents = 2
     battery = 30
     time_steps = 50
     speed = 2.0
     map_size = 20
-    counter = 0
+    counter = 1
     cf_bh = False
-    counter_move = False
+    counter_move = True
 
-    poi_visit = False    # Flag to determine if agent impacts POI completeness, but NOT the rewards
-    counter_locs = []
+    poi_visit = True    # Flag to determine if agent impacts POI completeness, but NOT the rewards
+    counter_locs = [[2.6601612555325027, 2.2831018377147627]]
 
     poi_pos = [[1.0, 5.5], [1.0, 10.0], [1.0, 19.0], [5.5, 1.0], [5.5, 10.0], [5.5, 14.5], [10.0, 1.0], [10.0, 5.5], [10.0, 14.5], [10.0, 19.0], [14.5, 5.5], [14.5, 10.0], [14.5, 19.0], [19.0, 1.0], [19.0, 10.0], [19.0, 14.5]]
     n_pois = 16

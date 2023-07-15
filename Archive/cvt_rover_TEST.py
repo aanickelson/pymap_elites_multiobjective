@@ -12,7 +12,7 @@ import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pare
 
 from teaming.domain import DiscreteRoverDomain as Domain
 import evo_playground.parameters as param
-from evo_playground.learning.neuralnet_no_hid import NeuralNetwork as NN
+from evo_playground.support.neuralnet_no_hid import NeuralNetwork as NN
 from torch import from_numpy
 from datetime import datetime
 from os import path, getcwd, mkdir

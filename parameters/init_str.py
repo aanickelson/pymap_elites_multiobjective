@@ -6,19 +6,12 @@ def line_str(num):
 
 def init_strings():
     s = ""
-    ranges = [[10, 10, 1], [11, 13, 1], [21, 23, 1], [31, 33, 1], [41, 43, 1],
-              [121, 123, 1], [141, 143, 1], [231, 239, 2], [241, 249, 2], [341, 349, 2]]
-    rng_names = ['no_cf', 'no_close', 'move_close', 'no_far', 'move_far',
-                 'poi_close', 'poi_far', 'no_far_new', 'move_far_new', 'poi_far_new']
-    batches = ''
-    for idx, [lw, hg, by] in enumerate(ranges):
-        batch_nm = f'{rng_names[idx]} = ['
-        for i in range(lw, hg+1, by):
-            s += line_str(i)
-            batch_nm += f'p{i:03d},'
-        batch_nm += ']\n'
-        batches += batch_nm
-    s += batches
+    pnums = [0, 1, 2, 3, 5, 9,
+             11, 12, 13, 15, 19,
+             111, 112, 113, 115, 119,
+             129, 500]
+    for i in pnums:
+        s += line_str(i)
     return s
 
 

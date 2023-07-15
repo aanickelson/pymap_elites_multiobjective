@@ -17,8 +17,8 @@ import pymap_elites_multiobjective.map_elites.cvt as cvt_me
 import pymap_elites_multiobjective.map_elites.common as cm_map_elites
 from pymap_elites_multiobjective.scripts_data.run_env import run_env
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
-from evo_playground.learning.rover_wrapper import RoverWrapper
-from evo_playground.learning.neuralnet import NeuralNetwork as NN
+from evo_playground.support.rover_wrapper import RoverWrapper
+from evo_playground.support.neuralnet import NeuralNetwork as NN
 from torch import from_numpy
 from datetime import datetime
 from os import path, getcwd, mkdir
@@ -40,7 +40,7 @@ def main(setup):
 
     n_behaviors = env_p.n_bh
     start = time()
-    archive = cvt_me.compute(n_behaviors, wts_dim, dom.evaluate, n_niches=n_niches, max_evals=evals,
+    archive = cvt_me.compute(n_behaviors, wts_dim, dom._evaluate, n_niches=n_niches, max_evals=evals,
                              log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     tot_time = time() - start
     with open(filepath + '_time.txt', 'w') as f:
@@ -88,8 +88,8 @@ if __name__ == '__main__':
     # RUN VALS:
     px["batch_size"] = 100
     px["dump_period"] = 10000
-    px['n_niches'] = 5000
-    evals = 200000
+    px['n_niches'] = 2000
+    evals = 100000
 
     # DEBUGGING VALS:
     # px["batch_size"] = 10
@@ -108,15 +108,15 @@ if __name__ == '__main__':
     mkdir(dirpath)
     batch = []
 
-    for params in [Params.p129, Params.p000, Params.p119]:
+    for params in [Params.p111, Params.p112, Params.p113]:
         p = deepcopy(params)
-        p.speed = 2.0
+        p.cf_bh = False
         if p.cf_bh:
             p.n_bh = params.n_poi_types + 3
         else:
             p.n_bh = params.n_poi_types * 3
         p.n_agents = 1
-        lp.n_stat_runs = 10
+        lp.n_stat_runs = 1
         for i in range(lp.n_stat_runs):
             filepath = path.join(dirpath, f'{p.param_idx:03d}_run{i}')
             mkdir(filepath)

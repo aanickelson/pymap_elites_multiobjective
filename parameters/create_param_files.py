@@ -51,7 +51,7 @@ def corners(n, world, d):
 
 def gen_all_files():
     # Values to iterate over
-    n_cf = [0, 1, 5, 9]
+    n_cf = [0, 1, 2, 3, 5, 9]
     dist_to_center = [8]
     move_poi = [[0, False, False], [0, False, False], [10, True, False], [110, True, True]]
     vals_to_iterate = [n_cf, dist_to_center, move_poi]
