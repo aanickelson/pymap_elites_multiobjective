@@ -14,7 +14,8 @@ def string_to_save(i, n_cf, cf_bh, map_size, move, poi, cf_locs, poi_locs, n_poi
     s += f"    map_size = {map_size}\n"
     s += f"    counter = {n_cf}\n"
     s += f"    cf_bh = {cf_bh}\n"
-    s += f"    counter_move = {move}\n\n"
+    s += f"    counter_move = {move}\n"
+    s += f'    ag_in_st = True\n\n'
 
     s += f"    poi_visit = {poi}    # Flag to determine if agent impacts POI completeness, but NOT the rewards\n"
     s += f"    counter_locs =" + str([l for l in cf_locs]) + "\n\n"

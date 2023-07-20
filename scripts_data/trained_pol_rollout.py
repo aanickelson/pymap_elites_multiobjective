@@ -6,7 +6,6 @@ import numpy as np
 
 def get_weights(fpath):
     data = np.loadtxt(fpath)
-    # if CFs, then use 12. If no cfs, use 14. Because hard coding is easy. kinda.
     return data
 
 

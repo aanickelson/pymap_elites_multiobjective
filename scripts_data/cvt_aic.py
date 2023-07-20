@@ -33,7 +33,7 @@ def main(setup):
     numpy.random.seed(stat_num + random.randint(0, 10000))
     archive = {}
     env = Domain(env_p)
-    dom = RoverWrapper(env, env_p)
+    dom = RoverWrapper(env)
     # Dimension of x to be tested is the sum of the sizes of the weights vectors and bias vectors
     wts_dim = dom.agents[0].w0_size + dom.agents[0].w2_size + dom.agents[0].b0_size + dom.agents[0].b2_size
     n_niches = px['n_niches']
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     px["batch_size"] = 100
     px["dump_period"] = 10000
     px['n_niches'] = 2000
-    evals = 100000
+    evals = 200000
 
     # DEBUGGING VALS:
     # px["batch_size"] = 10
@@ -108,7 +108,7 @@ if __name__ == '__main__':
     mkdir(dirpath)
     batch = []
 
-    for params in [Params.p111, Params.p112, Params.p113]:
+    for params in [Params.p200, Params.p211, Params.p219]:
         p = deepcopy(params)
         p.cf_bh = False
         if p.cf_bh:
@@ -116,7 +116,7 @@ if __name__ == '__main__':
         else:
             p.n_bh = params.n_poi_types * 3
         p.n_agents = 1
-        lp.n_stat_runs = 1
+        lp.n_stat_runs = 10
         for i in range(lp.n_stat_runs):
             filepath = path.join(dirpath, f'{p.param_idx:03d}_run{i}')
             mkdir(filepath)

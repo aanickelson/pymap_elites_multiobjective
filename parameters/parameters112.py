@@ -13,9 +13,10 @@ class Parameters:
     counter = 2
     cf_bh = True
     counter_move = True
+    ag_in_st = True
 
     poi_visit = True    # Flag to determine if agent impacts POI completeness, but NOT the rewards
-    counter_locs =[[2.1768243236608047, 2.215317159566301], [2.8685358828024254, 18.693215873656115]]
+    counter_locs =[[2.3837136447461154, 2.8669147202227117], [2.798850374004229, 18.706128975063486]]
 
     poi_pos =[[1.0, 5.5], [1.0, 10.0], [1.0, 19.0], [5.5, 1.0], [5.5, 10.0], [5.5, 14.5], [10.0, 1.0], [10.0, 5.5], [10.0, 14.5], [10.0, 19.0], [14.5, 5.5], [14.5, 10.0], [14.5, 19.0], [19.0, 1.0], [19.0, 10.0], [19.0, 14.5]]
     n_pois = 16
@@ -23,7 +24,7 @@ class Parameters:
     n_poi_types = 2
 
     agent_class = [agent] * n_agents
-    agent_pos =[[10.186212215290968, 9.376711740589133]]
+    agent_pos =[[10.326010252651205, 10.631393351431132]]
 
     interact_range = 2.0
     n_sensors = 4

@@ -14,6 +14,9 @@ from pymap_elites_multiobjective.parameters.parameters112 import Parameters as p
 from pymap_elites_multiobjective.parameters.parameters113 import Parameters as p113
 from pymap_elites_multiobjective.parameters.parameters115 import Parameters as p115
 from pymap_elites_multiobjective.parameters.parameters119 import Parameters as p119
+from pymap_elites_multiobjective.parameters.parameters200 import Parameters as p200
+from pymap_elites_multiobjective.parameters.parameters211 import Parameters as p211
+from pymap_elites_multiobjective.parameters.parameters219 import Parameters as p219
 from pymap_elites_multiobjective.parameters.parameters500 import Parameters as p500
 from pymap_elites_multiobjective.parameters.parameters501 import Parameters as p501
 from pymap_elites_multiobjective.parameters.parameters502 import Parameters as p502
