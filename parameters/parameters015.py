@@ -9,6 +9,7 @@ class Parameters:
     battery = 30
     time_steps = 50
     speed = 2.0
+    n_cf_evals = 10  # Number of times to rerun with different cf configurations 
     map_size = 20
     counter = 5
     cf_bh = True
@@ -16,7 +17,7 @@ class Parameters:
     ag_in_st = True
 
     poi_visit = False    # Flag to determine if agent impacts POI completeness, but NOT the rewards
-    counter_locs =[[2.554849155068805, 1.0299805824169483], [2.6677301996507685, 18.336735476301968], [18.74721090198408, 1.2800743486231205], [17.87638205225626, 18.83481627655374], [2.45516865200807, 1.8995984607128105]]
+    counter_locs =[[2.0232036442334733, 1.4928696358452662], [1.9064035904120573, 18.36562908006817], [17.902169345247675, 1.0418390551097862], [18.06877727018623, 18.329377464609262], [1.5607991114568358, 2.2251415692840384]]
 
     poi_pos =[[1.0, 5.5], [1.0, 10.0], [1.0, 19.0], [5.5, 1.0], [5.5, 10.0], [5.5, 14.5], [10.0, 1.0], [10.0, 5.5], [10.0, 14.5], [10.0, 19.0], [14.5, 5.5], [14.5, 10.0], [14.5, 19.0], [19.0, 1.0], [19.0, 10.0], [19.0, 14.5]]
     n_pois = 16
@@ -24,7 +25,7 @@ class Parameters:
     n_poi_types = 2
 
     agent_class = [agent] * n_agents
-    agent_pos =[[10.326010252651205, 10.631393351431132]]
+    agent_pos =[[9.02518917475535, 9.994396567876612]]
 
     interact_range = 2.0
     n_sensors = 4

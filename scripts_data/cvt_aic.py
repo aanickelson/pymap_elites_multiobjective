@@ -30,6 +30,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 def main(setup):
     [env_p, cvt_p, filepath, stat_num] = setup
+    print(f"main has begun for {stat_num}")
     numpy.random.seed(stat_num + random.randint(0, 10000))
     archive = {}
     env = Domain(env_p)
@@ -40,7 +41,7 @@ def main(setup):
 
     n_behaviors = env_p.n_bh
     start = time()
-    archive = cvt_me.compute(n_behaviors, wts_dim, dom._evaluate, n_niches=n_niches, max_evals=evals,
+    archive = cvt_me.compute(n_behaviors, wts_dim, dom._evaluate_multiple, n_niches=n_niches, max_evals=evals,
                              log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
     tot_time = time() - start
     with open(filepath + '_time.txt', 'w') as f:
@@ -108,7 +109,7 @@ if __name__ == '__main__':
     mkdir(dirpath)
     batch = []
 
-    for params in [Params.p200, Params.p211, Params.p219]:
+    for params in [Params.p219]:  # , Params.p119, Params.p211, Params.p219]:
         p = deepcopy(params)
         p.cf_bh = False
         if p.cf_bh:
@@ -116,18 +117,20 @@ if __name__ == '__main__':
         else:
             p.n_bh = params.n_poi_types * 3
         p.n_agents = 1
-        lp.n_stat_runs = 10
+        lp.n_stat_runs = 5
+        if p.counter == 0:
+            p.n_cf_evals = 1
         for i in range(lp.n_stat_runs):
             filepath = path.join(dirpath, f'{p.param_idx:03d}_run{i}')
             mkdir(filepath)
             batch.append([p, px, filepath, i])
 
     # Use this one
-    multiprocess_main(batch)
+    # multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
     # px["parallel"] = True
-    # main(batch[0])
+    main(batch[0])
 
     # for b in batch:
     #     main(b)

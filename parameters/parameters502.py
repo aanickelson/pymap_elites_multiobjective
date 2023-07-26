@@ -9,6 +9,7 @@ class Parameters:
     battery = 30
     time_steps = 50
     speed = 2.0
+    n_cf_evals = 10  # Number of times to rerun with different cf configurations
     map_size = 20
     counter = 1
     cf_bh = False

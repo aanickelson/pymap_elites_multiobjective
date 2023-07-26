@@ -22,7 +22,6 @@ def run_env(env, policies, p, use_bh=False, vis=False):
     if vis:
         g = env.G()
         view(env, p.time_steps, g)
-        print(action)
     if not use_bh:
         return env.G()
     else:

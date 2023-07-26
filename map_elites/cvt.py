@@ -191,6 +191,10 @@ def compute(dim_map, dim_x, f,
         b_evals += len(to_evaluate)
 
         # write archive
+        if n_evals < 1000:
+            now = datetime.now()
+            now_str = now.strftime("%H:%M:%S")
+            print(f"[{n_evals}/{int(max_evals)}] - {now_str} - {data_fname} \n", end=" ", flush=True)
         if b_evals >= params['dump_period'] and params['dump_period'] != -1:
             now = datetime.now()
             now_str = now.strftime("%H:%M:%S")

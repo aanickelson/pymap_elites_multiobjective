@@ -11,6 +11,7 @@ def string_to_save(i, n_cf, cf_bh, map_size, move, poi, cf_locs, poi_locs, n_poi
     s += f"    battery = 30\n"
     s += f"    time_steps = 50\n"
     s += f"    speed = 2.0\n"
+    s += f"    n_cf_evals = 10  # Number of times to rerun with different cf configurations \n"
     s += f"    map_size = {map_size}\n"
     s += f"    counter = {n_cf}\n"
     s += f"    cf_bh = {cf_bh}\n"

@@ -9,6 +9,7 @@ class Parameters:
     battery = 30
     time_steps = 50
     speed = 2.0
+    n_cf_evals = 10  # Number of times to rerun with different cf configurations 
     map_size = 20
     counter = 0
     cf_bh = False
@@ -24,7 +25,7 @@ class Parameters:
     n_poi_types = 2
 
     agent_class = [agent] * n_agents
-    agent_pos =[[10.326010252651205, 10.631393351431132]]
+    agent_pos =[[9.02518917475535, 9.994396567876612]]
 
     interact_range = 2.0
     n_sensors = 4
