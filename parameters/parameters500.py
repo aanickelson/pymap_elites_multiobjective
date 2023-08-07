@@ -14,6 +14,7 @@ class Parameters:
     counter = 0
     cf_bh = False
     counter_move = False
+    ag_in_st = False
 
 
     poi_visit = False    # Flag to determine if agent impacts POI completeness, but NOT the rewards
