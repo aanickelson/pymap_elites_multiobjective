@@ -50,7 +50,7 @@ def calc_bh(bh_vec, n_poi_types, n_agents, n_bh, agents, cf_in_bh):
                 # Mean of all behaviors for that POI type
                 poi_bh = all_poi_bhs.mean(axis=0)[1:]
                 # Average the behavior means -- can't just sum because we have to keep it between [0, 1]
-                if cf_in_bh:
+                if cf_in_bh or n_bh == 2:
                     bh[ag_i][poi] = np.sum(poi_bh) / 3
                 else:
                     # Set the three behaviors associated with this POI to the mean of the behaviors
