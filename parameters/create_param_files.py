@@ -56,36 +56,47 @@ def corners(n, world, d):
 
 def gen_all_files():
     # Values to iterate over
-    n_cf = [0, 1, 5, 9]
-    dist_to_center = [8]
-    ag_in_st = [False, True]
-    ag_in_bh = [False, True]
-    # ag_in_st = [False, True]
-    vals_to_iterate = [n_cf, dist_to_center, ag_in_st, ag_in_bh]
-    combos = list(product(*vals_to_iterate))
+    no_cf_list = [[0],  # cf move
+                  [0],  # cf task
+                  [0],  # cf state
+                  [0], # cf beh
+                  [0]]  # num cf
+    # cf_list = [[0, 1],  # cf move
+    #            [0, 1],  # cf task
+    #            [0, 1],  # cf state
+    #            [0, 1],  # cf beh
+    #            [1, 3, 5, 9]]  # num cf
+    cf_list = [[1],  # cf move
+               [1],  # cf task
+               [0],  # cf state
+               [0],  # cf beh
+               [1, 9]]  # num cf
+    no_cf_combos = list(product(*no_cf_list))
+    cf_combos = list(product(*cf_list))
+    combos = no_cf_combos + cf_combos
 
     # Standard values
     world_size = 20
+    cf_dist_to_center = 8
     poi_dist_to_center = 6
-    n_poi = 16 # [10, 15, 20]
+    n_poi = 40 # [10, 15, 20]
     # poi_locs = np.ndarray.tolist(grid(n_poi, world_size))
     pois = circle(n_poi, world_size, poi_dist_to_center, True)
     poi_locs = np.ndarray.tolist(pois)
     poi_class = (['linear_poi', 'tanh_poi'] * int(np.ceil(n_poi / 2)))[:n_poi]
     agent_loc = corners(1, world_size, 0)
-
+    nums = []
     for combo in combos:
-        start_num = 300
-        cf, d, ag_st, cf_bh = combo
-        add_val = 0
-        if ag_st:
-            add_val += 10
-        if cf_bh:
-            add_val += 100
-        cf_locs = corners(cf, world_size, d)
-        trial_num = start_num + add_val + cf
-        generated_string = str_gen(trial_num, cf, cf_bh, world_size, True, True, cf_locs, poi_locs, n_poi, agent_loc, ag_st)
+        start_num = 200000
+        trial_num = start_num + int(''.join(map(str, combo)))  # Turns the combination into an integer then adds it to the base num
+        nums.append(trial_num)
+        print(f'from pymap_elites_multiobjective.parameters.parameters{trial_num} import Parameters as p{trial_num}')
+        move, task, cf_st, cf_bh, n_cf = combo
+        cf_locs = corners(n_cf, world_size, cf_dist_to_center)
+        generated_string = str_gen(trial_num, n_cf, cf_bh, world_size, move, task, cf_locs, poi_locs, n_poi, agent_loc, cf_st)
         filesave(generated_string, trial_num)
+
+    print(f'new_batch = {["p"+str(i) for i in nums]}')
 
     return pois
 
@@ -99,21 +110,20 @@ def filesave(str_to_save, filenum):
         fl.writelines(str_to_save)
 
 
-
 if __name__ == '__main__':
     poi_pos = gen_all_files()
-    from matplotlib import pyplot as plt
-
-    counter_locs = [[2.8602098625437753, 1.5772234705185684], [2.1540002623523646, 17.74362372813859],
-                    [18.53467814194324, 1.918471564126539], [17.302498605261977, 17.550713507266],
-                    [1.095394173470764, 2.727767777227816], [1.8924398652370835, 17.583733548290475],
-                    [17.862221568582086, 1.6983992899553664], [17.7311752902783, 17.315501893932677],
-                    [2.8378728517443466, 1.2468080813796043]]
-    cf_pts = np.array(counter_locs)
-
-    pts = np.array(poi_pos)
-    plt.xlim([0, 20])
-    plt.ylim([0, 20])
-    plt.scatter(pts[:, 0], pts[:, 1])
-    plt.scatter(cf_pts[:, 0], cf_pts[:, 1], c='red')
-    plt.show()
+    # from matplotlib import pyplot as plt
+    #
+    # counter_locs = [[2.8602098625437753, 1.5772234705185684], [2.1540002623523646, 17.74362372813859],
+    #                 [18.53467814194324, 1.918471564126539], [17.302498605261977, 17.550713507266],
+    #                 [1.095394173470764, 2.727767777227816], [1.8924398652370835, 17.583733548290475],
+    #                 [17.862221568582086, 1.6983992899553664], [17.7311752902783, 17.315501893932677],
+    #                 [2.8378728517443466, 1.2468080813796043]]
+    # cf_pts = np.array(counter_locs)
+    #
+    # pts = np.array(poi_pos)
+    # plt.xlim([0, 20])
+    # plt.ylim([0, 20])
+    # plt.scatter(pts[:, 0], pts[:, 1])
+    # plt.scatter(cf_pts[:, 0], cf_pts[:, 1], c='red')
+    # plt.show()

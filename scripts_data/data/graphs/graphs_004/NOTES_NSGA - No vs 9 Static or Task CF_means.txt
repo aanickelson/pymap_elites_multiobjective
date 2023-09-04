@@ -1,2 +1,0 @@
-Final Means, NSGA - No vs 9 Static or Task CF
-Move cf NSGA: 2.491318123029669 
