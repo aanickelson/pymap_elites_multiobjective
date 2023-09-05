@@ -92,11 +92,12 @@ if __name__ == '__main__':
     px['n_niches'] = 2000
     evals = 200000
 
+
     # DEBUGGING VALS:
-    # px["batch_size"] = 10
-    # px["dump_period"] = 100
-    # px['n_niches'] = 100
-    # evals = 200
+    # px["batch_size"] = 100
+    # px["dump_period"] = 1000
+    # px['n_niches'] = 1000
+    # evals = 2000
 
     now = datetime.now()
     base_path = path.join(getcwd(), 'data')
@@ -109,13 +110,14 @@ if __name__ == '__main__':
     mkdir(dirpath)
     batch = []
 
-    for params in [Params.p219]:  # , Params.p119, Params.p211, Params.p219]:
+    for params in [Params.p909]:  # , Params.p119, Params.p211, Params.p219]:
         p = deepcopy(params)
         p.cf_bh = False
-        if p.cf_bh:
-            p.n_bh = params.n_poi_types + 3
-        else:
-            p.n_bh = params.n_poi_types * 3
+        # if p.cf_bh:
+        #     p.n_bh = params.n_poi_types + 3
+        # else:
+        #     p.n_bh = params.n_poi_types * 3
+        p.n_bh = 2
         p.n_agents = 1
         lp.n_stat_runs = 5
         if p.counter == 0:
@@ -126,11 +128,11 @@ if __name__ == '__main__':
             batch.append([p, px, filepath, i])
 
     # Use this one
-    # multiprocess_main(batch)
+    multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
     # px["parallel"] = True
-    main(batch[0])
+    # main(batch[0])
 
     # for b in batch:
     #     main(b)

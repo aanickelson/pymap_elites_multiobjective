@@ -4,7 +4,7 @@ from AIC.view import view
 
 def run_env(env, policies, p, use_bh=False, vis=False):
     bh_space = [[] for _ in range(p.n_agents)]
-    n_move_choice = 3
+    n_move_choice = 2
     for i in range(p.time_steps):
         state = env.state()
         if vis:
