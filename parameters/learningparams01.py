@@ -3,7 +3,7 @@ class LearnParams:
 
     param_idx = 1
 
-    n_stat_runs = 5
+    n_stat_runs = 10
 
     # Neural Network:
     hid = 30
@@ -16,6 +16,6 @@ class LearnParams:
     thirds = False
 
     # Evo learner
-    n_gen = 1000
+    n_gen = 2500
     n_top_gen = 500
 
