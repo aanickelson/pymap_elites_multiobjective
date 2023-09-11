@@ -1,0 +1,4 @@
+539 - Major change: NN no longer has ReLu hidden layer. Now is a Sigmoid hidden layer.
+ReLu was causing the NN to output either ~0 or ~1. Nothing in between. That's bad.
+
+543 - reduced the battery to actually be a constraint. It was not an order of magnitude too large before

@@ -50,7 +50,7 @@ def main(setup):
 
 def multiprocess_main(batch_for_multi):
     cpus = multiprocessing.cpu_count() - 1
-    # cpus = 2
+    # cpus = 4
     with multiprocessing.Pool(processes=cpus) as pool:
         pool.map(main, batch_for_multi)
 
@@ -89,9 +89,8 @@ if __name__ == '__main__':
     # RUN VALS:
     px["batch_size"] = 100
     px["dump_period"] = 10000
-    px['n_niches'] = 2000
-    evals = 200000
-
+    px['n_niches'] = 1000
+    evals = 100000
 
     # DEBUGGING VALS:
     # px["batch_size"] = 100
@@ -110,18 +109,21 @@ if __name__ == '__main__':
     mkdir(dirpath)
     batch = []
 
-    for params in [Params.p909]:  # , Params.p119, Params.p211, Params.p219]:
+    for params in Params.morePOInostate + Params.morePOIbatch:  #, Params.p111107:  # , Params.p119, Params.p211, Params.p219]:
         p = deepcopy(params)
-        p.cf_bh = False
+        # p.n_cf_evals = 1
+        # p.cf_bh = False
+        p.n_bh = 2
         # if p.cf_bh:
         #     p.n_bh = params.n_poi_types + 3
         # else:
         #     p.n_bh = params.n_poi_types * 3
-        p.n_bh = 2
         p.n_agents = 1
-        lp.n_stat_runs = 5
+        lp.n_stat_runs = 2
         if p.counter == 0:
             p.n_cf_evals = 1
+        # else:
+        #     p.n_cf_evals = 10
         for i in range(lp.n_stat_runs):
             filepath = path.join(dirpath, f'{p.param_idx:03d}_run{i}')
             mkdir(filepath)

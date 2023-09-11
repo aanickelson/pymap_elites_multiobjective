@@ -108,17 +108,20 @@ from pymap_elites_multiobjective.parameters.parameters111111 import Parameters a
 from pymap_elites_multiobjective.parameters.parameters111113 import Parameters as p111113
 from pymap_elites_multiobjective.parameters.parameters111115 import Parameters as p111115
 from pymap_elites_multiobjective.parameters.parameters111119 import Parameters as p111119
+from pymap_elites_multiobjective.parameters.parameters200000 import Parameters as p200000
+from pymap_elites_multiobjective.parameters.parameters200000b import Parameters as p200000b
 from pymap_elites_multiobjective.parameters.parameters200100 import Parameters as p200100
+from pymap_elites_multiobjective.parameters.parameters211001 import Parameters as p211001
 from pymap_elites_multiobjective.parameters.parameters211101 import Parameters as p211101
 from pymap_elites_multiobjective.parameters.parameters211101b import Parameters as p211101b
-from pymap_elites_multiobjective.parameters.parameters211109 import Parameters as p211109
-from pymap_elites_multiobjective.parameters.parameters200000 import Parameters as p200000
-from pymap_elites_multiobjective.parameters.parameters211001 import Parameters as p211001
 from pymap_elites_multiobjective.parameters.parameters211009 import Parameters as p211009
+from pymap_elites_multiobjective.parameters.parameters211109 import Parameters as p211109
 
 morePOInostate = [p200000, p211001, p211009]
 
 morePOIbatch = [p200100, p211101, p211109]
+
+
 
 new_batch = [p100000, p100100,
              p100001, p100003, p100005, p100009,

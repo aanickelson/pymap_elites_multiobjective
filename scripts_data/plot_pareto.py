@@ -152,12 +152,13 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes):
         os.mkdir(dirname)
 
     plt.clf()
-    max_vals = [max(x), max(y)]
-    plt_max = 2.3
+    # max_vals = [max(x), max(y)]
+    max_vals = [8.3, 8.3]
+    # plt_max = 2.3
     # plt_max = 3.3
     # plt_max = 90
-    plt.xlim([-0.1, plt_max])
-    plt.ylim([-0.1, plt_max])
+    plt.xlim([-0.1, max_vals[0] + 0.1])
+    plt.ylim([-0.1, max_vals[1] + 0.1])
     plt.scatter(x, y, c='red')
     plt.scatter(x[iseff], y[iseff], c="blue")
     xy = np.array([x, y]).T
@@ -200,8 +201,8 @@ def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
         plt.plot(evos, means, marker=mrks[mrk_n], label=nm)
         mrk_n += 1
         plt.fill_between(evos, means-sterr, means+sterr, alpha=0.3)
-    # plt.ylim([-0.1, max_mean])
-    plt.ylim([-0.1, 2.1])
+    plt.ylim([-0.1, max_mean + 0.1])
+    # plt.ylim([-0.1, 3.1])
     # plt.title(f"{dirname}")
     plt.xlabel('Number of Policies Tested')
     plt.ylabel('Hypervolume of resulting Pareto front')
@@ -218,15 +219,15 @@ if __name__ == '__main__':
 
     # Change these parameters to run the script
 
-    ftypes = ['.png']   # What file type(s) do you want for the plots  '.svg',
+    ftypes = ['.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
 
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
+    n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
 
     # If you don't define this, it will use the current working directory of this file
     basedir_qd = os.getcwd()
-    n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
-    # dates_qd = ['529_20230822_120257', '531_20230825_111600', '532_20230828_101445', '533_20230828_113856', '534_20230828_134557']
-    dates_qd = ['537_20230904_081955']  # '530_20230823_111127',
+    # dates_qd = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600']  #, '532_20230828_101445', '533_20230828_113856', '534_20230828_134557']
+    dates_qd = ['540_20230907_095553', '541_20230907_103856', '542_20230907_105048']
     files_info = [[dates_qd, basedir_qd, 'archive_']]
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
@@ -238,13 +239,13 @@ if __name__ == '__main__':
     # param_names = ['No', 'Static', 'Move', 'Task']
     # param_sets = ['100100', '100119','110119', '111119']
     # nm = 'Compare CF types'
-    param_names = ['0cf', '1cf, no bh', '9cf, no bh']
-    param_sets = ['200100', '211101', '211109']
-    nm = '1 vs 9 no bh'
+    param_names = ['0cf', '1cf, no bh', '9cf, no bh', '0cf, no st', '1cf, no st', '9cf, no st']
+    param_sets = ['200100', '211101', '211109', '200000', '211001', '211009']
+    nm = '1 vs 9 no bh or no st'
     # param_sets = ['100000', '100100', '100009', '100109', '100019', '100119', '110009', '111009', '110109', '110019', '111109', '111019', '110119', '111119']
     # nm = 'Extra ALL the st and beh situations'
-    # nms = ['0, none', '9, none', '9, poi only', '9, behavior', '9, state', '9, all']
-    # param_sets, param_names, nm = [['100100', '110009','111009', '111019', '111109', '111119'], nms, '7 Compare CF in st or bh']
+    # nms = ['0, none', '9, none', '9, Task p (1)', '9, Agent (2)', '9, Behavior (3)',  '9, all (1, 2, 3)']
+    # param_sets, param_names, nm = [['100100', '110009', '111009', '110109', '110019', '111119'], nms, '7 Compare CF in st or bh']
     # nms = ['0cf', '1cf', '3cf', '5cf', '9cf']
     # param_sets, param_names, nm = [['100100', '111111', '111113','111115', '111119'], nms, '5 Compare num CF']
     # param_names = ['0cf', '1cf', '2cf', '3cf', '9cf']
@@ -271,8 +272,11 @@ if __name__ == '__main__':
             if not p_num in param_sets:
                 # print(f'Did not save data for {params_name} in {sub}')
                 continue
+            if len(fnums) < n_files:
+                continue
 
             # This block goes through each fil609047338827017e, gets the data, finds the pareto front, gets the area, then saves the area
+
             areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits)[:n_files]
             if len(areas) < n_files:
                 continue
