@@ -6,3 +6,5 @@ ReLu was causing the NN to output either ~0 or ~1. Nothing in between. That's ba
 544 - Upped the battery to 14 - my previous assumptions about an order of magnitude were incorrect (based only on the earliest results from training)
 
 545 - Upping the battery to 18 - closer to a constraining point for later policies
+
+546 - Changed the battery to drain with v^2 and e^2 so higher values drain it significantly more
