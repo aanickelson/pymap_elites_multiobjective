@@ -49,8 +49,8 @@ def main(setup):
 
 
 def multiprocess_main(batch_for_multi):
-    cpus = multiprocessing.cpu_count() - 1
-    # cpus = 4
+    # cpus = multiprocessing.cpu_count() - 1
+    cpus = 4
     with multiprocessing.Pool(processes=cpus) as pool:
         pool.map(main, batch_for_multi)
 
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     mkdir(dirpath)
     batch = []
 
-    for params in Params.morePOInostate + Params.morePOIbatch:  #, Params.p111107:  # , Params.p119, Params.p211, Params.p219]:
+    for params in [Params.p200000]:  #, Params.p111107:  # , Params.p119, Params.p211, Params.p219]:
         p = deepcopy(params)
         # p.n_cf_evals = 1
         # p.cf_bh = False
@@ -119,7 +119,7 @@ if __name__ == '__main__':
         # else:
         #     p.n_bh = params.n_poi_types * 3
         p.n_agents = 1
-        lp.n_stat_runs = 2
+        lp.n_stat_runs = 1
         if p.counter == 0:
             p.n_cf_evals = 1
         # else:
@@ -130,11 +130,11 @@ if __name__ == '__main__':
             batch.append([p, px, filepath, i])
 
     # Use this one
-    multiprocess_main(batch)
+    # multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
-    # px["parallel"] = True
-    # main(batch[0])
+    px["parallel"] = True
+    main(batch[0])
 
     # for b in batch:
     #     main(b)

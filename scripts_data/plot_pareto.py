@@ -227,7 +227,7 @@ if __name__ == '__main__':
     # If you don't define this, it will use the current working directory of this file
     basedir_qd = os.getcwd()
     # dates_qd = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600']  #, '532_20230828_101445', '533_20230828_113856', '534_20230828_134557']
-    dates_qd = ['540_20230907_095553', '541_20230907_103856', '542_20230907_105048']
+    dates_qd = ['545_20230911_154331']
     files_info = [[dates_qd, basedir_qd, 'archive_']]
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
