@@ -160,16 +160,17 @@ def plot_cvt(centroids, fit, desc, dim1, dim2, min_fit, max_fit, e, graph_f, sub
     my_cmap = orig_map.reversed()
 
     # compute Voronoi tesselation
-    # print("Voronoi...")
     vor = Voronoi(centroids[:, [dim1, dim2]])
     regions, vertices = voronoi_finite_polygons_2d(vor)
-    # print("fit:", min_fit, max_fit)
-    norm = mpl.colors.Normalize(vmin=min_fit, vmax=max_fit)
-    # print("KD-Tree...")
     kdt = KDTree(centroids, leaf_size=30, metric='euclidean')
 
+    # norm = mpl.colors.Normalize(vmin=0, vmax=9)
+    norm = mpl.colors.Normalize(vmin=0, vmax=max_fit)
+
+    print(f'plotting {sub_d}')
     print("plotting contour...")
     # ax.scatter(centroids[:, 0], centroids[:,1], c=fit)
+
     # contours
     for i, region in enumerate(regions):
         polygon = vertices[region]
@@ -183,14 +184,15 @@ def plot_cvt(centroids, fit, desc, dim1, dim2, min_fit, max_fit, e, graph_f, sub
         index = q[1][0][0]
         region = regions[index]
         polygon = vertices[region]
+        # cols[index] += fit[i]
         if cols[index] < fit[i]:
             cols[index] = fit[i]
-            axes.fill(*zip(*polygon), alpha=0.9, color=my_cmap(norm(cols[index])))
+        axes.fill(*zip(*polygon), alpha=0.9, color=my_cmap(norm(cols[index])))
         k += 1
         if k % 100 == 0:
             print(k, end=" ", flush=True)
     fit_reshaped = fit.reshape((len(fit),))
-    norm = mpl.colors.Normalize(vmin=0, vmax=max_fit)
+
 
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap),
                  ax=axes, orientation='vertical', label='Distance to global Pareto front')
@@ -200,7 +202,7 @@ def plot_cvt(centroids, fit, desc, dim1, dim2, min_fit, max_fit, e, graph_f, sub
     if reduced:
         pre = 'red_bh_'
     for ex in e:
-        figpath = os.path.join(graph_f, f'{pre}{sub_d}_dims{dim1}{dim2}_{ex}')
+        figpath = os.path.join(graph_f, f'{pre}{sub_d}_dims{dim1}{dim2}{ex}')
         fig.savefig(figpath)
     plt.clf()
 
@@ -262,6 +264,7 @@ def process_and_plot(files_info, ds, ext, sub, plotit, red=False):
     pct_bh = len(counts) / centroids.shape[0]
     # print(pct_bh)
     fit = calc_fit_data(ftns, n_pareto_layers)
+    # fit = np.ones(ftns.shape[0])
 
     if plotit:
         for dim01, dim02 in ds:
@@ -277,7 +280,7 @@ if __name__ == "__main__":
     # dates = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600', '532_20230828_101445']
     # dates = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600', '532_20230828_101445',
     # '533_20230828_113856', '534_20230828_134557']
-    dates = ['540_20230907_095553', '541_20230907_103856']
+    dates = ['546_20230912_163947']
     exts = ['.png']  # ,'.png'
     n_niches = 1000
     n_pols = 100000
@@ -298,8 +301,9 @@ if __name__ == "__main__":
 
     for date in dates:
         root_dir = os.path.join(os.getcwd(), 'data', date)
+        # root_dir = '/home/toothless/workspaces/pymap_elites_multiobjective/Archive/538_20230904_175703'
 
-        bh_pth = os.path.join(root_dir, 'bh_vis')
+        # bh_pth = os.path.join(root_dir, 'bh_vis')/\
         # util.make_a_directory(bh_pth)
         # print(root_dir)
         sub_dirs = list(os.walk(root_dir))[0][1]
@@ -313,8 +317,8 @@ if __name__ == "__main__":
             params_dict[p_num].append(bh_fill)
             print(d, bh_fill)
     graphsfname = f_info[-1]
-    with open(graphsfname + 'by type NOTES.TXT', 'w') as fl:
-        for i, [key, val] in enumerate(params_dict.items()):
-            fl.write(f'{key} & - & - & - & - & & &  {np.mean(val):0.5f} & {stats.sem(val):0.5f} \n')
+    # with open(graphsfname + 'by type NOTES.TXT', 'w') as fl:
+    #     for i, [key, val] in enumerate(params_dict.items()):
+    #         fl.write(f'{key} & - & - & - & - & & &  {np.mean(val):0.5f} & {stats.sem(val):0.5f} \n')
     print(params_dict)
 

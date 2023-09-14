@@ -1,9 +1,13 @@
 import numpy as np
 from AIC.view import view
+from AIC.behaviors import Behaviors
 
 
-def run_env(env, policies, p, use_bh=False, vis=False):
-    bh_space = [[] for _ in range(p.n_agents)]
+def run_env(env, policies, p, beh_strs, use_bh=False, vis=False):
+    # Need one beh for each agent. Currently only one because I'm only testing with one agent.
+    beh = Behaviors(p, env.state_size(), env.action_size())
+
+    # bh_space = [[] for _ in range(p.n_agents)]
     n_move_choice = 2
     for i in range(p.time_steps):
         state = env.state()
@@ -11,21 +15,20 @@ def run_env(env, policies, p, use_bh=False, vis=False):
             g = env.G()
             view(env, i, g)
         actions = []
-        for i, policy in enumerate(policies):
-            action = policy(state[i]).detach().numpy()
+        for pol_n, policy in enumerate(policies):
+            action = policy(state[pol_n]).detach().numpy()
             actions.append(action)
 
-            if use_bh:
-                bh_space[i].append(action_space(action, p, n_move_choice))
-
         env.action(actions)
+        beh.update(i, state[0], actions[0], [env.agents[0].x, env.agents[0].y], env.bins)
+    bh = beh.get_beh(beh_strs)
     if vis:
         g = env.G()
         view(env, p.time_steps, g)
     if not use_bh:
         return env.G()
     else:
-        return env.G(), calc_bh(bh_space, p.n_agents, p.n_bh, env.agents)
+        return env.G(), bh
 
 
 def action_space(act_vec, p, n_move):

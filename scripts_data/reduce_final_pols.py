@@ -35,11 +35,11 @@ if __name__ == "__main__":
     # if len(sys.argv) < 3:
     #     sys.exit('Usage: %s centroids_file archive.dat [min_fit] [max_fit]' % sys.argv[0])
     import os
-    dates = ['516_20230711_150701']
+    dates = ['546_20230912_163947']
     plot_exts = ['.png']
-    n_niches = 5000
-    n_pols = 200000
-    bh_size = [5, 6, 9]
+    n_niches = 1000
+    n_pols = 100000
+    bh_size = [2, 5, 6, 9]
 
     graphs_f = os.path.join(file_setup(dates, 'bh_'), 'bh')
     for date in dates:
@@ -48,12 +48,12 @@ if __name__ == "__main__":
         for d in sub_dirs:
             # if "129_run0" not in d:
             #     continue
-            file_path = os.path.join(root_dir, d, f'archive_{n_pols}.dat')
+            file_path = os.path.join(root_dir, d, f'weights_{n_pols}.dat')
             if not os.path.exists(file_path):
                 print(f"Archive does not exist in {d}")
                 continue
 
-            new_fpath = os.path.join(root_dir, d, f'fin_arch_reduced.dat')
+            new_fpath = os.path.join(root_dir, d, f'weights{n_pols}_reduced.dat')
             graphs_f = os.path.join(file_setup(dates, 'bh_'), 'bh')
             if not os.path.exists(graphs_f):
                 os.mkdir(graphs_f)
@@ -72,5 +72,5 @@ if __name__ == "__main__":
 
             create_red_file(file_path, new_fpath)
             f_info = (os.path.join(root_dir, d), cent_f, new_fpath, graphs_f)
-            process_and_plot(f_info, [[0, 3]], plot_exts, d, red=True)
+            process_and_plot(f_info, [[0, 1]], plot_exts, d, plotit=True, red=True)
 
