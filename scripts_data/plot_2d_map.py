@@ -45,6 +45,7 @@ import pymap_elites_multiobjective.scripts_data.often_used as util
 from pymap_elites_multiobjective.scripts_data.plot_pareto import file_setup
 import re
 import os
+from itertools import combinations
 from scipy import stats
 
 
@@ -138,8 +139,9 @@ def load_data(filename, dim, n_fit):
     # print("\nLoading ", filename)
     data = np.loadtxt(filename)
     fit = data[:, 0:n_fit]
-    desc = data[:, n_fit: dim + n_fit]
-
+    # Data is formatted as fitness, centroid, behavior
+    # desc = data[:, n_fit + dim: dim + dim + n_fit]  # Use this to load the behaviors (this messes up the % full calculation)
+    desc = data[:, n_fit : dim + n_fit]  # Use this to load the centroids associated with each policy
     return fit, desc
 
 
@@ -148,7 +150,7 @@ def load_centroids(filename):
     return points
 
 
-def plot_cvt(centroids, fit, desc, dim1, dim2, min_fit, max_fit, e, graph_f, sub_d, pctbh, reduced=False):
+def plot_cvt(centroids, fit, desc, dim1, dim2, min_fit, max_fit, e, graph_f, sub_d, pctbh, bhsz, reduced=False):
     fig, axes = plt.subplots(1, 1, figsize=(10, 10), facecolor='white', edgecolor='white')
     axes.set_xlim(0, 1)
     axes.set_ylim(0, 1)
@@ -202,12 +204,12 @@ def plot_cvt(centroids, fit, desc, dim1, dim2, min_fit, max_fit, e, graph_f, sub
     if reduced:
         pre = 'red_bh_'
     for ex in e:
-        figpath = os.path.join(graph_f, f'{pre}{sub_d}_dims{dim1}{dim2}{ex}')
+        figpath = os.path.join(graph_f, f'{pre}{sub_d}_dims{dim1}{dim2}_sz{bhsz}{ex}')
         fig.savefig(figpath)
     plt.clf()
 
 
-def mk_files(rootdir, subd, niches, pols):
+def mk_files(rootdir, subd, niches, pols, bh_size):
     # Get the name of the sub-directory
     p_num = re.split('_|/', subd)[0]
     pth = os.path.join(rootdir, subd)
@@ -216,16 +218,10 @@ def mk_files(rootdir, subd, niches, pols):
     if not os.path.exists(graphs_f):
         os.mkdir(graphs_f)
 
-    bhs = [2, 5, 6, 9]
-    did_it = False
-    for bh_size in bhs:
-        cent_f = os.path.join(pth, f'centroids_{niches}_{bh_size}.dat')
-        dat_f = os.path.join(pth, f'archive_{pols}.dat')
-        if os.path.exists(cent_f):
-            did_it = True
-            break
-
-    if not did_it:
+    cent_f = os.path.join(pth, f'centroids_{niches}_{bh_size}.dat')
+    dat_f = os.path.join(pth, f'archive_{pols}.dat')
+    if not os.path.exists(cent_f):
+        print(f"File does not exist: {cent_f}")
         return False
 
     if not os.path.exists(dat_f):
@@ -251,7 +247,7 @@ def calc_fit_data(fitnesses, layers):
     return fit
 
 
-def process_and_plot(files_info, ds, ext, sub, plotit, red=False):
+def process_and_plot(files_info, ds, ext, sub, plotit, bh_sz, red=False):
     if not files_info:
         print(f'### SKIPPING')
         return
@@ -269,7 +265,7 @@ def process_and_plot(files_info, ds, ext, sub, plotit, red=False):
     if plotit:
         for dim01, dim02 in ds:
             # Plot
-            plot_cvt(centroids, fit, beh, dim01, dim02, 0, 1, ext, grph_f, sub, pct_bh, red)
+            plot_cvt(centroids, fit, beh, dim01, dim02, 0, 1, ext, grph_f, sub, pct_bh, bh_sz, red)
 
     return pct_bh
 
@@ -280,24 +276,34 @@ if __name__ == "__main__":
     # dates = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600', '532_20230828_101445']
     # dates = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600', '532_20230828_101445',
     # '533_20230828_113856', '534_20230828_134557']
-    dates = ['546_20230912_163947']
+    dates = ['555_20230915_111851']
     exts = ['.png']  # ,'.png'
     n_niches = 1000
-    n_pols = 100000
+    n_pols = 10000
     final_num = n_pols
     bh_size = 2
     n_objectives = 2
     n_pareto_layers = 150
     dim_x = 24
     toplotornot = True
-    param_sets = ['200100', '211101', '211109', '200000', '211001', '211009']
+
+    # bh_options = ['battery', 'full act']
+    bh_options = ['battery', 'distance', 'type sep', 'type combo', 'v or e', 'full act']
+    bh_combos = list(combinations(bh_options, 2))
+    bh_sizes = {'battery': 1, 'distance': 1, 'type sep': 4, 'type combo': 2,
+                'v or e': 2, 'full act': 10}
+    param_sets = [i + "_" + j for (i, j) in bh_combos]
+    n_bh_vals = {i + "_" + j: bh_sizes[i] + bh_sizes[j] for (i, j) in bh_combos}
+    params_dict = {key:[] for key, _ in n_bh_vals.items()}
+    # param_sets = ['200100', '211101', '211109', '200000', '211001', '211009']
     # param_sets = ['100000', '100100', '100009', '100109', '100019', '100119', '110009', '111009', '110109', '110019', '111109', '111019', '110119',
     #               '111119']
     # param_sets = ['100109']  #, '100107']
     # param_sets = ['100100', '111101', '111103', '111105', '111107', '111109']
     # param_sets = ['100100', '100109', '110109', '111109']
 
-    params_dict = {pname: [] for pname in param_sets}
+    # params_dict = {pname: [] for pname in param_sets}
+
 
     for date in dates:
         root_dir = os.path.join(os.getcwd(), 'data', date)
@@ -308,12 +314,16 @@ if __name__ == "__main__":
         # print(root_dir)
         sub_dirs = list(os.walk(root_dir))[0][1]
         for d in sub_dirs:
-            p_num = re.split('_|/', d)[0]
+            # p_num = re.split('_|/', d)[0]
+            p_num = d[7:-5]
             if p_num not in params_dict:
                 continue
-            f_info = mk_files(root_dir, d, n_niches, n_pols)
+            bh_size = n_bh_vals[p_num]
+            f_info = mk_files(root_dir, d, n_niches, n_pols, bh_size)
+            if not f_info:
+                continue
             dims = [[0, 1]]  #, [1, 4], [2, 5]] #  ,[0, 3],  [2, 5]]  #, [4, 2]]
-            bh_fill = process_and_plot(f_info, dims, exts, d, toplotornot)
+            bh_fill = process_and_plot(f_info, dims, exts, d, toplotornot, bh_size)
             params_dict[p_num].append(bh_fill)
             print(d, bh_fill)
     graphsfname = f_info[-1]

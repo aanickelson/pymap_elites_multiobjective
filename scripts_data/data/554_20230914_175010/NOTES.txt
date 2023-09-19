@@ -1,0 +1,3 @@
+top_20230915_124314_ob - testing with D, normalized with G_env
+
+NEXT ROUND - testing with D, normalized with sum(G * wts)

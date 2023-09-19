@@ -6,7 +6,8 @@ from shapely.geometry import Polygon
 import os
 from pymap_elites_multiobjective.scripts_data.often_used import is_pareto_efficient_simple
 import pygmo
-# import platypus
+from itertools import combinations
+
 
 ##############################
 # This block is for file i/o #
@@ -221,13 +222,13 @@ if __name__ == '__main__':
 
     ftypes = ['.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
 
-    plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
+    plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
     n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
 
     # If you don't define this, it will use the current working directory of this file
     basedir_qd = os.getcwd()
     # dates_qd = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600']  #, '532_20230828_101445', '533_20230828_113856', '534_20230828_134557']
-    dates_qd = ['545_20230911_154331']
+    dates_qd = ['555_20230916_105158']
     files_info = [[dates_qd, basedir_qd, 'archive_']]
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
@@ -235,13 +236,25 @@ if __name__ == '__main__':
     # Each set is [[param file numbers], [param names for plot], 'graph title']
     # Param names provides the name of each parameter being compared. Should line up with the files
     # In this example, the names are consistent across all the plots, but they won't always be depending on what you want to run
-
+    bh_options = ['battery', 'distance', 'type sep', 'type combo', 'v or e', 'full act']
+    bh_combos = list(combinations(bh_options, 2))
+    bh_options_one = [['type sep'], ['type combo'], ['v or e'], ['full act']]
+    param_num = '200100'
+    all_options = bh_options_one + bh_combos
+    param_sets = []
+    for opt in all_options:
+        p = ''
+        for str_val in opt:
+           p += f"{str_val}_"
+        param_sets.append(p[:-1])
+    param_names = param_sets
+    nm = 'Behavior tests for single behaviors'
     # param_names = ['No', 'Static', 'Move', 'Task']
     # param_sets = ['100100', '100119','110119', '111119']
     # nm = 'Compare CF types'
-    param_names = ['0cf', '1cf, no bh', '9cf, no bh', '0cf, no st', '1cf, no st', '9cf, no st']
-    param_sets = ['200100', '211101', '211109', '200000', '211001', '211009']
-    nm = '1 vs 9 no bh or no st'
+    # param_names = ['0cf', '1cf, no bh', '9cf, no bh', '0cf, no st', '1cf, no st', '9cf, no st']
+    # param_sets = ['200100', '211101', '211109', '200000', '211001', '211009']
+    # nm = '1 vs 9 no bh or no st'
     # param_sets = ['100000', '100100', '100009', '100109', '100019', '100119', '110009', '111009', '110109', '110019', '111109', '111019', '110119', '111119']
     # nm = 'Extra ALL the st and beh situations'
     # nms = ['0, none', '9, none', '9, Task p (1)', '9, Agent (2)', '9, Behavior (3)',  '9, all (1, 2, 3)']
@@ -257,7 +270,7 @@ if __name__ == '__main__':
     # ---------------------------------------------------------
 
     graphs_fname = file_setup(dates_qd, basedir_qd)
-    evols = [(i + 1) * 10000 for i in range(n_files)]
+    evols = [(i + 1) * 1000 for i in range(n_files)]
     data_and_nm = {p: [param_names[i]] for i, p in enumerate(param_sets)}
     plot_fname = f'{nm}'  # What domain is being tested
 
@@ -268,10 +281,15 @@ if __name__ == '__main__':
         for sub, date, params_name, fnums in files:
             # Pulls the parameter file number
             # p_num = params_name[:3]
-            p_num = params_name.split('_')[0]
+            # p_num = params_name.split('_')[0]
+            p_num = params_name[7:-5]
             if not p_num in param_sets:
                 # print(f'Did not save data for {params_name} in {sub}')
                 continue
+
+            if not param_num in params_name:
+                continue
+
             if len(fnums) < n_files:
                 continue
 
