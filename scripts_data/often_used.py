@@ -1,5 +1,7 @@
 import numpy as np
 import os
+import re
+
 
 def is_pareto_efficient_simple(xyvals):
     """
@@ -10,7 +12,7 @@ def is_pareto_efficient_simple(xyvals):
     """
     costs = np.array(xyvals)
     is_efficient = np.ones(costs.shape[0], dtype=bool)
-    is_efficient[np.sum(costs, axis=1) < 0.0001] = False
+    # is_efficient[np.sum(costs, axis=1) < 0.0001] = False
     for i, c in enumerate(costs):
         if is_efficient[i]:
             is_efficient[is_efficient] = np.any(costs[is_efficient] > c, axis=1)  # Keep any point with a lower cost
@@ -28,3 +30,23 @@ def make_a_directory(dirname):
         os.mkdir(dirname)
         return True
     return False
+
+
+def get_unique_fname(rootdir, date_time=None):
+    greatest = 0
+    # Walk through all the files in the given directory
+    for sub, dirs, files in os.walk(rootdir):
+        for d in dirs:
+            pos = 3
+            splitstr = re.split('_|/', d)
+            try:
+                int_str = int(splitstr[-pos])
+            except (ValueError, IndexError):
+                continue
+
+            if int_str > greatest:
+                greatest = int_str
+        break
+
+    return os.path.join(rootdir, f'{greatest + 1:03d}{date_time}')
+

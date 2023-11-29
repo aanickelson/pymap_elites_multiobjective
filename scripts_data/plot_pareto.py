@@ -92,13 +92,13 @@ def process_centroids(c_vals, p_vals):
 # This block is for calculating pareto areas #
 ##############################################
 
-def get_area(xy_v):
+def get_area(xy_v, orig):
     xy = -1 * np.array(xy_v)
     hv = pygmo.hypervolume(xy)
-    return hv.compute([0.0]*2)  # returns the exclusive volume by point 0
+    return hv.compute(orig)  # returns the exclusive volume by point 0
 
 
-def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, a_or_f):
+def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, a_or_f, origin=[0.0]*2):
     areas = []
     for evo in fnms:
         if evo == 0:
@@ -124,9 +124,9 @@ def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, 
         #     evo *= 100
         if evo == fnms[-1] and plot_sc:
             curve_area = plot_pareto_scatter(x, y, is_eff, f'{pnum}_{evo}',
-                                             f'{pnum}_{dt}_{paramsnm}', graphs_f, f_types)
+                                             f'{pnum}_{dt}_{paramsnm}', graphs_f, f_types, origin)
         else:
-            curve_area = get_area(xy[is_eff])
+            curve_area = get_area(xy[is_eff], origin)
 
         areas.append(curve_area)
 
@@ -146,14 +146,14 @@ def process(data):
 # This block is for plotting #
 ##############################
 
-def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes):
+def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes, orgn):
     dirname = os.path.join(graph_dir, 'pareto')
     if not os.path.exists(dirname):
         os.mkdir(dirname)
 
     plt.clf()
-    # max_vals = [max(x), max(y)]
-    max_vals = [8.3, 8.3]
+    max_vals = [max(x), max(y)]
+    # max_vals = [8.3, 8.3]
     # plt_max = 2.3
     # plt_max = 3.3
     # plt_max = 90
@@ -162,7 +162,7 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes):
     plt.scatter(x, y, c='red')
     plt.scatter(x[iseff], y[iseff], c="blue")
     xy = np.array([x, y]).T
-    curve_area = get_area(xy[iseff])
+    curve_area = get_area(xy[iseff], orgn)
     plt.locator_params(axis="both", integer=True, tight=True)
     plt.title(f"{graph_title} AREA: {curve_area:.03f}")
     for ext in filetypes:
@@ -227,7 +227,7 @@ if __name__ == '__main__':
     # If you don't define this, it will use the current working directory of this file
     basedir_qd = os.getcwd()
     # dates_qd = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600']  #, '532_20230828_101445', '533_20230828_113856', '534_20230828_134557']
-    dates_qd = ['545_20230911_154331']
+    dates_qd = ['546_20230912_163947']
     files_info = [[dates_qd, basedir_qd, 'archive_']]
     # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 

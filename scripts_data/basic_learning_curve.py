@@ -5,10 +5,10 @@ from matplotlib import pyplot as plt
 
 if __name__ == '__main__':
     # File name
-    base_fname = '/home/toothless/workspaces/pymap_elites_multiobjective/scripts_data/data/545_20230911_154331/200000_run0/'
+    base_fname = '/home/anna/PycharmProjects/evo_playground/test_morl/'
     # Get subfile names
-    sub_files = ['top_20230912_193838_b', 'top_20230912_193838_o', 'top_20230912_193838_ob']
-    n_gen = 500
+    sub_files = ['test_lander']
+    n_gen = 1000
     for s in sub_files:
         fname = base_fname + s
         file_data = list(os.walk(fname))[0][2]
