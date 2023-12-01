@@ -20,7 +20,7 @@ from evo_playground.test_morl.sar_wrapper import SARWrap
 
 def main(setup):
     [env_p, cvt_p, filepath, env_nm, bh_name, stat_num] = setup
-    print(f"main has begun for {stat_num}")
+    print(f"main has begun for {bh_name} - {stat_num}")
     numpy.random.seed(stat_num + random.randint(0, 10000))
     moo_gym_env = MORecordEpisodeStatistics(mo_gym.make(env_nm), gamma=0.99)
     # eval_env = mo_gym.make(gym_env)
@@ -54,10 +54,10 @@ if __name__ == '__main__':
     env_shorthand = 'lander'
 
     # DEBUGGING VALS:
-    # px["batch_size"] = 100
-    # px["dump_period"] = 1000
-    # px['n_niches'] = 1000
-    # evals = 2000
+    # px["batch_size"] = 10
+    # px["dump_period"] = 100
+    # px['n_niches'] = 100
+    # px['evals'] = 200
 
     base_path = path.join(getcwd(), 'data_gym', env_shorthand)
     oft.make_a_directory(base_path)
@@ -69,6 +69,7 @@ if __name__ == '__main__':
     batch = []
 
     bh_options = ['avg st', 'fin st', 'avg act', 'fin act', 'min avg max act']
+    # bh_options = ['avg st']  #, 'fin st', 'avg act', 'fin act', 'min avg max act']
 
     lp.n_stat_runs = 5
     for b in bh_options:
@@ -77,12 +78,12 @@ if __name__ == '__main__':
             oft.make_a_directory(filepath)
             batch.append([p, px, filepath, env_name, b, i])
 
-    # Use this one to multiprocess
-    # multiprocess_main(batch)
+        # Use this one to multiprocess
+        multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
     # px["parallel"] = True
-    main(batch[0])
+    # main(batch[0])
 
     # This runs them one at a time
     # for b in batch:
