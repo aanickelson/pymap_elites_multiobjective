@@ -78,8 +78,8 @@ if __name__ == '__main__':
             oft.make_a_directory(filepath)
             batch.append([p, px, filepath, env_name, b, i])
 
-        # Use this one to multiprocess
-        multiprocess_main(batch)
+    # Use this one to multiprocess
+    multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
     # px["parallel"] = True

@@ -20,7 +20,7 @@ def file_setup(f_dates, pre='', cwd=None):
     if not cwd:
         cwd = os.getcwd()
     # Filename setup
-    graphs_dir = os.path.join(cwd, 'data', 'graphs')
+    graphs_dir = os.path.join(cwd, 'graphs')
     if not os.path.exists(graphs_dir):
         os.mkdir(graphs_dir)
 
@@ -44,7 +44,7 @@ def get_file_info(dates, a_or_f, cwd=None):
 
     files_to_use = []
     for date in dates:
-        root_dir = os.path.join(cwd, 'data', date)
+        root_dir = os.path.join(cwd, date)
         sub_dirs = list(os.walk(root_dir))[0][1]
         for s in sub_dirs:
             sub = os.path.join(root_dir, s)
@@ -73,11 +73,11 @@ def get_file_info(dates, a_or_f, cwd=None):
     return files_to_use
 
 
-def load_data(filename):
+def load_data(filename, n_objective, plot_obj):
     data = np.loadtxt(filename)
-    xvals = data[:, 0]
-    yvals = data[:, 1]
-    xyvals = data[:, 0:2]
+    xvals = data[:, plot_obj[0]]
+    yvals = data[:, plot_obj[1]]
+    xyvals = data[:, 0:n_objective]
     return xvals, yvals, xyvals
 
 def load_centroids(filename):
@@ -95,10 +95,14 @@ def process_centroids(c_vals, p_vals):
 def get_area(xy_v, orig):
     xy = -1 * np.array(xy_v)
     hv = pygmo.hypervolume(xy)
+    # try:
     return hv.compute(orig)  # returns the exclusive volume by point 0
+    # except ValueError:
+    #     print(xy_v, orig)
 
-
-def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, a_or_f, origin=[0.0]*2):
+def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, a_or_f, n_objectives, obj_to_plot, origin=None):
+    if not origin:
+        origin = [0.0]*n_objectives
     areas = []
     for evo in fnms:
         if evo == 0:
@@ -115,7 +119,7 @@ def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, 
         fname = os.path.join(sub, f'{a_or_f}{evo}{ext}')
         if not os.path.exists(fname):
             continue
-        x, y, xy = load_data(fname)
+        x, y, xy = load_data(fname, n_objectives, obj_to_plot)
         is_eff = is_pareto_efficient_simple(xy)
 
         # if evo == 1998:
@@ -123,7 +127,7 @@ def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, 
         # if a_or_f == 'fits':
         #     evo *= 100
         if evo == fnms[-1] and plot_sc:
-            curve_area = plot_pareto_scatter(x, y, is_eff, f'{pnum}_{evo}',
+            curve_area = plot_pareto_scatter(x, y, xy, is_eff, f'{pnum}_{evo}',
                                              f'{pnum}_{dt}_{paramsnm}', graphs_f, f_types, origin)
         else:
             curve_area = get_area(xy[is_eff], origin)
@@ -146,7 +150,7 @@ def process(data):
 # This block is for plotting #
 ##############################
 
-def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes, orgn):
+def plot_pareto_scatter(x, y, xy, iseff, graph_title, fname, graph_dir, filetypes, orgn):
     dirname = os.path.join(graph_dir, 'pareto')
     if not os.path.exists(dirname):
         os.mkdir(dirname)
@@ -157,11 +161,10 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes, o
     # plt_max = 2.3
     # plt_max = 3.3
     # plt_max = 90
-    plt.xlim([-0.1, max_vals[0] + 0.1])
-    plt.ylim([-0.1, max_vals[1] + 0.1])
+    plt.xlim([-0.1, max_vals[0] * 1.05])
+    plt.ylim([-0.1, max_vals[1] * 1.05])
     plt.scatter(x, y, c='red')
     plt.scatter(x[iseff], y[iseff], c="blue")
-    xy = np.array([x, y]).T
     curve_area = get_area(xy[iseff], orgn)
     plt.locator_params(axis="both", integer=True, tight=True)
     plt.title(f"{graph_title} AREA: {curve_area:.03f}")
@@ -181,9 +184,7 @@ def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
         f.write(f'Final Means, {dirname}\n')
     mrk_n = 0
     max_mean = 0
-    for _, vals in data_and_names.items():
-        nm = vals[0]
-        data = vals[1:]
+    for nm, data in data_and_names.items():
         if not data:
             continue
         means, sterr = process(data)
@@ -222,57 +223,23 @@ if __name__ == '__main__':
     ftypes = ['.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
 
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
-    n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
+    n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
 
     # If you don't define this, it will use the current working directory of this file
-    basedir_qd = os.getcwd()
-    # dates_qd = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600']  #, '532_20230828_101445', '533_20230828_113856', '534_20230828_134557']
-    dates_qd = ['545_20230911_154331']
+    basedir_qd = os.path.join(os.getcwd(), 'data_gym', 'lander')
+    dates_qd = ['001_20231204_131838']
     files_info = [[dates_qd, basedir_qd, 'archive_']]
-    # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
 
-    # all_sets is a little wonky, I'll admit.
-    # Each set is [[param file numbers], [param names for plot], 'graph title']
-    # Param names provides the name of each parameter being compared. Should line up with the files
-    # In this example, the names are consistent across all the plots, but they won't always be depending on what you want to run
-    # bh_options = ['battery', 'distance', 'type sep', 'type combo', 'v or e', 'full act']
-    # bh_combos = list(combinations(bh_options, 2))
-    # bh_options_one = [['type sep'], ['type combo'], ['v or e'], ['full act']]
-    # all_options = [['v or e', 'full act'], ['battery', 'distance']]
-    param_num = '211101'
-    # all_options = bh_options_one + bh_combos
-    param_sets = []
-    for opt in all_options:
-        p = ''
-        for str_val in opt:
-           p += f"{str_val}_"
-        param_sets.append(p[:-1])
-    param_names = param_sets
-    nm = f'Behavior tests for single behaviors, {param_num}'
-    # param_names = ['No', 'Static', 'Move', 'Task']
-    # param_sets = ['100100', '100119','110119', '111119']
-    # nm = 'Compare CF types'
-    param_names = ['0cf', '1cf, no bh', '9cf, no bh', '0cf, no st', '1cf, no st', '9cf, no st']
-    param_sets = ['200100', '211101', '211109', '200000', '211001', '211009']
-    nm = '1 vs 9 no bh or no st'
-    # param_sets = ['100000', '100100', '100009', '100109', '100019', '100119', '110009', '111009', '110109', '110019', '111109', '111019', '110119', '111119']
-    # nm = 'Extra ALL the st and beh situations'
-    # nms = ['0, none', '9, none', '9, Task p (1)', '9, Agent (2)', '9, Behavior (3)',  '9, all (1, 2, 3)']
-    # param_sets, param_names, nm = [['100100', '110009', '111009', '110109', '110019', '111119'], nms, '7 Compare CF in st or bh']
-    # nms = ['0cf', '1cf', '3cf', '5cf', '9cf']
-    # param_sets, param_names, nm = [['100100', '111111', '111113','111115', '111119'], nms, '5 Compare num CF']
-    # param_names = ['0cf', '1cf', '2cf', '3cf', '9cf']
-    # nm = '1, 2, 3cf, no bh'
-    # param_sets = ['100100', '111101', '111102', '111103', '111109']
-    # '100100', '100119', '110009', '110019', '110109', '110119', '111009', '111019', '111109', '111111', '111113', '111115', '111119'
-
-    # You shouldn't need to change anything beyond here
-    # ---------------------------------------------------------
-
-    graphs_fname = file_setup(dates_qd, basedir_qd)
+    graphs_fname = file_setup(dates_qd, cwd=basedir_qd)
     evols = [(i + 1) * 10000 for i in range(n_files)]
-    data_and_nm = {p: [param_names[i]] for i, p in enumerate(param_sets)}
-    plot_fname = f'{nm}'  # What domain is being tested
+    n_obj = 4
+    plot_obj_idx = [0, 2]
+    param_num = 0
+    param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
+    param_sets = ['000']
+    data_and_nm = {p: [] for p in param_nms}
+    plot_fname = 'lander'  # What domain is being tested
+    orig = [15]*n_obj
 
     for dates, basedir, arch_or_fits in files_info:
         files = get_file_info(dates, arch_or_fits, basedir)
@@ -282,6 +249,7 @@ if __name__ == '__main__':
             # Pulls the parameter file number
             # p_num = params_name[:3]
             p_num = params_name.split('_')[0]
+            bh_name = params_name.split('_')[1]
             if not p_num in param_sets:
                 # print(f'Did not save data for {params_name} in {sub}')
                 continue
@@ -290,13 +258,14 @@ if __name__ == '__main__':
 
             # This block goes through each fil609047338827017e, gets the data, finds the pareto front, gets the area, then saves the area
 
-            areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits)[:n_files]
+            areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits, n_obj, plot_obj_idx, origin=orig)[:n_files]
+            areas = [a / 10000 for a in areas]
             if len(areas) < n_files:
                 continue
 
-            print(f'{p_num}, {areas[-1]}')
+            print(f'{bh_name}, {areas[-1]}')
             try:
-                data_and_nm[p_num].append(areas)
+                data_and_nm[bh_name].append(areas)
             except KeyError:
                 print(f'Did not save data for {params_name} in {sub}')
                 continue
