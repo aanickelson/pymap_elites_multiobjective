@@ -50,15 +50,15 @@ def multiprocess_main(batch_for_multi):
 if __name__ == '__main__':
     px = default_params.copy()
     p = Parameters
-    env_name = "mo-lunar-lander-continuous-v2"
+    env_name = "mo-lunar-lander-continuous-new-rw-v2"
     env_shorthand = 'lander'
 
     # DEBUGGING VALS:
     # px["batch_size"] = 10
-    # px["dump_period"] = 100
+    # px["dump_period"] = 1000
     # px['n_niches'] = 100
     # px['evals'] = 200
-
+    # px['evals'] = 10000
     base_path = path.join(getcwd(), 'data_gym', env_shorthand)
     oft.make_a_directory(base_path)
 

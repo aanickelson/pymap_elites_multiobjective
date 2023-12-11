@@ -202,7 +202,7 @@ def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
         plt.plot(evos, means, marker=mrks[mrk_n], label=nm)
         mrk_n += 1
         plt.fill_between(evos, means-sterr, means+sterr, alpha=0.3)
-    plt.ylim([-0.1, max_mean + 0.1])
+    plt.ylim([-0.1, max_mean * 1.05])
     # plt.ylim([-0.1, 3.1])
     # plt.title(f"{dirname}")
     plt.xlabel('Number of Policies Tested')
@@ -223,15 +223,15 @@ if __name__ == '__main__':
     ftypes = ['.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
 
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
-    n_files = 20  # Need this in order to make sure the number of data points is consistent for the area plot
+    n_files = 15  # Need this in order to make sure the number of data points is consistent for the area plot
 
     # If you don't define this, it will use the current working directory of this file
     basedir_qd = os.path.join(os.getcwd(), 'data_gym', 'lander')
-    dates_qd = ['001_20231204_131838']
+    dates_qd = ['007_20231208_141219', '008_20231211_070203']
     files_info = [[dates_qd, basedir_qd, 'archive_']]
 
     graphs_fname = file_setup(dates_qd, cwd=basedir_qd)
-    evols = [(i + 1) * 10000 for i in range(n_files)]
+    evols = [(i + 1) * 1000 for i in range(n_files)]
     n_obj = 4
     plot_obj_idx = [0, 2]
     param_num = 0
@@ -239,7 +239,9 @@ if __name__ == '__main__':
     param_sets = ['000']
     data_and_nm = {p: [] for p in param_nms}
     plot_fname = 'lander'  # What domain is being tested
-    orig = [15]*n_obj
+    orig = [0.]*n_obj
+
+    from time import time
 
     for dates, basedir, arch_or_fits in files_info:
         files = get_file_info(dates, arch_or_fits, basedir)
@@ -258,12 +260,18 @@ if __name__ == '__main__':
 
             # This block goes through each fil609047338827017e, gets the data, finds the pareto front, gets the area, then saves the area
 
+            start = time()
             areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits, n_obj, plot_obj_idx, origin=orig)[:n_files]
-            areas = [a / 10000 for a in areas]
-            if len(areas) < n_files:
-                continue
-
+            end_time = time() - start
             print(f'{bh_name}, {areas[-1]}')
+            # areas = [a / 10000 for a in areas]
+            # print(f"{end_time}")
+            if len(areas) < n_files:
+                print(f'Not enough files with data for {params_name} in {sub}')
+                continue
+            elif len(areas) > n_files:
+                areas = areas[:n_files]
+
             try:
                 data_and_nm[bh_name].append(areas)
             except KeyError:
