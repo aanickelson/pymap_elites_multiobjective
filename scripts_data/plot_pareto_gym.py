@@ -93,7 +93,7 @@ def process_centroids(c_vals, p_vals):
 ##############################################
 
 def get_area(xy_v, orig):
-    xy = -1 * np.array(xy_v)
+    xy = np.array(xy_v)
     hv = pygmo.hypervolume(xy)
     # try:
     return hv.compute(orig)  # returns the exclusive volume by point 0
@@ -157,12 +157,17 @@ def plot_pareto_scatter(x, y, xy, iseff, graph_title, fname, graph_dir, filetype
 
     plt.clf()
     max_vals = [max(x), max(y)]
+    min_vals = [min(x), min(y)]
     # max_vals = [8.3, 8.3]
     # plt_max = 2.3
     # plt_max = 3.3
     # plt_max = 90
-    plt.xlim([-0.1, max_vals[0] * 1.05])
-    plt.ylim([-0.1, max_vals[1] * 1.05])
+    if min_vals[0] < 0 and min_vals[1] < 0:
+        plt.xlim([min_vals[0] * 1.05, 0.1])
+        plt.ylim([min_vals[1] * 1.05, 0.1])
+    else:
+        plt.xlim([-0.1, max_vals[0] * 1.05])
+        plt.ylim([-0.1, max_vals[1] * 1.05])
     plt.scatter(x, y, c='red')
     plt.scatter(x[iseff], y[iseff], c="blue")
     curve_area = get_area(xy[iseff], orgn)
@@ -223,23 +228,25 @@ if __name__ == '__main__':
     ftypes = ['.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
 
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
-    n_files = 15  # Need this in order to make sure the number of data points is consistent for the area plot
+    n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
 
     # If you don't define this, it will use the current working directory of this file
-    basedir_qd = os.path.join(os.getcwd(), 'data_gym', 'lander')
-    dates_qd = ['007_20231208_141219', '008_20231211_070203']
+    dates_qd = ['005_20231211_160926']
+    gym_dir_name = 'mountain'
+    basedir_qd = os.path.join(os.getcwd(), 'data_gym', gym_dir_name)
     files_info = [[dates_qd, basedir_qd, 'archive_']]
 
     graphs_fname = file_setup(dates_qd, cwd=basedir_qd)
     evols = [(i + 1) * 1000 for i in range(n_files)]
     n_obj = 4
-    plot_obj_idx = [0, 2]
+    plot_obj_idx = [1,3]
     param_num = 0
     param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
     param_sets = ['000']
     data_and_nm = {p: [] for p in param_nms}
     plot_fname = 'lander'  # What domain is being tested
-    orig = [0.]*n_obj
+    orig = [0.5]*n_obj
+    # orig = [-110., -35., -1., -20.]
 
     from time import time
 
