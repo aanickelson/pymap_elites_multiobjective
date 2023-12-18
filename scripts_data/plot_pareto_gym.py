@@ -75,9 +75,14 @@ def get_file_info(dates, a_or_f, cwd=None):
 
 def load_data(filename, n_objective, plot_obj):
     data = np.loadtxt(filename)
-    xvals = data[:, plot_obj[0]]
-    yvals = data[:, plot_obj[1]]
-    xyvals = data[:, 0:n_objective]
+    try:
+        xvals = data[:, plot_obj[0]]
+        yvals = data[:, plot_obj[1]]
+        xyvals = data[:, 0:n_objective]
+    except IndexError:
+        xvals = np.array([data[plot_obj[0]]])
+        yvals = np.array([data[plot_obj[1]]])
+        xyvals = np.array([data[0:n_objective]])
     return xvals, yvals, xyvals
 
 def load_centroids(filename):
@@ -93,7 +98,9 @@ def process_centroids(c_vals, p_vals):
 ##############################################
 
 def get_area(xy_v, orig):
-    xy = np.array(xy_v)
+    xy = -1 * np.array(xy_v)
+    # xy[:, 1:] = xy[:, 1:] / 100
+    # xy[:, 0] += 1
     hv = pygmo.hypervolume(xy)
     # try:
     return hv.compute(orig)  # returns the exclusive volume by point 0
@@ -166,8 +173,8 @@ def plot_pareto_scatter(x, y, xy, iseff, graph_title, fname, graph_dir, filetype
         plt.xlim([min_vals[0] * 1.05, 0.1])
         plt.ylim([min_vals[1] * 1.05, 0.1])
     else:
-        plt.xlim([-0.1, max_vals[0] * 1.05])
-        plt.ylim([-0.1, max_vals[1] * 1.05])
+        plt.xlim([-0.01, max_vals[0] * 1.05])
+        plt.ylim([-0.01, max_vals[1] * 1.05])
     plt.scatter(x, y, c='red')
     plt.scatter(x[iseff], y[iseff], c="blue")
     curve_area = get_area(xy[iseff], orgn)
@@ -231,22 +238,21 @@ if __name__ == '__main__':
     n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
 
     # If you don't define this, it will use the current working directory of this file
-    dates_qd = ['005_20231211_160926']
+    dates_qd = ['008_20231218_105121']
     gym_dir_name = 'mountain'
     basedir_qd = os.path.join(os.getcwd(), 'data_gym', gym_dir_name)
     files_info = [[dates_qd, basedir_qd, 'archive_']]
 
     graphs_fname = file_setup(dates_qd, cwd=basedir_qd)
-    evols = [(i + 1) * 1000 for i in range(n_files)]
-    n_obj = 4
-    plot_obj_idx = [1,3]
+    evols = [(i + 1) * 10000 for i in range(n_files)]
+    n_obj = 3
+    plot_obj_idx = [0, 2]
     param_num = 0
     param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
     param_sets = ['000']
     data_and_nm = {p: [] for p in param_nms}
-    plot_fname = 'lander'  # What domain is being tested
-    orig = [0.5]*n_obj
-    # orig = [-110., -35., -1., -20.]
+    plot_fname = gym_dir_name  # What domain is being tested
+    orig = [0.1]*n_obj
 
     from time import time
 

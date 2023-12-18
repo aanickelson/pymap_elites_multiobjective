@@ -50,33 +50,42 @@ def multiprocess_main(batch_for_multi):
 if __name__ == '__main__':
     px = default_params.copy()
     p = Parameters
-    env_name = "mo-lunar-lander-continuous-new-rw-v2"
-    env_shorthand = 'lander'
 
     # DEBUGGING VALS:
-    # px["batch_size"] = 10
-    # px["dump_period"] = 1000
-    # px['n_niches'] = 100
+    # px["batch_size"] = 100
+    # px["dump_period"] = 100
+    # px['n_niches'] = 1000
     # px['evals'] = 200
-    # px['evals'] = 10000
-    base_path = path.join(getcwd(), 'data_gym', env_shorthand)
-    oft.make_a_directory(base_path)
+    px['evals'] = 100000
 
-    now = datetime.now()
-    now_str = now.strftime("_%Y%m%d_%H%M%S")
-    dirpath = oft.get_unique_fname(base_path, now_str)
-    oft.make_a_directory(dirpath)
-    batch = []
+    env_info = [["mo-hopper-new-rw-v4", 'hopper'],
+                ["mo-mountaincarcontinuous-new-rw-v0", 'mountain']]
+    # env_info = [["mo-mountaincarcontinuous-new-rw-v0", 'mountain']]
 
     bh_options = ['avg st', 'fin st', 'avg act', 'fin act', 'min avg max act']
     # bh_options = ['avg st']  #, 'fin st', 'avg act', 'fin act', 'min avg max act']
+    # bh_options = ['min avg max act']
 
-    lp.n_stat_runs = 5
-    for b in bh_options:
-        for i in range(lp.n_stat_runs):
-            filepath = path.join(dirpath, f'{p.param_idx:03d}_{b}_run{i}')
-            oft.make_a_directory(filepath)
-            batch.append([p, px, filepath, env_name, b, i])
+    lp.n_stat_runs = 2
+    # lp.n_stat_runs = 1
+
+
+    batch = []
+    for env_name, env_shorthand in env_info:
+
+        base_path = path.join(getcwd(), 'data_gym', env_shorthand)
+        oft.make_a_directory(base_path)
+
+        now = datetime.now()
+        now_str = now.strftime("_%Y%m%d_%H%M%S")
+        dirpath = oft.get_unique_fname(base_path, now_str)
+        oft.make_a_directory(dirpath)
+
+        for b in bh_options:
+            for i in range(lp.n_stat_runs):
+                filepath = path.join(dirpath, f'{p.param_idx:03d}_{b}_run{i}')
+                oft.make_a_directory(filepath)
+                batch.append([p, px, filepath, env_name, b, i])
 
     # Use this one to multiprocess
     multiprocess_main(batch)
