@@ -4,7 +4,7 @@ from AIC.view import view
 
 def run_env(env, policies, p, use_bh=False, vis=False):
     bh_space = [[] for _ in range(p.n_agents)]
-    n_move_choice = 3
+    n_move_choice = 2
     for i in range(p.time_steps):
         state = env.state()
         if vis:
@@ -25,7 +25,7 @@ def run_env(env, policies, p, use_bh=False, vis=False):
     if not use_bh:
         return env.G()
     else:
-        return env.G(), calc_bh(bh_space, p.n_poi_types, p.n_agents, p.n_bh, env.agents, p.cf_bh)
+        return env.G(), calc_bh(bh_space, p.n_agents, p.n_bh, env.agents)
 
 
 def action_space(act_vec, p, n_move):
@@ -35,7 +35,18 @@ def action_space(act_vec, p, n_move):
     # return [poi_type, sum(act_vec[-n_beh:])]
 
 
-def calc_bh(bh_vec, n_poi_types, n_agents, n_bh, agents, cf_in_bh):
+def calc_bh(bh_vec, n_agents, n_bh, agents):
+    # If there are counterfactual agents, include in b
+    bh = np.zeros((n_agents, n_bh))
+    for ag_i in range(n_agents):
+        ag_bhs = np.array(bh_vec[ag_i])
+        agent = agents[ag_i]
+        # Take the average of the two behavior vectors
+        bh[ag_i] = np.mean(ag_bhs, axis=0)[1:]
+    return bh
+
+
+def calc_bh_OLD(bh_vec, n_poi_types, n_agents, n_bh, agents, cf_in_bh):
     # If there are counterfactual agents, include in b
     bh = np.zeros((n_agents, n_bh))
     for ag_i in range(n_agents):
@@ -50,7 +61,7 @@ def calc_bh(bh_vec, n_poi_types, n_agents, n_bh, agents, cf_in_bh):
                 # Mean of all behaviors for that POI type
                 poi_bh = all_poi_bhs.mean(axis=0)[1:]
                 # Average the behavior means -- can't just sum because we have to keep it between [0, 1]
-                if cf_in_bh:
+                if cf_in_bh or n_bh == 2:
                     bh[ag_i][poi] = np.sum(poi_bh) / 3
                 else:
                     # Set the three behaviors associated with this POI to the mean of the behaviors
@@ -61,4 +72,3 @@ def calc_bh(bh_vec, n_poi_types, n_agents, n_bh, agents, cf_in_bh):
 
     bh = np.nan_to_num(bh, np.nan)
     # bh = np.reshape(bh, (n_agents, n_poi_types * n_beh))
-    return bh

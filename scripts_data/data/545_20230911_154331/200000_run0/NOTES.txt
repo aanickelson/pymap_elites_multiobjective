@@ -1,0 +1,1 @@
+20230911_202922 - these were run with the full set of 0.5, 0.7, 1.0 weights just to see. It probably won't work, but it will be interesting.

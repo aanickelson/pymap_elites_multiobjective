@@ -1,5 +1,5 @@
 
-def string_to_save(i, n_cf, cf_bh, map_size, move, poi, cf_locs, poi_locs, n_poi, agent_locs):
+def string_to_save(i, n_cf, cf_bh, map_size, move, poi, cf_locs, poi_locs, n_poi, agent_locs, ag_st):
     s = ""
     s += "import numpy as np\n"
     s += "from AIC.poi import tanh_poi, linear_poi\n"
@@ -14,12 +14,12 @@ def string_to_save(i, n_cf, cf_bh, map_size, move, poi, cf_locs, poi_locs, n_poi
     s += f"    n_cf_evals = 10  # Number of times to rerun with different cf configurations \n"
     s += f"    map_size = {map_size}\n"
     s += f"    counter = {n_cf}\n"
-    s += f"    cf_bh = {cf_bh}\n"
-    s += f"    counter_move = {move}\n"
-    s += f'    ag_in_st = True\n\n'
-
-    s += f"    poi_visit = {poi}    # Flag to determine if agent impacts POI completeness, but NOT the rewards\n"
     s += f"    counter_locs =" + str([l for l in cf_locs]) + "\n\n"
+
+    s += f"    counter_move = {bool(move)}\n"
+    s += f"    poi_visit = {bool(poi)}    # Flag to determine if agent impacts POI completeness, but NOT the rewards\n"
+    s += f'    ag_in_st = {bool(ag_st)}\n'
+    s += f"    cf_bh = {bool(cf_bh)}\n\n"
 
     s += f"    poi_pos =" + str(poi_locs) + "\n"
     s += f"    n_pois = {n_poi}\n"

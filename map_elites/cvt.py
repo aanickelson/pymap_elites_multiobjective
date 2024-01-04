@@ -52,7 +52,13 @@ def __add_to_archive(slist, archive, kdt):
     niches_changed = []
     for s in slist:
         centroid = s.desc
-        niche_index = kdt.query([centroid], k=1)[1][0][0]
+        try:
+            niche_index = kdt.query([centroid], k=1)[1][0][0]
+        except ValueError:
+            print("Value Error at kdt query for centroid (cvt > add to archive)")
+            print(centroid)
+            print(s.desc, s.centroid, s.fitness)
+            exit(1)
         niche_kdt = kdt.data[niche_index]
         n = cm.make_hashable(niche_kdt)
         s.centroid = n
