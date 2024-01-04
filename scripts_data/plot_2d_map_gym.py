@@ -42,7 +42,7 @@ import matplotlib as mpl
 from scipy.spatial import Voronoi, voronoi_plot_2d
 from sklearn.neighbors import KDTree
 import pymap_elites_multiobjective.scripts_data.often_used as util
-from pymap_elites_multiobjective.scripts_data.plot_pareto import file_setup
+from pymap_elites_multiobjective.scripts_data.plot_pareto_gym import file_setup
 import re
 import os
 from scipy import stats
@@ -205,42 +205,30 @@ def plot_cvt(centroids, fit, desc, dim1, dim2, min_fit, max_fit, e, graph_f, sub
     plt.clf()
 
 
-def mk_files(rootdir, subd, niches, pols):
+def mk_files(rootdir, subd, niches, pols, n_bh):
     # Get the name of the sub-directory
     p_num = re.split('_|/', subd)[0]
     pth = os.path.join(rootdir, subd)
 
-    graphs_f = os.path.join(file_setup(dates, 'bh_'), 'bh')
-    if not os.path.exists(graphs_f):
-        os.mkdir(graphs_f)
-
-    bhs = [2, 5, 6, 9]
-    did_it = False
-    for bh_size in bhs:
-        cent_f = os.path.join(pth, f'centroids_{niches}_{bh_size}.dat')
-        dat_f = os.path.join(pth, f'archive_{pols}.dat')
-        if os.path.exists(cent_f):
-            did_it = True
-            break
-
-    if not did_it:
-        return False
+    cent_f = os.path.join(pth, f'centroids_{niches}_{n_bh}.dat')
+    dat_f = os.path.join(pth, f'archive_{pols}.dat')
 
     if not os.path.exists(dat_f):
         print(f"File does not exist: {dat_f}")
         return False
 
-    return pth, cent_f, dat_f, graphs_f
+    return [pth, cent_f, dat_f]
 
 
-def calc_fit_data(fitnesses, layers):
+def calc_fit_data(fitnesses, layers, nobj):
     fit = np.zeros(fitnesses.shape[0])
     fits = fitnesses.copy()
     x = 1
     for lay in range(layers, 0, -1):
+
         pareto = util.is_pareto_efficient_simple(fits)
         fit[pareto] = x
-        fits[pareto] = [0, 0]
+        fits[pareto] = [0]*nobj
         x *= 0.99
         # if not lay % 100:
         #     print(lay)
@@ -249,19 +237,18 @@ def calc_fit_data(fitnesses, layers):
     return fit
 
 
-def process_and_plot(files_info, ds, ext, sub, plotit, red=False):
+def process_and_plot(files_info, ds, ext, sub, plotit, n_obj, n_pareto_layers, red=False):
     if not files_info:
         print(f'### SKIPPING')
         return
-    n_pareto_layers = 1000
-    fpath, centroids_f, data_f, grph_f = files_info
+    [fpath, centroids_f, data_f, grph_f] = files_info
     # print(f'processing {fpath}')
     centroids = load_centroids(centroids_f)
-    ftns, beh = load_data(data_f, centroids.shape[1], 2)
+    ftns, beh = load_data(data_f, centroids.shape[1], n_obj)
     _, counts = np.unique(beh, return_counts=True, axis=0)
     pct_bh = len(counts) / centroids.shape[0]
     # print(pct_bh)
-    fit = calc_fit_data(ftns, n_pareto_layers)
+    fit = calc_fit_data(ftns, n_pareto_layers, n_obj)
 
     if plotit:
         for dim01, dim02 in ds:
@@ -272,44 +259,39 @@ def process_and_plot(files_info, ds, ext, sub, plotit, red=False):
 
 
 if __name__ == "__main__":
-    # if len(sys.argv) < 3:
-    #     sys.exit('Usage: %s centroids_file archive.dat [min_fit] [max_fit]' % sys.argv[0])
-    # dates = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600', '532_20230828_101445']
-    # dates = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600', '532_20230828_101445',
-    # '533_20230828_113856', '534_20230828_134557']
-    dates = ['540_20230907_095553', '541_20230907_103856']
-    exts = ['.png']  # ,'.png'
-    n_niches = 1000
-    n_pols = 100000
-    final_num = n_pols
-    bh_size = 2
-    n_objectives = 2
-    n_pareto_layers = 150
-    dim_x = 24
-    toplotornot = True
-    param_sets = ['200100', '211101', '211109', '200000', '211001', '211009']
-    # param_sets = ['100000', '100100', '100009', '100109', '100019', '100119', '110009', '111009', '110109', '110019', '111109', '111019', '110119',
-    #               '111119']
-    # param_sets = ['100109']  #, '100107']
-    # param_sets = ['100100', '111101', '111103', '111105', '111107', '111109']
-    # param_sets = ['100100', '100109', '110109', '111109']
 
-    params_dict = {pname: [] for pname in param_sets}
+    exts = ['.png']  # ,'.png'
+    dates = ['003_20240104_144742']
+    n_niches = 1000
+    n_pols = 10000
+    final_num = n_pols
+    bh_size = 9
+    n_objectives = 3
+    n_pareto_layers = 150
+    toplotornot = True
+    gym_dir_name = 'hopper'
+    basedir_qd = os.path.join(os.getcwd(), 'data_gym', gym_dir_name)
+    graphs_f = file_setup(dates, cwd=basedir_qd)
+    files_info = [[dates, basedir_qd, 'archive_']]
+    param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
+    param_sets = ['000']
+    params_dict = {p: [] for p in param_nms}
 
     for date in dates:
-        root_dir = os.path.join(os.getcwd(), 'data', date)
+        root_dir = os.path.join(basedir_qd, date)
 
         bh_pth = os.path.join(root_dir, 'bh_vis')
         # util.make_a_directory(bh_pth)
         # print(root_dir)
         sub_dirs = list(os.walk(root_dir))[0][1]
         for d in sub_dirs:
-            p_num = re.split('_|/', d)[0]
+            p_num = re.split('_|/', d)[1]
             if p_num not in params_dict:
                 continue
-            f_info = mk_files(root_dir, d, n_niches, n_pols)
-            dims = [[0, 1]]  #, [1, 4], [2, 5]] #  ,[0, 3],  [2, 5]]  #, [4, 2]]
-            bh_fill = process_and_plot(f_info, dims, exts, d, toplotornot)
+            f_info = mk_files(root_dir, d, n_niches, n_pols, bh_size)
+            f_info.append(graphs_f)
+            dims = [[0, 8], [1, 7], [2, 6], [3, 5], [0, 4]]  #, [1, 4], [2, 5]] #  ,[0, 3],  [2, 5]]  #, [4, 2]]
+            bh_fill = process_and_plot(f_info, dims, exts, d, toplotornot, n_objectives, n_pareto_layers)
             params_dict[p_num].append(bh_fill)
             print(d, bh_fill)
     graphsfname = f_info[-1]
