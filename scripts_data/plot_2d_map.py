@@ -48,6 +48,10 @@ import os
 from scipy import stats
 
 
+# Type 1 / Truetype Fonts for GECCO
+mpl.rcParams['pdf.fonttype'] = 42
+mpl.rcParams['ps.fonttype'] = 42
+
 
 def voronoi_finite_polygons_2d(vor, radius=None):
     """

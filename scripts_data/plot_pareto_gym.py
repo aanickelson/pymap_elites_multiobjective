@@ -2,11 +2,16 @@ import re
 
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib as mpl
 from shapely.geometry import Polygon
 import os
 from pymap_elites_multiobjective.scripts_data.often_used import is_pareto_efficient_simple
 import pygmo
 # import platypus
+
+# Type 1 / Truetype Fonts for GECCO
+mpl.rcParams['pdf.fonttype'] = 42
+mpl.rcParams['ps.fonttype'] = 42
 
 ##############################
 # This block is for file i/o #
@@ -204,7 +209,7 @@ def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
             max_mean = max(means) + 0.2
 
         with open(text_f, 'a') as f:
-            f.write(f'{nm} & {means[-1]} & {sterr[-1]} \n')
+            f.write(f'{nm} \n means: {means} \n sterr: {sterr} \n')
 
         # these are print statements if you want to print & combine data across machines
         # It's far easier this way than trying to migrate 2-3GB of raw data across machines.
@@ -234,25 +239,26 @@ if __name__ == '__main__':
 
     ftypes = ['.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
 
-    plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
-    n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
+    plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
+    n_files = 15  # Need this in order to make sure the number of data points is consistent for the area plot
+    dates_qd = ['004_20240105_132202']
+    gym_dir_name = 'hopper'
+    n_obj = 3
+    plot_obj_idx = [0, 1]
 
     # If you don't define this, it will use the current working directory of this file
-    dates_qd = ['008_20231218_105121']
-    gym_dir_name = 'mountain'
     basedir_qd = os.path.join(os.getcwd(), 'data_gym', gym_dir_name)
     files_info = [[dates_qd, basedir_qd, 'archive_']]
 
     graphs_fname = file_setup(dates_qd, cwd=basedir_qd)
     evols = [(i + 1) * 10000 for i in range(n_files)]
-    n_obj = 3
-    plot_obj_idx = [0, 2]
     param_num = 0
     param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
+    # param_nms = ['avg st', 'fin st', 'min avg max act']
     param_sets = ['000']
     data_and_nm = {p: [] for p in param_nms}
     plot_fname = gym_dir_name  # What domain is being tested
-    orig = [0.1]*n_obj
+    orig = [0.0]*n_obj
 
     from time import time
 

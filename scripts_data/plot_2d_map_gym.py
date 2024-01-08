@@ -49,6 +49,11 @@ from scipy import stats
 
 
 
+# Type 1 / Truetype Fonts for GECCO
+mpl.rcParams['pdf.fonttype'] = 42
+mpl.rcParams['ps.fonttype'] = 42
+
+
 def voronoi_finite_polygons_2d(vor, radius=None):
     """
     Reconstruct infinite voronoi regions in a 2D diagram to finite
@@ -261,21 +266,26 @@ def process_and_plot(files_info, ds, ext, sub, plotit, n_obj, n_pareto_layers, r
 if __name__ == "__main__":
 
     exts = ['.png']  # ,'.png'
-    dates = ['003_20240104_144742']
+    dates = ['004_20240105_132202']
+    gym_dir_name = 'hopper'
     n_niches = 1000
-    n_pols = 10000
+    n_pols = 150000
+
     final_num = n_pols
-    bh_size = 9
     n_objectives = 3
     n_pareto_layers = 150
-    toplotornot = True
-    gym_dir_name = 'hopper'
+    plotornot = True
+
     basedir_qd = os.path.join(os.getcwd(), 'data_gym', gym_dir_name)
     graphs_f = file_setup(dates, cwd=basedir_qd)
     files_info = [[dates, basedir_qd, 'archive_']]
-    param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
+
+    # param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
+    param_nms = ['avg st', 'fin st', 'min avg max act']
     param_sets = ['000']
     params_dict = {p: [] for p in param_nms}
+    # bh_dict = {'avg act':1, 'avg st':2, 'fin act':1, 'fin st':2, 'min avg max act':3}
+    bh_dict = {'avg act':3, 'avg st':11, 'fin act':3, 'fin st':11, 'min avg max act':9}
 
     for date in dates:
         root_dir = os.path.join(basedir_qd, date)
@@ -288,10 +298,13 @@ if __name__ == "__main__":
             p_num = re.split('_|/', d)[1]
             if p_num not in params_dict:
                 continue
+            bh_size = bh_dict[p_num]
             f_info = mk_files(root_dir, d, n_niches, n_pols, bh_size)
+            if not f_info:
+                continue
             f_info.append(graphs_f)
-            dims = [[0, 8], [1, 7], [2, 6], [3, 5], [0, 4]]  #, [1, 4], [2, 5]] #  ,[0, 3],  [2, 5]]  #, [4, 2]]
-            bh_fill = process_and_plot(f_info, dims, exts, d, toplotornot, n_objectives, n_pareto_layers)
+            dims = [[0, 1]]  #, [1, 4], [2, 5]] #  ,[0, 3],  [2, 5]]  #, [4, 2]]
+            bh_fill = process_and_plot(f_info, dims, exts, d, plotornot, n_objectives, n_pareto_layers)
             params_dict[p_num].append(bh_fill)
             print(d, bh_fill)
     graphsfname = f_info[-1]
