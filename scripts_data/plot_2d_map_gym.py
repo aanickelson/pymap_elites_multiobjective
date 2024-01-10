@@ -266,26 +266,33 @@ def process_and_plot(files_info, ds, ext, sub, plotit, n_obj, n_pareto_layers, r
 if __name__ == "__main__":
 
     exts = ['.png']  # ,'.png'
-    dates = ['004_20240105_132202']
+    dates = ['005_20240109_161908']
     gym_dir_name = 'hopper'
     n_niches = 1000
-    n_pols = 150000
+    n_pols = 100000
 
     final_num = n_pols
     n_objectives = 3
     n_pareto_layers = 150
     plotornot = True
+    # Mountain
+    bh_dict = {'avg act':1, 'avg st':2, 'fin act':1, 'fin st':2,
+               'min max st': 4, 'min avg max st': 6, 'min max act': 2,'min avg max act':3}
+    # Hopper
+    bh_dict = {'avg act':3, 'avg st':11, 'fin act':3, 'fin st':11,
+               'min max st': 22, 'min avg max st': 33, 'min max act': 6,'min avg max act':9}
+    dims = [[1, 7], [2, 8]]  # , [1, 4], [2, 5]] #  ,[0, 3],  [2, 5]]  #, [4, 2]]
 
     basedir_qd = os.path.join(os.getcwd(), 'data_gym', gym_dir_name)
     graphs_f = file_setup(dates, cwd=basedir_qd)
     files_info = [[dates, basedir_qd, 'archive_']]
 
+    # bh_options = ['avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
     # param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
-    param_nms = ['avg st', 'fin st', 'min avg max act']
+    # param_nms = ['avg st', 'fin st', 'min avg max act']
+    param_nms = ['min avg max act']
     param_sets = ['000']
     params_dict = {p: [] for p in param_nms}
-    # bh_dict = {'avg act':1, 'avg st':2, 'fin act':1, 'fin st':2, 'min avg max act':3}
-    bh_dict = {'avg act':3, 'avg st':11, 'fin act':3, 'fin st':11, 'min avg max act':9}
 
     for date in dates:
         root_dir = os.path.join(basedir_qd, date)
@@ -303,7 +310,6 @@ if __name__ == "__main__":
             if not f_info:
                 continue
             f_info.append(graphs_f)
-            dims = [[0, 1]]  #, [1, 4], [2, 5]] #  ,[0, 3],  [2, 5]]  #, [4, 2]]
             bh_fill = process_and_plot(f_info, dims, exts, d, plotornot, n_objectives, n_pareto_layers)
             params_dict[p_num].append(bh_fill)
             print(d, bh_fill)
