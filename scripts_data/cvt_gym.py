@@ -8,14 +8,12 @@ import multiprocessing
 import mo_gymnasium as mo_gym
 from mo_gymnasium.utils import MORecordEpisodeStatistics
 
-
-from AIC.aic import aic as Domain
 import pymap_elites_multiobjective.map_elites.cvt as cvt_me
 from pymap_elites_multiobjective.cvt_params.mome_default_params import default_params
 from pymap_elites_multiobjective.cvt_params.gym_params_0000 import Parameters
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
 import pymap_elites_multiobjective.scripts_data.often_used as oft
-from evo_playground.test_morl.sar_wrapper import SARWrap
+from pymap_elites_multiobjective.scripts_data.sar_wrapper import SARWrap
 
 
 def main(setup):
@@ -58,20 +56,25 @@ if __name__ == '__main__':
     # px['evals'] = 200
     px['evals'] = 100000
 
-    env_info = [["mo-hopper-new-rw-v4", 'hopper'],
-                ["mo-mountaincarcontinuous-new-rw-v0", 'mountain']]
+    bh_options_hop = ['avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    # Action in mountain car is 1d, so not very useful as a behavior descriptor
+    bh_options_mt = ['avg st', 'fin st', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+
+    env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop],
+                ["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
     # env_info = [["mo-mountaincarcontinuous-new-rw-v0", 'mountain']]
+    # env_info = [["mo-hopper-new-rw-v4", 'hopper']]
 
-    bh_options = ['avg st', 'fin st', 'avg act', 'fin act', 'min avg max act']
+
     # bh_options = ['avg st']  #, 'fin st', 'avg act', 'fin act', 'min avg max act']
-    # bh_options = ['min avg max act']
+    # bh_options = ['min avg max act', 'fin act']
 
-    lp.n_stat_runs = 2
-    # lp.n_stat_runs = 1
+    # lp.n_stat_runs = 10
+    lp.n_stat_runs = 3
 
 
     batch = []
-    for env_name, env_shorthand in env_info:
+    for env_name, env_shorthand, bh_options in env_info:
 
         base_path = path.join(getcwd(), 'data_gym', env_shorthand)
         oft.make_a_directory(base_path)
