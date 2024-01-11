@@ -266,7 +266,7 @@ def process_and_plot(files_info, ds, ext, sub, plotit, n_obj, n_pareto_layers, r
 if __name__ == "__main__":
 
     exts = ['.png']  # ,'.png'
-    dates = ['005_20240109_161908']
+    dates = ['011_20240110_125413']
     gym_dir_name = 'hopper'
     n_niches = 1000
     n_pols = 100000
@@ -276,21 +276,21 @@ if __name__ == "__main__":
     n_pareto_layers = 150
     plotornot = True
     # Mountain
-    bh_dict = {'avg act':1, 'avg st':2, 'fin act':1, 'fin st':2,
-               'min max st': 4, 'min avg max st': 6, 'min max act': 2,'min avg max act':3}
+    # bh_dict = {'avg act':1, 'avg st':2, 'fin act':1, 'fin st':2,
+    #            'min max st': 4, 'min avg max st': 6, 'min max act': 2,'min avg max act':3}
     # Hopper
-    bh_dict = {'avg act':3, 'avg st':11, 'fin act':3, 'fin st':11,
-               'min max st': 22, 'min avg max st': 33, 'min max act': 6,'min avg max act':9}
-    dims = [[1, 7], [2, 8]]  # , [1, 4], [2, 5]] #  ,[0, 3],  [2, 5]]  #, [4, 2]]
+    bh_dict = {'avg act':3, 'avg st':4, 'fin act':3, 'fin st':4,
+               'min max st': 8, 'min avg max st': 12, 'min max act': 6,'min avg max act':9}
+    param_nms = ['avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    # param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
+    # param_nms = ['avg st', 'fin st', 'min avg max act']
+    # param_nms = ['min avg max act']
+    dims = [[0, 1]]
 
     basedir_qd = os.path.join(os.getcwd(), 'data_gym', gym_dir_name)
     graphs_f = file_setup(dates, cwd=basedir_qd)
     files_info = [[dates, basedir_qd, 'archive_']]
 
-    # bh_options = ['avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
-    # param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
-    # param_nms = ['avg st', 'fin st', 'min avg max act']
-    param_nms = ['min avg max act']
     param_sets = ['000']
     params_dict = {p: [] for p in param_nms}
 
