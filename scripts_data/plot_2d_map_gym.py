@@ -47,8 +47,6 @@ import re
 import os
 from scipy import stats
 
-
-
 # Type 1 / Truetype Fonts for GECCO
 mpl.rcParams['pdf.fonttype'] = 42
 mpl.rcParams['ps.fonttype'] = 42
@@ -233,7 +231,7 @@ def calc_fit_data(fitnesses, layers, nobj):
 
         pareto = util.is_pareto_efficient_simple(fits)
         fit[pareto] = x
-        fits[pareto] = [0]*nobj
+        fits[pareto] = [0] * nobj
         x *= 0.99
         # if not lay % 100:
         #     print(lay)
@@ -266,7 +264,7 @@ def process_and_plot(files_info, ds, ext, sub, plotit, n_obj, n_pareto_layers, r
 if __name__ == "__main__":
 
     exts = ['.png']  # ,'.png'
-    dates = ['011_20240110_125413']
+    dates = ['019_20240110_172553']
     gym_dir_name = 'hopper'
     n_niches = 1000
     n_pols = 100000
@@ -276,12 +274,13 @@ if __name__ == "__main__":
     n_pareto_layers = 150
     plotornot = True
     # Mountain
-    # bh_dict = {'avg act':1, 'avg st':2, 'fin act':1, 'fin st':2,
+    # bh_dict = {'auto': 2, 'avg act':1, 'avg st':2, 'fin act':1, 'fin st':2,
     #            'min max st': 4, 'min avg max st': 6, 'min max act': 2,'min avg max act':3}
     # Hopper
-    bh_dict = {'avg act':3, 'avg st':4, 'fin act':3, 'fin st':4,
-               'min max st': 8, 'min avg max st': 12, 'min max act': 6,'min avg max act':9}
-    param_nms = ['avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    bh_dict = {'auto': 2, 'avg act': 3, 'avg st': 4, 'fin act': 3, 'fin st': 4,
+               'min max st': 8, 'min avg max st': 12, 'min max act': 6, 'min avg max act': 9}
+    param_nms = ['auto', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act',
+                 'min avg max act']
     # param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
     # param_nms = ['avg st', 'fin st', 'min avg max act']
     # param_nms = ['min avg max act']
@@ -318,4 +317,3 @@ if __name__ == "__main__":
         for i, [key, val] in enumerate(params_dict.items()):
             fl.write(f'{key} & - & - & - & - & & &  {np.mean(val):0.5f} & {stats.sem(val):0.5f} \n')
     print(params_dict)
-

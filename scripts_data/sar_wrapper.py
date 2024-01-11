@@ -44,7 +44,7 @@ class SARWrap:
                 self.st_high[i] = np.min([self.st_high[i], 50])
 
         # Used for finding the practical min / max of states
-        # self.raw_st = np.zeros((ts, self.st_size))
+        self.raw_st = np.zeros((ts, self.st_size))
         # self.raw_st_low = np.zeros(self.st_size) + 100
         # self.raw_st_high = np.zeros(self.st_size) - 100
         # self.counter = 0
@@ -126,14 +126,16 @@ class SARWrap:
         # May decide to only use a subset of the state for the behaviors
         # In some domains, part of the state can be binary, which is unhelpful for behaviors
         st_bh_size = self.env.get_wrapper_attr("st_bh_size")
-        sizes = {'avg st': st_bh_size,                # Average state
-                 'fin st': st_bh_size,                # Final state
+        sizes = {'avg st': st_bh_size,                      # Average state
+                 'fin st': st_bh_size,                      # Final state
                  'avg act': self.act_size,                  # Average action
                  'fin act': self.act_size,                  # Final action
-                 'min max st': st_bh_size * 2,            # Min and max states
-                 'min avg max st': st_bh_size * 3,        # Min, average, and max states
+                 'min max st': st_bh_size * 2,              # Min and max states
+                 'min avg max st': st_bh_size * 3,          # Min, average, and max states
                  'min max act': self.act_size * 2,          # Min and max actions
-                 'min avg max act': self.act_size * 3}      # Min, average, max actions
+                 'min avg max act': self.act_size * 3,      # Min, average, max actions
+                 'auto': self.raw_st.size                   # Auto-encoder will use all states as an input
+                 }
         return sizes[bh_name]
 
     def get_bh(self, bh_name):
@@ -158,7 +160,8 @@ class SARWrap:
                'min avg max act':                           # Min, average, max actions
                    np.concatenate((np.min(self.acts, axis=0),
                                    np.mean(self.acts, axis=0),
-                                   np.max(self.acts, axis=0)))}
+                                   np.max(self.acts, axis=0))),
+               'auto': np.ndarray.flatten(self.raw_st)}
 
         return np.nan_to_num(bhs[bh_name])
 

@@ -9,6 +9,7 @@ import mo_gymnasium as mo_gym
 from mo_gymnasium.utils import MORecordEpisodeStatistics
 
 import pymap_elites_multiobjective.map_elites.cvt as cvt_me
+import pymap_elites_multiobjective.map_elites.cvt_auto_encoder as cvt_auto_encoder
 from pymap_elites_multiobjective.cvt_params.mome_default_params import default_params
 from pymap_elites_multiobjective.cvt_params.gym_params_0000 import Parameters
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
@@ -22,20 +23,28 @@ def main(setup):
     numpy.random.seed(stat_num + random.randint(0, 10000))
     moo_gym_env = MORecordEpisodeStatistics(mo_gym.make(env_nm), gamma=0.99)
     # eval_env = mo_gym.make(gym_env)
-    wrap = SARWrap(moo_gym_env, lp.hid, bh_name)
+    if env_nm == "mo-hopper-new-rw-v4":
+        ts = 200
+    elif env_nm == '"mo-mountaincarcontinuous-new-rw-v0"':
+        ts = 500
+    else:
+        ts = 1000
+
+    wrap = SARWrap(moo_gym_env, lp.hid, bh_name, ts)
     # Dimension of x to be tested is the sum of the sizes of the weights vectors and bias vectors
     wts_dim = ((wrap.st_size * lp.hid)      # Layer 0 size
                + (lp.hid * wrap.act_size)   # Layer 1 size
                + lp.hid                     # Bias 0 size
                + wrap.act_size)             # Bias 1 size
+    if bh_name == "auto":
+        n_behaviors = 2
+        archive = cvt_auto_encoder.compute(n_behaviors, wts_dim, wrap, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
+                                 log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
 
-    n_behaviors = wrap.bh_size(wrap.bh_name)
-    start = time()
-    archive = cvt_me.compute(n_behaviors, wts_dim, wrap.run_bh, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
-                             log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
-    tot_time = time() - start
-    with open(filepath + '_time.txt', 'w') as f:
-        f.write(str(tot_time))
+    else:
+        n_behaviors = wrap.bh_size(wrap.bh_name)
+        archive = cvt_me.compute(n_behaviors, wts_dim, wrap.run_bh, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
+                                 log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
 
 
 def multiprocess_main(batch_for_multi):
@@ -56,22 +65,21 @@ if __name__ == '__main__':
     # px['evals'] = 200
     px['evals'] = 100000
 
-    bh_options_hop = ['avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    # bh_options_hop = ['auto', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    bh_options_hop = ['auto']
     # Action in mountain car is 1d, so not very useful as a behavior descriptor
-    bh_options_mt = ['avg st', 'fin st', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    bh_options_mt = ['auto', 'avg st', 'fin st', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
 
-    env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop],
-                ["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
-    # env_info = [["mo-mountaincarcontinuous-new-rw-v0", 'mountain']]
-    # env_info = [["mo-hopper-new-rw-v4", 'hopper']]
-
+    # env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop],
+    #             ["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
+    # env_info = [["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
+    env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop]]
 
     # bh_options = ['avg st']  #, 'fin st', 'avg act', 'fin act', 'min avg max act']
     # bh_options = ['min avg max act', 'fin act']
 
     # lp.n_stat_runs = 10
-    lp.n_stat_runs = 3
-
+    lp.n_stat_runs = 1
 
     batch = []
     for env_name, env_shorthand, bh_options in env_info:
@@ -91,11 +99,11 @@ if __name__ == '__main__':
                 batch.append([p, px, filepath, env_name, b, i])
 
     # Use this one to multiprocess
-    multiprocess_main(batch)
+    # multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
-    # px["parallel"] = True
-    # main(batch[0])
+    px["parallel"] = True
+    main(batch[0])
 
     # This runs them one at a time
     # for b in batch:
