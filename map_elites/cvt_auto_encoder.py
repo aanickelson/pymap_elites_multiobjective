@@ -49,7 +49,7 @@ from pymap_elites_multiobjective.map_elites import common as cm
 from evo_playground.support.auto_encoder import Autoencoder
 
 
-def __add_to_archive(slist, archive, kdt):
+def __add_to_archive(slist, archive, kdt, pareto=True):
     niches_changed = []
     for s in slist:
         centroid = s.desc
@@ -72,8 +72,13 @@ def __add_to_archive(slist, archive, kdt):
         if n not in niches_changed:
             niches_changed.append(n)
 
-    for ni in niches_changed:
-        archive[ni] = is_pareto_efficient_simple(archive[ni])
+    if pareto:
+        for ni in niches_changed:
+            archive[ni] = is_pareto_efficient_simple(archive[ni])
+    else:
+        for ni in niches_changed:
+            max_pol = np.argmax([sum(pol.fitness) for pol in archive[ni]])
+            archive[ni] = [archive[ni][max_pol]]
 
 
 def is_pareto_efficient_simple(vals):
@@ -164,7 +169,8 @@ def compute(bh_size, dim_x, wrapper,
             params=cm.default_params,
             log_file=None,
             variation_operator=cm.variation,
-            data_fname=None):
+            data_fname=None,
+            multiobj=True):
     """CVT MAP-Elites
        Vassiliades V, Chatzilygeroudis K, Mouret JB. Using centroidal voronoi tessellations to scale up the multidimensional archive of phenotypic elites algorithm. IEEE Transactions on Evolutionary Computation. 2017 Aug 3;22(4):623-30.
 
@@ -227,7 +233,7 @@ def compute(bh_size, dim_x, wrapper,
         archive, autoencoder, s_list = get_bh_from_auto(autoencoder, archive, s_list)
 
         # natural selection
-        __add_to_archive(s_list, archive, kdt)
+        __add_to_archive(s_list, archive, kdt, multiobj)
         # count evals
         n_evals += len(to_evaluate)
         b_evals += len(to_evaluate)

@@ -14,6 +14,8 @@ class SARWrap:
     def __init__(self, env, hid, bh, ts=1000):
         self.env = env
         self.ts = ts
+        if 'auto ' in bh:
+            bh = 'auto'
         self.bh_name = bh
 
         self.st_size = self.env.observation_space.shape[0]

@@ -36,10 +36,11 @@ def main(setup):
                + (lp.hid * wrap.act_size)   # Layer 1 size
                + lp.hid                     # Bias 0 size
                + wrap.act_size)             # Bias 1 size
-    if bh_name == "auto":
+    if bh_name == "auto so" or bh_name == 'auto mo':
         n_behaviors = 2
+        multiobjective = bh_name == 'auto mo'
         archive = cvt_auto_encoder.compute(n_behaviors, wts_dim, wrap, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
-                                 log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
+                                 log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath, multiobj=multiobjective)
 
     else:
         n_behaviors = wrap.bh_size(wrap.bh_name)
@@ -66,9 +67,9 @@ if __name__ == '__main__':
     px['evals'] = 100000
 
     # bh_options_hop = ['auto', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
-    bh_options_hop = ['auto']
+    bh_options_hop = ['auto so', 'auto mo']
     # Action in mountain car is 1d, so not very useful as a behavior descriptor
-    bh_options_mt = ['auto', 'avg st', 'fin st', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    bh_options_mt = ['auto so', 'auto mo', 'avg st', 'fin st', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
 
     # env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop],
     #             ["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
@@ -79,7 +80,7 @@ if __name__ == '__main__':
     # bh_options = ['min avg max act', 'fin act']
 
     # lp.n_stat_runs = 10
-    lp.n_stat_runs = 1
+    lp.n_stat_runs = 5
 
     batch = []
     for env_name, env_shorthand, bh_options in env_info:
