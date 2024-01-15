@@ -18,7 +18,7 @@ mpl.rcParams['ps.fonttype'] = 42
 # This block is for file i/o #
 ##############################
 
-def file_setup(f_dates, pre='', cwd=None):
+def file_setup(f_dates, cwd=None):
     fnums = [re.split('_|/', d)[0] for d in f_dates]
 
     all_fnums = '_'.join(fnums)
@@ -30,7 +30,8 @@ def file_setup(f_dates, pre='', cwd=None):
     if not os.path.exists(graphs_dir):
         os.mkdir(graphs_dir)
 
-    graphs_f = os.path.join(graphs_dir, f'{pre}graphs_{all_fnums}')
+    graphs_f = graphs_dir + f'/graphs_{all_fnums}'
+    # graphs_f = os.path.join(graphs_dir, f'{pre}graphs_{all_fnums}')
     if not os.path.exists(graphs_f):
         os.mkdir(graphs_f)
 
@@ -81,6 +82,8 @@ def get_file_info(dates, a_or_f, cwd=None):
 
 def load_data(filename):
     data = np.loadtxt(filename)
+    if len(data.shape) == 1:
+        data = np.array([data])
     xvals = data[:, 0]
     yvals = data[:, 1]
     xyvals = data[:, 0:2]
@@ -228,56 +231,24 @@ if __name__ == '__main__':
     ftypes = ['.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
 
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
-    n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
+    n_files = 8  # Need this in order to make sure the number of data points is consistent for the area plot
+    all_options = ['auto so', 'auto mo', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    dates_qd = ['567_20240115_134716']
+    param_sets = ['200100', '211101', '211109', '200000', '211001', '211009']
+    param_names = ['0cf', '1cf, no bh', '9cf, no bh', '0cf, no st', '1cf, no st', '9cf, no st']
+    nm = 'Behavoir comparison'
 
     # If you don't define this, it will use the current working directory of this file
     basedir_qd = os.getcwd()
-    # dates_qd = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600']  #, '532_20230828_101445', '533_20230828_113856', '534_20230828_134557']
-    dates_qd = ['545_20230911_154331']
     files_info = [[dates_qd, basedir_qd, 'archive_']]
-    # FOR PARAMETER FILE NAME CODES -- see __NOTES.txt in the parameters directory
-
-    # all_sets is a little wonky, I'll admit.
-    # Each set is [[param file numbers], [param names for plot], 'graph title']
-    # Param names provides the name of each parameter being compared. Should line up with the files
-    # In this example, the names are consistent across all the plots, but they won't always be depending on what you want to run
-    # bh_options = ['battery', 'distance', 'type sep', 'type combo', 'v or e', 'full act']
-    # bh_combos = list(combinations(bh_options, 2))
-    # bh_options_one = [['type sep'], ['type combo'], ['v or e'], ['full act']]
-    # all_options = [['v or e', 'full act'], ['battery', 'distance']]
-    param_num = '211101'
-    # all_options = bh_options_one + bh_combos
-    param_sets = []
-    for opt in all_options:
-        p = ''
-        for str_val in opt:
-           p += f"{str_val}_"
-        param_sets.append(p[:-1])
-    param_names = param_sets
-    nm = f'Behavior tests for single behaviors, {param_num}'
-    # param_names = ['No', 'Static', 'Move', 'Task']
-    # param_sets = ['100100', '100119','110119', '111119']
-    # nm = 'Compare CF types'
-    param_names = ['0cf', '1cf, no bh', '9cf, no bh', '0cf, no st', '1cf, no st', '9cf, no st']
-    param_sets = ['200100', '211101', '211109', '200000', '211001', '211009']
-    nm = '1 vs 9 no bh or no st'
-    # param_sets = ['100000', '100100', '100009', '100109', '100019', '100119', '110009', '111009', '110109', '110019', '111109', '111019', '110119', '111119']
-    # nm = 'Extra ALL the st and beh situations'
-    # nms = ['0, none', '9, none', '9, Task p (1)', '9, Agent (2)', '9, Behavior (3)',  '9, all (1, 2, 3)']
-    # param_sets, param_names, nm = [['100100', '110009', '111009', '110109', '110019', '111119'], nms, '7 Compare CF in st or bh']
-    # nms = ['0cf', '1cf', '3cf', '5cf', '9cf']
-    # param_sets, param_names, nm = [['100100', '111111', '111113','111115', '111119'], nms, '5 Compare num CF']
-    # param_names = ['0cf', '1cf', '2cf', '3cf', '9cf']
-    # nm = '1, 2, 3cf, no bh'
-    # param_sets = ['100100', '111101', '111102', '111103', '111109']
-    # '100100', '100119', '110009', '110019', '110109', '110119', '111009', '111019', '111109', '111111', '111113', '111115', '111119'
 
     # You shouldn't need to change anything beyond here
     # ---------------------------------------------------------
 
-    graphs_fname = file_setup(dates_qd, basedir_qd)
+    graphs_fname = file_setup(dates_qd, cwd=basedir_qd)
     evols = [(i + 1) * 10000 for i in range(n_files)]
-    data_and_nm = {p: [param_names[i]] for i, p in enumerate(param_sets)}
+    # This is very dumb, but it's based on the way I used to do things..... so I didn't change it and just jimmy rigged
+    data_and_nm = {p: [p] for p in all_options}
     plot_fname = f'{nm}'  # What domain is being tested
 
     for dates, basedir, arch_or_fits in files_info:
@@ -286,9 +257,8 @@ if __name__ == '__main__':
         # Walk through all the files in the given directory
         for sub, date, params_name, fnums in files:
             # Pulls the parameter file number
-            # p_num = params_name[:3]
-            p_num = params_name.split('_')[0]
-            if not p_num in param_sets:
+            p_num = params_name.split('_')[1]
+            if not p_num in all_options:
                 # print(f'Did not save data for {params_name} in {sub}')
                 continue
             if len(fnums) < n_files:

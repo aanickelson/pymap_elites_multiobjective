@@ -41,14 +41,14 @@ def main(setup):
     # Dimension of x to be tested is the sum of the sizes of the weights vectors and bias vectors
     wts_dim = wrap.agents[0].w0_size + wrap.agents[0].w2_size + wrap.agents[0].b0_size + wrap.agents[0].b2_size
     n_niches = px['n_niches']
-    if bh_name == "auto so" or bh_name == 'auto mo':
+    if 'auto' in bh_name:
         n_behaviors = 2
-        multiobjective = bh_name == 'auto mo'
+        multiobjective = 'auto mo' in bh_name
         archive = cvt_auto_encoder.compute(n_behaviors, wts_dim, wrap, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
                                  log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath, multiobj=multiobjective)
 
     else:
-        n_behaviors = wrap.bh_size(wrap.bh)
+        n_behaviors = wrap.bh_size(wrap.bh_name)
         archive = cvt_me.compute(n_behaviors, wts_dim, wrap.run_bh, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
                                  log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
 
@@ -89,16 +89,19 @@ if __name__ == '__main__':
     # px["dump_period"] = 1000
     # px['n_niches'] = 100
     # evals = 10
-    evals = 100000
+    evals = 50000
 
-    bh_options = ['auto so', 'auto mo']  #, 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+
+    bh_options = ['auto so st', 'auto mo st','auto so ac', 'auto mo ac',
+                  'avg st', 'fin st', 'min max st', 'min avg max st',
+                  'avg act', 'fin act', 'min max act', 'min avg max act']
     # bh_options = ['battery', 'distance', 'type sep', 'type combo', 'v or e', 'full act']
     # bh_combos = list(combinations(bh_options, 2))
     # bh_options_one = [['type sep'], ['type combo'], ['v or e'], ['full act']]
     # all_options = bh_options_one + bh_combos
     all_options = bh_options
 
-    for niches in [2000]:
+    for niches in [px['n_niches']]:
         print(f'Testing {niches}')
         px['n_niches'] = niches
         now = datetime.now()
@@ -117,7 +120,7 @@ if __name__ == '__main__':
             p.n_cf_evals = 1
             p.n_agents = 1
             p.battery = 18      # Found through experimentation
-            lp.n_stat_runs = 2
+            lp.n_stat_runs = 1
             for bh in all_options:
                 for i in range(lp.n_stat_runs):
                     filepath = path.join(dirpath, f'{p.param_idx:03d}_{bh}_run{i}')
