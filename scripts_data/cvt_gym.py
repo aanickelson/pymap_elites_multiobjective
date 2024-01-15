@@ -26,7 +26,7 @@ def main(setup):
     if env_nm == "mo-hopper-new-rw-v4":
         ts = 200
     elif env_nm == '"mo-mountaincarcontinuous-new-rw-v0"':
-        ts = 500
+        ts = 200
     else:
         ts = 1000
 
@@ -66,21 +66,22 @@ if __name__ == '__main__':
     # px['evals'] = 200
     px['evals'] = 100000
 
-    # bh_options_hop = ['auto', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
-    bh_options_hop = ['auto so', 'auto mo']
+    bh_options_hop = ['auto so', 'auto mo', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    # bh_options_hop = ['auto so', 'auto mo']
     # Action in mountain car is 1d, so not very useful as a behavior descriptor
     bh_options_mt = ['auto so', 'auto mo', 'avg st', 'fin st', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
-
-    # env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop],
-    #             ["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
+    # bh_options_mt = ['auto mo', 'auto so']
+    env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop],
+                ["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
     # env_info = [["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
-    env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop]]
+    # env_info = [['mo-lunar-lander-continuous-new-rw-v2', 'lander', bh_options_mt]]
+    # env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop]]
 
     # bh_options = ['avg st']  #, 'fin st', 'avg act', 'fin act', 'min avg max act']
     # bh_options = ['min avg max act', 'fin act']
 
     # lp.n_stat_runs = 10
-    lp.n_stat_runs = 5
+    lp.n_stat_runs = 10
 
     batch = []
     for env_name, env_shorthand, bh_options in env_info:
@@ -100,11 +101,11 @@ if __name__ == '__main__':
                 batch.append([p, px, filepath, env_name, b, i])
 
     # Use this one to multiprocess
-    # multiprocess_main(batch)
+    multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
-    px["parallel"] = True
-    main(batch[0])
+    # px["parallel"] = True
+    # main(batch[0])
 
     # This runs them one at a time
     # for b in batch:

@@ -145,8 +145,8 @@ def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, 
             curve_area = get_area(xy[is_eff], origin)
 
         areas.append(curve_area)
-
-    return areas, x[is_eff], y[is_eff]
+    return_vals = [areas, x[is_eff], y[is_eff]]
+    return return_vals
 
 
 def process(data):
@@ -168,9 +168,11 @@ def plot_pareto_scatter(x, y, xy, iseff, graph_title, fname, graph_dir, filetype
         os.mkdir(dirname)
 
     plt.clf()
-    max_vals = [max(x), max(y)]
-    min_vals = [min(x), min(y)]
-    # max_vals = [8.3, 8.3]
+    # max_vals = [max(x), max(y)]
+    # min_vals = [min(x), min(y)]
+    min_vals = [0, 0]
+    # max_vals = [2.3, 1.1]
+    max_vals = [1., 1.]
     # plt_max = 2.3
     # plt_max = 3.3
     # plt_max = 90
@@ -241,10 +243,10 @@ if __name__ == '__main__':
 
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
     n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
-    dates_qd = ['019_20240110_172553']
+    dates_qd = ['018_20240115_124423']
     gym_dir_name = 'hopper'
-    n_obj = 3
-    plot_obj_idx = [0, 2]
+    n_obj = 2
+    plot_obj_idx = [0, 1]
 
     # If you don't define this, it will use the current working directory of this file
     basedir_qd = os.path.join(os.getcwd(), 'data_gym', gym_dir_name)
@@ -253,8 +255,10 @@ if __name__ == '__main__':
     graphs_fname = file_setup(dates_qd, cwd=basedir_qd)
     evols = [(i + 1) * 10000 for i in range(n_files)]
     param_num = 0
-    param_nms = ['auto', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    param_nms = ['auto mo', 'auto so', 'auto', 'avg st', 'fin st', 'avg act', 'fin act',
+                 'min max st', 'min avg max st', 'min max act', 'min avg max act']
     # param_nms = ['avg st', 'fin st', 'min avg max act']
+    # param_nms = ['fin act', 'min max st']
     param_sets = ['000']
     data_and_nm = {p: [] for p in param_nms}
     plot_fname = gym_dir_name  # What domain is being tested
@@ -280,7 +284,7 @@ if __name__ == '__main__':
             # This block goes through each fil609047338827017e, gets the data, finds the pareto front, gets the area, then saves the area
 
             start = time()
-            areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits, n_obj, plot_obj_idx, origin=orig)[:n_files]
+            areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits, n_obj, plot_obj_idx, origin=orig)
             end_time = time() - start
             print(f'{bh_name}, {areas[-1]}')
             # areas = [a / 10000 for a in areas]
