@@ -2,11 +2,16 @@ import re
 
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib as mpl
 from shapely.geometry import Polygon
 import os
 from pymap_elites_multiobjective.scripts_data.often_used import is_pareto_efficient_simple
 import pygmo
 # import platypus
+
+# Type 1 / Truetype Fonts for GECCO
+mpl.rcParams['pdf.fonttype'] = 42
+mpl.rcParams['ps.fonttype'] = 42
 
 ##############################
 # This block is for file i/o #
@@ -140,8 +145,8 @@ def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, 
             curve_area = get_area(xy[is_eff], origin)
 
         areas.append(curve_area)
-
-    return areas, x[is_eff], y[is_eff]
+    return_vals = [areas, x[is_eff], y[is_eff]]
+    return return_vals
 
 
 def process(data):
@@ -204,7 +209,7 @@ def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
             max_mean = max(means) + 0.2
 
         with open(text_f, 'a') as f:
-            f.write(f'{nm} & {means[-1]} & {sterr[-1]} \n')
+            f.write(f'{nm} \n means: {means} \n sterr: {sterr} \n')
 
         # these are print statements if you want to print & combine data across machines
         # It's far easier this way than trying to migrate 2-3GB of raw data across machines.
@@ -235,24 +240,27 @@ if __name__ == '__main__':
     ftypes = ['.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
 
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
-    n_files = 15  # Need this in order to make sure the number of data points is consistent for the area plot
+    n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
+    dates_qd = ['018_20240115_124423']
+    gym_dir_name = 'hopper'
+    n_obj = 2
+    plot_obj_idx = [0, 1]
 
     # If you don't define this, it will use the current working directory of this file
-    dates_qd = ['004_20240104_094025']
-    gym_dir_name = 'hopper'
     basedir_qd = os.path.join(os.getcwd(), 'data_gym', gym_dir_name)
     files_info = [[dates_qd, basedir_qd, 'archive_']]
 
     graphs_fname = file_setup(dates_qd, cwd=basedir_qd)
     evols = [(i + 1) * 10000 for i in range(n_files)]
-    n_obj = 3
-    plot_obj_idx = [0, 2]
     param_num = 0
-    param_nms = ['avg act', 'fin act', 'fin st', 'min avg max act', 'avg st'] #'avg st',
+    param_nms = ['auto mo', 'auto so', 'auto', 'avg st', 'fin st', 'avg act', 'fin act',
+                 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    # param_nms = ['avg st', 'fin st', 'min avg max act']
+    # param_nms = ['fin act', 'min max st']
     param_sets = ['000']
     data_and_nm = {p: [] for p in param_nms}
     plot_fname = gym_dir_name  # What domain is being tested
-    orig = [0.]*n_obj
+    orig = [0.0]*n_obj
 
     from time import time
 
@@ -263,10 +271,8 @@ if __name__ == '__main__':
         for sub, date, params_name, fnums in files:
             # Pulls the parameter file number
             # p_num = params_name[:3]
-            params_name_split = params_name.split('_')
-            p_num = params_name_split[0]
-            bh_name = params_name_split[1]
-            run_nm = params_name_split[2]
+            p_num = params_name.split('_')[0]
+            bh_name = params_name.split('_')[1]
             if not p_num in param_sets:
                 # print(f'Did not save data for {params_name} in {sub}')
                 continue
@@ -276,9 +282,9 @@ if __name__ == '__main__':
             # This block goes through each fil609047338827017e, gets the data, finds the pareto front, gets the area, then saves the area
 
             start = time()
-            areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits, n_obj, plot_obj_idx, origin=orig)[:n_files]
+            areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits, n_obj, plot_obj_idx, origin=orig)
             end_time = time() - start
-            print(f'{bh_name}, {run_nm}, {areas[-1]}')
+            print(f'{bh_name}, {areas[-1]}')
             # areas = [a / 10000 for a in areas]
             # print(f"{end_time}")
             if len(areas) < n_files:

@@ -14,12 +14,11 @@ from AIC.aic import aic as Domain
 import pymap_elites_multiobjective.parameters as Params
 
 import pymap_elites_multiobjective.map_elites.cvt as cvt_me
-import pymap_elites_multiobjective.map_elites.common as cm_map_elites
-from pymap_elites_multiobjective.scripts_data.run_env import run_env
+import pymap_elites_multiobjective.map_elites.cvt_auto_encoder as cvt_auto_encoder
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
 from evo_playground.support.rover_wrapper import RoverWrapper
-from evo_playground.support.neuralnet import NeuralNetwork as NN
-from torch import from_numpy
+from pymap_elites_multiobjective.scripts_data.sar_wrapper import SARWrap
+from pymap_elites_multiobjective.cvt_params.mome_default_params import default_params
 from datetime import datetime
 from os import path, getcwd, mkdir
 import multiprocessing
@@ -29,29 +28,29 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 
 def main(setup):
-    [env_p, cvt_p, filepath, stat_num, bh_strs] = setup
+    [env_p, cvt_p, filepath, stat_num, bh_name] = setup
     print(f"main has begun for {stat_num}")
     numpy.random.seed(stat_num + random.randint(0, 10000))
     archive = {}
-    bh_sizes = {'battery': 1, 'distance': 1, 'type sep': 4, 'type combo': 2,
-                'v or e': 2, 'full act': 10}
-    env_p.n_bh = 0
-    for bhstr in bh_strs:
-        env_p.n_bh += bh_sizes[bhstr]
+    # bh_sizes = {'battery': 1, 'distance': 1, 'type sep': 4, 'type combo': 2,
+    #             'v or e': 2, 'full act': 10}
 
     env = Domain(env_p)
-    dom = RoverWrapper(env, bh_strs)
+    wrap = RoverWrapper(env, bh_name)
 
     # Dimension of x to be tested is the sum of the sizes of the weights vectors and bias vectors
-    wts_dim = dom.agents[0].w0_size + dom.agents[0].w2_size + dom.agents[0].b0_size + dom.agents[0].b2_size
+    wts_dim = wrap.agents[0].w0_size + wrap.agents[0].w2_size + wrap.agents[0].b0_size + wrap.agents[0].b2_size
     n_niches = px['n_niches']
+    if 'auto' in bh_name:
+        n_behaviors = 2
+        multiobjective = 'auto mo' in bh_name
+        archive = cvt_auto_encoder.compute(n_behaviors, wts_dim, wrap, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
+                                 log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath, multiobj=multiobjective)
 
-    start = time()
-    archive = cvt_me.compute(env_p.n_bh, wts_dim, dom._evaluate_multiple, n_niches=n_niches, max_evals=evals,
-                             log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
-    # tot_time = time() - start
-    # with open(filepath + '_time.txt', 'w') as f:
-    #     f.write(str(tot_time))
+    else:
+        n_behaviors = wrap.bh_size(wrap.bh_name)
+        archive = cvt_me.compute(n_behaviors, wts_dim, wrap.run_bh, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
+                                 log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
 
 
 def multiprocess_main(batch_for_multi):
@@ -83,34 +82,26 @@ def get_unique_fname(rootdir, date_time=None):
 if __name__ == '__main__':
     x = multiprocessing.cpu_count()
     # we do 10M evaluations, which takes a while in Python (but it is very fast in the C++ version...)
-    px = cm_map_elites.default_params.copy()
-    px["min"] = -5
-    px["max"] = 5
-    px["parallel"] = False
-    px['cvt_use_cache'] = False
-    px['add_random'] = 0
-    px['random_init_batch'] = 100
-    px['random_init'] = 0.001  # Percent of niches that should be filled in order to start mutation
-
-    # RUN VALS:
-    px["batch_size"] = 100
-    px["dump_period"] = 10000
-    px['n_niches'] = 1000
-    evals = 100000
+    px = default_params.copy()
 
     # DEBUGGING VALS:
     # px["batch_size"] = 100
     # px["dump_period"] = 1000
     # px['n_niches'] = 100
     # evals = 10
+    evals = 50000
 
 
-    bh_options = ['battery', 'distance', 'type sep', 'type combo', 'v or e', 'full act']
-    bh_combos = list(combinations(bh_options, 2))
-    bh_options_one = [['type sep'], ['type combo'], ['v or e'], ['full act']]
+    bh_options = ['auto so st', 'auto mo st','auto so ac', 'auto mo ac',
+                  'avg st', 'fin st', 'min max st', 'min avg max st',
+                  'avg act', 'fin act', 'min max act', 'min avg max act']
+    # bh_options = ['battery', 'distance', 'type sep', 'type combo', 'v or e', 'full act']
+    # bh_combos = list(combinations(bh_options, 2))
+    # bh_options_one = [['type sep'], ['type combo'], ['v or e'], ['full act']]
+    # all_options = bh_options_one + bh_combos
+    all_options = bh_options
 
-    all_options = bh_options_one + bh_combos
-    for niches in [1000, 2000]:
+    for niches in [px['n_niches']]:
         print(f'Testing {niches}')
         px['n_niches'] = niches
         now = datetime.now()
@@ -124,30 +115,17 @@ if __name__ == '__main__':
         mkdir(dirpath)
         batch = []
 
-        for params in [Params.p200100, Params.p200000, Params.p211101]:  # Params.p200100,  Params.p111107:  # , Params.p119, Params.p211, Params.p219]:
+        for params in [Params.p200000]:
             p = deepcopy(params)
             p.n_cf_evals = 1
-            # p.cf_bh = False
-            # p.n_bh = 2
-            # if p.cf_bh:
-            #     p.n_bh = params.n_poi_types + 3
-            # else:
-            #     p.n_bh = params.n_poi_types * 3
             p.n_agents = 1
-            p.battery = 18
-            lp.n_stat_runs = 15
-            if p.counter == 0:
-                p.n_cf_evals = 1
-            # else:
-            #     p.n_cf_evals = 10
-            for c in all_options:
-                combo_str = ''
-                for c0 in c:
-                    combo_str += c0 + '_'
+            p.battery = 18      # Found through experimentation
+            lp.n_stat_runs = 1
+            for bh in all_options:
                 for i in range(lp.n_stat_runs):
-                    filepath = path.join(dirpath, f'{p.param_idx:03d}_{combo_str}run{i}')
+                    filepath = path.join(dirpath, f'{p.param_idx:03d}_{bh}_run{i}')
                     mkdir(filepath)
-                    batch.append([p, px, filepath, i, c])
+                    batch.append([p, px, filepath, i, bh])
 
         # Use this one
         multiprocess_main(batch)

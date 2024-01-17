@@ -8,14 +8,13 @@ import multiprocessing
 import mo_gymnasium as mo_gym
 from mo_gymnasium.utils import MORecordEpisodeStatistics
 
-
-from AIC.aic import aic as Domain
 import pymap_elites_multiobjective.map_elites.cvt as cvt_me
+import pymap_elites_multiobjective.map_elites.cvt_auto_encoder as cvt_auto_encoder
 from pymap_elites_multiobjective.cvt_params.mome_default_params import default_params
 from pymap_elites_multiobjective.cvt_params.gym_params_0000 import Parameters
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
 import pymap_elites_multiobjective.scripts_data.often_used as oft
-from evo_playground.test_morl.sar_wrapper import SARWrap
+from pymap_elites_multiobjective.scripts_data.sar_wrapper import SARWrap
 
 
 def main(setup):
@@ -24,20 +23,29 @@ def main(setup):
     numpy.random.seed(stat_num + random.randint(0, 10000))
     moo_gym_env = MORecordEpisodeStatistics(mo_gym.make(env_nm), gamma=0.99)
     # eval_env = mo_gym.make(gym_env)
-    wrap = SARWrap(moo_gym_env, lp.hid, bh_name)
+    if env_nm == "mo-hopper-new-rw-v4":
+        ts = 200
+    elif env_nm == '"mo-mountaincarcontinuous-new-rw-v0"':
+        ts = 200
+    else:
+        ts = 1000
+
+    wrap = SARWrap(moo_gym_env, lp.hid, bh_name, ts)
     # Dimension of x to be tested is the sum of the sizes of the weights vectors and bias vectors
     wts_dim = ((wrap.st_size * lp.hid)      # Layer 0 size
                + (lp.hid * wrap.act_size)   # Layer 1 size
                + lp.hid                     # Bias 0 size
                + wrap.act_size)             # Bias 1 size
+    if bh_name == "auto so" or bh_name == 'auto mo':
+        n_behaviors = 2
+        multiobjective = bh_name == 'auto mo'
+        archive = cvt_auto_encoder.compute(n_behaviors, wts_dim, wrap, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
+                                 log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath, multiobj=multiobjective)
 
-    n_behaviors = wrap.bh_size(wrap.bh_name)
-    start = time()
-    archive = cvt_me.compute(n_behaviors, wts_dim, wrap.run_bh, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
-                             log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
-    tot_time = time() - start
-    with open(filepath + '_time.txt', 'w') as f:
-        f.write(str(tot_time))
+    else:
+        n_behaviors = wrap.bh_size(wrap.bh_name)
+        archive = cvt_me.compute(n_behaviors, wts_dim, wrap.run_bh, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
+                                 log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath)
 
 
 def multiprocess_main(batch_for_multi):
@@ -58,20 +66,25 @@ if __name__ == '__main__':
     # px['evals'] = 200
     px['evals'] = 100000
 
-    env_info = [["mo-hopper-new-rw-v4", 'hopper'],
-                ["mo-mountaincarcontinuous-new-rw-v0", 'mountain']]
-    # env_info = [["mo-mountaincarcontinuous-new-rw-v0", 'mountain']]
+    bh_options_hop = ['auto so', 'auto mo', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    # bh_options_hop = ['auto so', 'auto mo']
+    # Action in mountain car is 1d, so not very useful as a behavior descriptor
+    bh_options_mt = ['auto so', 'auto mo', 'avg st', 'fin st', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    # bh_options_mt = ['auto mo', 'auto so']
+    env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop],
+                ["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
+    # env_info = [["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
+    # env_info = [['mo-lunar-lander-continuous-new-rw-v2', 'lander', bh_options_mt]]
+    # env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop]]
 
-    bh_options = ['avg st', 'fin st', 'avg act', 'fin act', 'min avg max act']
     # bh_options = ['avg st']  #, 'fin st', 'avg act', 'fin act', 'min avg max act']
-    # bh_options = ['min avg max act']
+    # bh_options = ['min avg max act', 'fin act']
 
-    lp.n_stat_runs = 2
-    # lp.n_stat_runs = 1
-
+    # lp.n_stat_runs = 10
+    lp.n_stat_runs = 10
 
     batch = []
-    for env_name, env_shorthand in env_info:
+    for env_name, env_shorthand, bh_options in env_info:
 
         base_path = path.join(getcwd(), 'data_gym', env_shorthand)
         oft.make_a_directory(base_path)

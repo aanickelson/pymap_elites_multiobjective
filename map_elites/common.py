@@ -75,11 +75,12 @@ default_params = \
     }
 
 class Species:
-    def __init__(self, x, desc, fitness, centroid=None):
+    def __init__(self, x, desc, fitness, states=None, centroid=None):
         self.x = x  # NN biases & weights
         self.desc = desc    # Full description of the location in behavior space
         self.fitness = fitness  # Evaluated fitness
         self.centroid = centroid    # Centroid of the niche in the behavior space
+        self.states = states    # If using auto-encoder, this will save the states, which will be used to determine bh
 
 
 def polynomial_mutation(x):
