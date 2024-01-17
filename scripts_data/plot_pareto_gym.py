@@ -235,11 +235,11 @@ if __name__ == '__main__':
     ftypes = ['.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
 
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
-    n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
+    n_files = 15  # Need this in order to make sure the number of data points is consistent for the area plot
 
     # If you don't define this, it will use the current working directory of this file
-    dates_qd = ['008_20231218_105121']
-    gym_dir_name = 'mountain'
+    dates_qd = ['004_20240104_094025']
+    gym_dir_name = 'hopper'
     basedir_qd = os.path.join(os.getcwd(), 'data_gym', gym_dir_name)
     files_info = [[dates_qd, basedir_qd, 'archive_']]
 
@@ -248,11 +248,11 @@ if __name__ == '__main__':
     n_obj = 3
     plot_obj_idx = [0, 2]
     param_num = 0
-    param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
+    param_nms = ['avg act', 'fin act', 'fin st', 'min avg max act', 'avg st'] #'avg st',
     param_sets = ['000']
     data_and_nm = {p: [] for p in param_nms}
     plot_fname = gym_dir_name  # What domain is being tested
-    orig = [0.1]*n_obj
+    orig = [0.]*n_obj
 
     from time import time
 
@@ -263,8 +263,10 @@ if __name__ == '__main__':
         for sub, date, params_name, fnums in files:
             # Pulls the parameter file number
             # p_num = params_name[:3]
-            p_num = params_name.split('_')[0]
-            bh_name = params_name.split('_')[1]
+            params_name_split = params_name.split('_')
+            p_num = params_name_split[0]
+            bh_name = params_name_split[1]
+            run_nm = params_name_split[2]
             if not p_num in param_sets:
                 # print(f'Did not save data for {params_name} in {sub}')
                 continue
@@ -276,7 +278,7 @@ if __name__ == '__main__':
             start = time()
             areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits, n_obj, plot_obj_idx, origin=orig)[:n_files]
             end_time = time() - start
-            print(f'{bh_name}, {areas[-1]}')
+            print(f'{bh_name}, {run_nm}, {areas[-1]}')
             # areas = [a / 10000 for a in areas]
             # print(f"{end_time}")
             if len(areas) < n_files:
@@ -288,7 +290,7 @@ if __name__ == '__main__':
             try:
                 data_and_nm[bh_name].append(areas)
             except KeyError:
-                print(f'Did not save data for {params_name} in {sub}')
+                print(f'Key error for {params_name} in {sub}')
                 continue
 
     # Plot the areas data for all parameters on one plot to compare
