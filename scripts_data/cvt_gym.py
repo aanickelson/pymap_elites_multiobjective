@@ -86,7 +86,7 @@ if __name__ == '__main__':
     batch = []
     for env_name, env_shorthand, bh_options in env_info:
 
-        base_path = path.join(getcwd(), 'data_gym', env_shorthand)
+        base_path = path.join(getcwd(), 'data', env_shorthand)
         oft.make_a_directory(base_path)
 
         now = datetime.now()

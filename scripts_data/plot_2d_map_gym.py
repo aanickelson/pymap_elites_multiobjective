@@ -198,6 +198,7 @@ def plot_cvt(centroids, fit, desc, dim1, dim2, min_fit, max_fit, e, graph_f, sub
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap),
                  ax=axes, orientation='vertical', label='Distance to global Pareto front')
     sc = axes.scatter(desc[:, 0], desc[:, 1], c='b', s=1, zorder=0)
+    print('\n')
     plt.title(f'Behavior Space, {pctbh:0.2f}')
     pre = 'bh_'
     if reduced:
@@ -309,7 +310,10 @@ if __name__ == "__main__":
             if not f_info:
                 continue
             f_info.append(graphs_f)
-            bh_fill = process_and_plot(f_info, dims, exts, d, plotornot, n_objectives, n_pareto_layers)
+            try:
+                bh_fill = process_and_plot(f_info, dims, exts, d, plotornot, n_objectives, n_pareto_layers)
+            except FileNotFoundError:
+                continue
             params_dict[p_num].append(bh_fill)
             print(d, bh_fill)
     graphsfname = f_info[-1]

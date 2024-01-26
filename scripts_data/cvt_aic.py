@@ -105,7 +105,7 @@ if __name__ == '__main__':
         print(f'Testing {niches}')
         px['n_niches'] = niches
         now = datetime.now()
-        base_path = path.join(getcwd(), 'data')
+        base_path = path.join(getcwd(), 'data', 'rover')
         if not os.path.exists(base_path):
             mkdir(base_path)
 
