@@ -140,8 +140,11 @@ def voronoi_finite_polygons_2d(vor, radius=None):
 def load_data(filename, dim, n_fit):
     # print("\nLoading ", filename)
     data = np.loadtxt(filename)
-    fit = data[:, 0:n_fit]
-    desc = data[:, n_fit: dim + n_fit]
+    try:
+        fit = data[:, 0:n_fit]
+        desc = data[:, n_fit: dim + n_fit]
+    except IndexError:
+        return False
 
     return fit, desc
 
@@ -265,7 +268,7 @@ def process_and_plot(files_info, ds, ext, sub, plotit, n_obj, n_pareto_layers, r
 if __name__ == "__main__":
 
     exts = ['.png']  # ,'.png'
-    dates = ['024_20240110_182506']
+    dates = ['018_20240115_124423', '019_20240110_172553', '020_20240117_124709', '021_20240119_095648']
     gym_dir_name = 'hopper'
     n_niches = 1000
     n_pols = 100000
@@ -278,9 +281,11 @@ if __name__ == "__main__":
     # bh_dict = {'auto': 2, 'avg act':1, 'avg st':2, 'fin act':1, 'fin st':2,
     #            'min max st': 4, 'min avg max st': 6, 'min max act': 2,'min avg max act':3}
     # Hopper
-    bh_dict = {'auto so': 2, 'auto mo': 2, 'avg act': 3, 'avg st': 4, 'fin act': 3, 'fin st': 4,
+    bh_dict = {'auto so ac': 2, 'auto mo ac': 2, 'auto so st': 2, 'auto mo st': 2,
+               'avg act': 3, 'avg st': 4, 'fin act': 3, 'fin st': 4,
                'min max st': 8, 'min avg max st': 12, 'min max act': 6, 'min avg max act': 9}
-    param_nms = ['auto so', 'auto mo', 'avg st', 'fin st', 'avg act', 'fin act',
+    param_nms = ['auto so ac', 'auto mo ac', 'auto so st', 'auto mo st',
+                 'avg st', 'fin st', 'avg act', 'fin act',
                  'min max st', 'min avg max st', 'min max act', 'min avg max act']
     # param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
     # param_nms = ['avg st', 'fin st', 'min avg max act']
@@ -303,6 +308,10 @@ if __name__ == "__main__":
         sub_dirs = list(os.walk(root_dir))[0][1]
         for d in sub_dirs:
             p_num = re.split('_|/', d)[1]
+            if p_num == 'auto so':
+                p_num = 'auto so st'
+            elif p_num == 'auto mo':
+                pnum = 'auto mo st'
             if p_num not in params_dict:
                 continue
             bh_size = bh_dict[p_num]

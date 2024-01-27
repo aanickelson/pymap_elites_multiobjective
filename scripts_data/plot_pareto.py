@@ -84,9 +84,10 @@ def load_data(filename):
     data = np.loadtxt(filename)
     if len(data.shape) == 1:
         data = np.array([data])
-    xvals = data[:, 0]
-    yvals = data[:, 1]
-    xyvals = data[:, 0:2]
+    xvals = data[:, 0] / 5.81
+    yvals = data[:, 1] / 6.3
+    xyvals = np.transpose(np.stack([xvals, yvals]))
+    # xyvals = data[:, 0:2]
     return xvals, yvals, xyvals
 
 def load_centroids(filename):
@@ -125,6 +126,8 @@ def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, 
         if not os.path.exists(fname):
             continue
         x, y, xy = load_data(fname)
+        # max vals found through experimentation
+
         is_eff = is_pareto_efficient_simple(xy)
 
         # if evo == 1998:
@@ -161,13 +164,10 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes, o
         os.mkdir(dirname)
 
     plt.clf()
-    max_vals = [max(x), max(y)]
-    # max_vals = [8.3, 8.3]
-    # plt_max = 2.3
-    # plt_max = 3.3
-    # plt_max = 90
-    plt.xlim([-0.1, max_vals[0] + 0.1])
-    plt.ylim([-0.1, max_vals[1] + 0.1])
+    # max_xy = [max(x), max(y)]
+    max_xy = [1., 1.]
+    plt.xlim([-0.05, max_xy[0] + 0.05])
+    plt.ylim([-0.05, max_xy[1] + 0.05])
     plt.scatter(x, y, c='red')
     plt.scatter(x[iseff], y[iseff], c="blue")
     xy = np.array([x, y]).T
@@ -182,7 +182,6 @@ def plot_pareto_scatter(x, y, iseff, graph_title, fname, graph_dir, filetypes, o
 def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
     print('We made it to plotting')
     plt.clf()
-    # plt.ylim([-0.1, 2.1])
     evos = np.array(evos)
     text_f = os.path.join(graphs_dir_fname, f'NOTES_{dirname}_means.txt')
     mrks = ['.', '*', 'o', 'v', 'P', 'D', '>', '1', '2', '3', '4', '.', '*', 'o', 'v', 'P', 'D', '>', '1']
@@ -231,11 +230,13 @@ if __name__ == '__main__':
     ftypes = ['.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
 
     plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
-    n_files = 8  # Need this in order to make sure the number of data points is consistent for the area plot
-    all_options = ['auto so', 'auto mo', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
-    dates_qd = ['567_20240115_134716']
-    param_sets = ['200100', '211101', '211109', '200000', '211001', '211009']
-    param_names = ['0cf', '1cf, no bh', '9cf, no bh', '0cf, no st', '1cf, no st', '9cf, no st']
+    n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
+    all_options = ['auto mo st', ' auto mo ac',  'auto so st', 'auto so ac',
+                   'avg st', 'fin st', 'min max st', 'min avg max st',
+                   'avg act', 'fin act', 'min max act', 'min avg max act']
+    dates_qd = ['579_20240115_171242', '580_20240116_153741', '581_20240122_100337', '585_20240123_083656']
+    param_sets = ['200000']
+    param_names = ['0cf, no st']
     nm = 'Behavoir comparison'
 
     # If you don't define this, it will use the current working directory of this file
@@ -250,32 +251,47 @@ if __name__ == '__main__':
     # This is very dumb, but it's based on the way I used to do things..... so I didn't change it and just jimmy rigged
     data_and_nm = {p: [p] for p in all_options}
     plot_fname = f'{nm}'  # What domain is being tested
-
+    fin_values_f = os.path.join(graphs_fname, f'NOTES_fin_values.txt')
+    with open(fin_values_f, 'w') as f:
+        f.write('')
+    max_x = 0
+    max_y = 0
     for dates, basedir, arch_or_fits in files_info:
         files = get_file_info(dates, arch_or_fits, basedir)
 
         # Walk through all the files in the given directory
         for sub, date, params_name, fnums in files:
+            if not fnums:
+                continue
             # Pulls the parameter file number
             p_num = params_name.split('_')[1]
             if not p_num in all_options:
                 # print(f'Did not save data for {params_name} in {sub}')
                 continue
-            if len(fnums) < n_files:
-                continue
 
-            # This block goes through each fil609047338827017e, gets the data, finds the pareto front, gets the area, then saves the area
+            # This block goes through each file, gets the data, finds the pareto front, gets the area, then saves the area
 
-            areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits)[:n_files]
+            areas, x_p, y_p = get_areas_in_sub(sub, fnums, p_num, plot_scatters, date, params_name, graphs_fname, ftypes, arch_or_fits)
+            # These should come out to be ~[1., 1.] if the scaling is done correctly
+            if max(x_p) > max_x:
+                max_x = max(x_p)
+            if max(y_p) > max_y:
+                max_y = max(y_p)
+
             if len(areas) < n_files:
                 continue
+            elif len(areas) > n_files:
+                areas = areas[:n_files]
 
             print(f'{p_num}, {areas[-1]}')
             try:
                 data_and_nm[p_num].append(areas)
+                with open(fin_values_f, 'a') as f:
+                    f.write(f'Rover, {p_num}, {areas[-1]}\n')
             except KeyError:
                 print(f'Did not save data for {params_name} in {sub}')
                 continue
 
+    print('Max vals ', max_x, max_y)
     # Plot the areas data for all parameters on one plot to compare
     plot_areas(evols, data_and_nm, plot_fname, graphs_fname, ftypes)

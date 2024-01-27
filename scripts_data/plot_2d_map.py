@@ -141,9 +141,11 @@ def voronoi_finite_polygons_2d(vor, radius=None):
 def load_data(filename, dim, n_fit):
     # print("\nLoading ", filename)
     data = np.loadtxt(filename)
-    fit = data[:, 0:n_fit]
-    desc = data[:, n_fit: dim + n_fit]
-
+    try:
+        fit = data[:, 0:n_fit]
+        desc = data[:, n_fit: dim + n_fit]
+    except IndexError:
+        return False
     return fit, desc
 
 
@@ -193,12 +195,14 @@ def plot_cvt(centroids, fit, desc, dim1, dim2, min_fit, max_fit, e, graph_f, sub
         k += 1
         if k % 100 == 0:
             print(k, end=" ", flush=True)
+    print(' ')
     fit_reshaped = fit.reshape((len(fit),))
     norm = mpl.colors.Normalize(vmin=0, vmax=max_fit)
 
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap),
                  ax=axes, orientation='vertical', label='Distance to global Pareto front')
     sc = axes.scatter(desc[:, 0], desc[:, 1], c='b', s=1, zorder=0)
+
     plt.title(f'Behavior Space, {pctbh:0.2f}')
     pre = 'bh_'
     if reduced:
@@ -214,11 +218,7 @@ def mk_files(rootdir, subd, niches, pols):
     p_num = re.split('_|/', subd)[0]
     pth = os.path.join(rootdir, subd)
 
-    graphs_f = os.path.join(file_setup(dates, 'bh_'), 'bh')
-    if not os.path.exists(graphs_f):
-        os.mkdir(graphs_f)
-
-    bhs = [2, 5, 6, 9]
+    bhs = list(range(1, 30))
     did_it = False
     for bh_size in bhs:
         cent_f = os.path.join(pth, f'centroids_{niches}_{bh_size}.dat')
@@ -234,7 +234,14 @@ def mk_files(rootdir, subd, niches, pols):
         print(f"File does not exist: {dat_f}")
         return False
 
-    return pth, cent_f, dat_f, graphs_f
+    return pth, cent_f, dat_f
+
+
+def graph_fname(dates):
+    graphs_f = os.path.join(file_setup(dates, os.getcwd()), 'bh')
+    if not os.path.exists(graphs_f):
+        os.mkdir(graphs_f)
+    return graphs_f
 
 
 def calc_fit_data(fitnesses, layers):
@@ -253,15 +260,18 @@ def calc_fit_data(fitnesses, layers):
     return fit
 
 
-def process_and_plot(files_info, ds, ext, sub, plotit, red=False):
+def process_and_plot(files_info, ds, ext, sub, plotit, grph_f, red=False):
     if not files_info:
         print(f'### SKIPPING')
         return
-    n_pareto_layers = 1000
-    fpath, centroids_f, data_f, grph_f = files_info
+    n_pareto_layers = 150
+    fpath, centroids_f, data_f = files_info
     # print(f'processing {fpath}')
     centroids = load_centroids(centroids_f)
-    ftns, beh = load_data(data_f, centroids.shape[1], 2)
+    loaded_data = load_data(data_f, centroids.shape[1], 2)
+    if not loaded_data:
+        return False
+    ftns, beh = loaded_data
     _, counts = np.unique(beh, return_counts=True, axis=0)
     pct_bh = len(counts) / centroids.shape[0]
     # print(pct_bh)
@@ -281,7 +291,11 @@ if __name__ == "__main__":
     # dates = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600', '532_20230828_101445']
     # dates = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600', '532_20230828_101445',
     # '533_20230828_113856', '534_20230828_134557']
-    dates = ['540_20230907_095553', '541_20230907_103856']
+    # all_options = ['auto mo st', ' auto mo ac',  'auto so st', 'auto so ac',
+    #                'avg st', 'fin st', 'min max st', 'min avg max st',
+    #                'avg act', 'fin act', 'min max act', 'min avg max act']
+    all_options = ['fin act']
+    dates = ['579_20240115_171242', '580_20240116_153741', '581_20240122_100337', '585_20240123_083656']
     exts = ['.png']  # ,'.png'
     n_niches = 1000
     n_pols = 100000
@@ -291,18 +305,14 @@ if __name__ == "__main__":
     n_pareto_layers = 150
     dim_x = 24
     toplotornot = True
-    param_sets = ['200100', '211101', '211109', '200000', '211001', '211009']
-    # param_sets = ['100000', '100100', '100009', '100109', '100019', '100119', '110009', '111009', '110109', '110019', '111109', '111019', '110119',
-    #               '111119']
-    # param_sets = ['100109']  #, '100107']
-    # param_sets = ['100100', '111101', '111103', '111105', '111107', '111109']
-    # param_sets = ['100100', '100109', '110109', '111109']
+    param_sets = ['200000']
 
     params_dict = {pname: [] for pname in param_sets}
+    graphsfname = graph_fname(dates)
 
     for date in dates:
         root_dir = os.path.join(os.getcwd(), 'data', date)
-
+        data_set_num = re.split('_|/', root_dir)[-3]
         bh_pth = os.path.join(root_dir, 'bh_vis')
         # util.make_a_directory(bh_pth)
         # print(root_dir)
@@ -312,11 +322,19 @@ if __name__ == "__main__":
             if p_num not in params_dict:
                 continue
             f_info = mk_files(root_dir, d, n_niches, n_pols)
+
+            if not f_info:
+                print(f'Could not find centroids file for {d}')
+                continue
+
             dims = [[0, 1]]  #, [1, 4], [2, 5]] #  ,[0, 3],  [2, 5]]  #, [4, 2]]
-            bh_fill = process_and_plot(f_info, dims, exts, d, toplotornot)
+            d = data_set_num + '_' + d
+            bh_fill = process_and_plot(f_info, dims, exts, d, toplotornot, graphsfname)
+            if not bh_fill:
+                continue
             params_dict[p_num].append(bh_fill)
             print(d, bh_fill)
-    graphsfname = f_info[-1]
+
     with open(graphsfname + 'by type NOTES.TXT', 'w') as fl:
         for i, [key, val] in enumerate(params_dict.items()):
             fl.write(f'{key} & - & - & - & - & & &  {np.mean(val):0.5f} & {stats.sem(val):0.5f} \n')

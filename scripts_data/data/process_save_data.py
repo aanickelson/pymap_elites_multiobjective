@@ -1,9 +1,10 @@
 import numpy as np
 import os
 import re
-import plot_2d_map_gym as plot_bh
-import plot_pareto as plot_par
 import csv
+
+import pymap_elites_multiobjective.scripts_data.plot_2d_map_gym as plot_bh
+import pymap_elites_multiobjective.scripts_data.plot_pareto as plot_par
 
 
 def get_files(names_dates, rootdir):
@@ -21,12 +22,18 @@ def get_files(names_dates, rootdir):
 
     return all_files
 
+def norm_data(ft, dom):
+    norms = {'hopper':[2.45, 1.36], 'mountain':[0.71, 1.], 'rover':[5.81, 6.3]}
+    norm_vals = norms[dom]
+    ft[:, 0] = ft[:, 0] / norm_vals[0]
+    ft[:, 1] = ft[:, 1] / norm_vals[1]
+    return ft
 
 if __name__ == '__main__':
-    root_dir = os.path.join(os.getcwd(), 'data')
-    nm_dates = [['hopper', ['003_20240103_170210', '004_20240104_094025']],
-                ['mountain', ['005_20231211_160926']],
-                ['rover', ['dummy']]]
+    root_dir = os.path.join(os.getcwd())
+    nm_dates = [['hopper', ['018_20240115_124423', '019_20240115_152734', '020_20240117_124709', '021_20240119_095648', '022_20240126_145552']],
+                ['mountain', ['024_20240117_124709', '025_20240126_145552']],
+                ['rover', ['579_20240115_171242', '580_20240116_153741', '581_20240122_100337', '585_20240123_083656', '586_20240126_145708']]]
     file_info = get_files(nm_dates, root_dir)
 
     # Create a long file name of first letter of domain & domain numbers -- it's just a bunch of nested loops essentially
@@ -44,14 +51,15 @@ if __name__ == '__main__':
     for fname, files, dom_nm, date_num in file_info:
         cent_files = [fn for fn in files if 'centroid' in fn]
 
-
         if (a not in files) or (not cent_files):
+            print(f'data not saved for {fname}')
             continue
 
         cent = cent_files[0]
         bh_name = re.split('_|/', fname)[-2]
         run_num = int(fname[-1])
 
+        print(f'processing {dom_nm} {date_num} {run_num}')
         # Get behavior and centroid numbers from centroid file name
         cent_split = re.split('_|\.', cent)
         n_bh = int(cent_split[-2])
@@ -60,7 +68,11 @@ if __name__ == '__main__':
         # Load data
         arch_file = os.path.join(fname, a)
         cent_file = os.path.join(fname, cent)
-        fits, desc = plot_bh.load_data(arch_file, n_bh, n_obj)
+        vals = plot_bh.load_data(arch_file, n_bh, n_obj)
+        if not vals:
+            continue
+        fs, desc = vals
+        fits = norm_data(fs, dom_nm)
 
         # Pareto data
         is_eff = plot_par.is_pareto_efficient_simple(fits)
@@ -83,8 +95,3 @@ if __name__ == '__main__':
 
         write.writerow(fields)
         write.writerows(all_data)
-
-
-
-
-
