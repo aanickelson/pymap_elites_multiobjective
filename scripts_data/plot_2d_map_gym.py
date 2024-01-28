@@ -268,22 +268,26 @@ def process_and_plot(files_info, ds, ext, sub, plotit, n_obj, n_pareto_layers, r
 if __name__ == "__main__":
 
     exts = ['.png']  # ,'.png'
-    dates = ['018_20240115_124423', '019_20240110_172553', '020_20240117_124709', '021_20240119_095648']
-    gym_dir_name = 'hopper'
+    dates = ['024_20240117_124709', '025_20240126_145552']
+    gym_dir_name = 'mountain'
     n_niches = 1000
     n_pols = 100000
+    # [['hopper', ['018_20240115_124423', '019_20240115_152734', '020_20240117_124709', '021_20240119_095648',
+    #              '022_20240126_145552']],
+    #  ['mountain', ['024_20240117_124709', '025_20240126_145552']],
 
     final_num = n_pols
     n_objectives = 2
     n_pareto_layers = 150
     plotornot = True
     # Mountain
-    # bh_dict = {'auto': 2, 'avg act':1, 'avg st':2, 'fin act':1, 'fin st':2,
-    #            'min max st': 4, 'min avg max st': 6, 'min max act': 2,'min avg max act':3}
-    # Hopper
     bh_dict = {'auto so ac': 2, 'auto mo ac': 2, 'auto so st': 2, 'auto mo st': 2,
-               'avg act': 3, 'avg st': 4, 'fin act': 3, 'fin st': 4,
-               'min max st': 8, 'min avg max st': 12, 'min max act': 6, 'min avg max act': 9}
+               'avg act':1, 'fin act':1, 'min max act': 2,'min avg max act':3,
+               'avg st':2, 'fin st':2, 'min max st': 4, 'min avg max st': 6}
+    # Hopper
+    # bh_dict = {'auto so ac': 2, 'auto mo ac': 2, 'auto so st': 2, 'auto mo st': 2,
+    #            'avg act': 3, 'avg st': 4, 'fin act': 3, 'fin st': 4,
+    #            'min max st': 8, 'min avg max st': 12, 'min max act': 6, 'min avg max act': 9}
     param_nms = ['auto so ac', 'auto mo ac', 'auto so st', 'auto mo st',
                  'avg st', 'fin st', 'avg act', 'fin act',
                  'min max st', 'min avg max st', 'min max act', 'min avg max act']
@@ -292,7 +296,7 @@ if __name__ == "__main__":
     # param_nms = ['min avg max act']
     dims = [[0, 1]]
 
-    basedir_qd = os.path.join(os.getcwd(), 'data_gym', gym_dir_name)
+    basedir_qd = os.path.join(os.getcwd(), 'data', gym_dir_name)
     graphs_f = file_setup(dates, cwd=basedir_qd)
     files_info = [[dates, basedir_qd, 'archive_']]
 
