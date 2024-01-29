@@ -1,6 +1,6 @@
 from AIC.aic import aic
 import pymap_elites_multiobjective.parameters as Params
-from evo_playground.support.rover_wrapper import RoverWrapper
+from pymap_elites_multiobjective.scripts_data.rover_wrapper import RoverWrapper
 import numpy as np
 
 

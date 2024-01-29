@@ -4,11 +4,7 @@ import sys, os
 
 import numpy.random
 
-import numpy as np
-import math
 from copy import deepcopy
-from time import time
-from itertools import combinations
 
 from AIC.aic import aic as Domain
 import pymap_elites_multiobjective.parameters as Params
@@ -16,8 +12,7 @@ import pymap_elites_multiobjective.parameters as Params
 import pymap_elites_multiobjective.map_elites.cvt as cvt_me
 import pymap_elites_multiobjective.map_elites.cvt_auto_encoder as cvt_auto_encoder
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
-from evo_playground.support.rover_wrapper import RoverWrapper
-from pymap_elites_multiobjective.scripts_data.sar_wrapper import SARWrap
+from pymap_elites_multiobjective.scripts_data.rover_wrapper import RoverWrapper
 from pymap_elites_multiobjective.cvt_params.mome_default_params import default_params
 from datetime import datetime
 from os import path, getcwd, mkdir
