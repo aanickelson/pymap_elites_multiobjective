@@ -90,8 +90,8 @@ def print_means_as_table(statsdf):
         for i, st in enumerate(stats_print):
             if i % 2:
                 continue
-            st_str += f'{stats_print[i]:.3f} ({stats_print[i+1]:.3f}) & '
-        print(f' & {nm} & {st_str} \\\\')
+            st_str += f'& {stats_print[i]:.3f} ({stats_print[i+1]:.3f})'
+        print(f' & {nm} {st_str} \\\\')
 
 
 def print_anova_stats(fulldf):
@@ -105,22 +105,33 @@ def print_anova_stats(fulldf):
         for d in domains:
             for s in st_print:
                 model1 = pg.anova(dv=s, between=[c], data=fulldf[fulldf['domain'] == d], detailed=True)
+                pval = model1['p-unc'].values[0]
+                np2val = model1['np2'].values[0]
+                prev = '\\highlight' if np2val > 0.07 else ''
+                pre = '\\highlighter' if np2val > 0.14 else prev
 
-                for a in anova_vals:
-                    printval = model1[a].values[0]
-                    str_to_print += f' & {printval}'
+                if pval < 0.01:
+                    str_to_print += f' & {pre}{{{pval:.2E}'
+                else:
+                    str_to_print += f' & {pre}{{{pval:.2f}'
+                if np2val < 0.01:
+                    str_to_print += f' ({np2val:.2E})}}'
+                else:
+                    str_to_print += f' ({np2val:.2f})}}'
+
         str_to_print += ' \\\\'
         print(str_to_print)
 
 if __name__ == '__main__':
     metafn = '/home/toothless/workspaces/pymap_elites_multiobjective/scripts_data/Behavior definitions - Sheet1.csv'
-    datafn = '/home/toothless/workspaces/pymap_elites_multiobjective/scripts_data/data/sum data/NOTES_fin_vals_h_018_019_020_021_022_m_024_025_r_579_580_581_585_586_.csv'
+    datafn = '/home/toothless/workspaces/pymap_elites_multiobjective/scripts_data/data/sum data/NOTES_fin_vals_h_018_019_020_021_022_m_024_025_026_r_579_580_581_585_586_587_588_.csv'
     stats_df, raw_df = pd_from_data(metafn, datafn)
 
     # print_anova_stats(raw_df)
     # print_means_as_table(stats_df)
 
-    print(stats_df.loc[:, ['domain', 'behavior', 'len', 'hypervol mean', 'bh pct full mean']], '\n')
+    print(stats_df.loc[:, ['domain', 'behavior', 'len', 'hypervol mean', 'hypervol sem']], '\n')
+    # print(stats_df.loc[:, ['domain', 'behavior', 'len', 'bh pct full mean', 'bh pct full sem']], '\n')
     # print(pd.DataFrame(round(stats_df.groupby(by=['behavior'])['bh pct full mean'].agg([np.mean, sem]), 4)).reset_index())
     # print(stats_df['hypervol mean'].corr(stats_df['bh pct full mean'], method='pearson'))
     # print(stats_df['hypervol mean'].corr(stats_df['bh size']))

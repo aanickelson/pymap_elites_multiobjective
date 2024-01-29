@@ -31,9 +31,11 @@ def norm_data(ft, dom):
 
 if __name__ == '__main__':
     root_dir = os.path.join(os.getcwd())
-    nm_dates = [['hopper', ['018_20240115_124423', '019_20240115_152734', '020_20240117_124709', '021_20240119_095648', '022_20240126_145552']],
-                ['mountain', ['024_20240117_124709', '025_20240126_145552']],
-                ['rover', ['579_20240115_171242', '580_20240116_153741', '581_20240122_100337', '585_20240123_083656', '586_20240126_145708']]]
+    nm_dates = [
+        ['hopper', ['018_20240115_124423', '019_20240115_152734', '020_20240117_124709', '021_20240119_095648', '022_20240126_145552']],
+        ['mountain', ['024_20240117_124709', '025_20240126_145552', '026_20240128_145330']],
+        ['rover', ['579_20240115_171242', '580_20240116_153741', '581_20240122_100337', '585_20240123_083656', '586_20240126_145708', '587_20240128_151600', '588_20240128_151600']]
+    ]
     file_info = get_files(nm_dates, root_dir)
 
     # Create a long file name of first letter of domain & domain numbers -- it's just a bunch of nested loops essentially
@@ -59,7 +61,7 @@ if __name__ == '__main__':
         bh_name = re.split('_|/', fname)[-2]
         run_num = int(fname[-1])
 
-        print(f'processing {dom_nm} {date_num} {run_num}')
+        print(f'processing {dom_nm} {date_num} {bh_name} {run_num}')
         # Get behavior and centroid numbers from centroid file name
         cent_split = re.split('_|\.', cent)
         n_bh = int(cent_split[-2])
@@ -70,6 +72,7 @@ if __name__ == '__main__':
         cent_file = os.path.join(fname, cent)
         vals = plot_bh.load_data(arch_file, n_bh, n_obj)
         if not vals:
+            print(f'no vals, not saving data for {fname}')
             continue
         fs, desc = vals
         fits = norm_data(fs, dom_nm)

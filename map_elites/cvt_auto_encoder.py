@@ -153,7 +153,10 @@ def get_bh_from_auto(autoenc, archive, new_pols):
     st_list = np.array([a.states for a in arch_list])
 
     # Train the auto-encoder
-    autoenc.train(st_list)
+    try:
+        autoenc.train(st_list)
+    except RuntimeError:
+        x = 1
 
     model_out = autoenc.feed(st_list)       # get the behavior descriptors from the autoencoder
     for i, sp in enumerate(arch_list):                 # Set the behavior descriptors for each species

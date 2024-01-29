@@ -88,22 +88,24 @@ if __name__ == '__main__':
     # px["batch_size"] = 100
     # px["dump_period"] = 1000
     # px['n_niches'] = 100
-    # evals = 10
-    evals = 50000
+    # px["evals"] = 1000
+    px["evals"] = 100000
 
 
-    bh_options = ['auto so st', 'auto mo st','auto so ac', 'auto mo ac',
-                  'avg st', 'fin st', 'min max st', 'min avg max st',
-                  'avg act', 'fin act', 'min max act', 'min avg max act']
-    # bh_options = ['battery', 'distance', 'type sep', 'type combo', 'v or e', 'full act']
+    # bh_options = ['avg act', 'fin act', 'min max act', 'min avg max act', 'auto so ac', 'auto mo ac',]
+    # bh_options = ['avg st', 'fin st', 'min max st', 'min avg max st',
+    #               'avg act', 'fin act', 'min max act', 'min avg max act',
+    #                'auto mo st','auto mo ac',]  #, 'auto so st', 'auto so ac',
+    bh_options = ['auto mo ac', 'auto so st', 'auto so ac']
     # bh_combos = list(combinations(bh_options, 2))
     # bh_options_one = [['type sep'], ['type combo'], ['v or e'], ['full act']]
     # all_options = bh_options_one + bh_combos
     all_options = bh_options
 
-    for niches in [px['n_niches']]:
-        print(f'Testing {niches}')
-        px['n_niches'] = niches
+    lp.n_stat_runs = 10
+    batch = []
+    # Because I'm extremely lazy and some of my code assumes the run number is only one digit.....
+    for _ in range(2):
         now = datetime.now()
         base_path = path.join(getcwd(), 'data', 'rover')
         if not os.path.exists(base_path):
@@ -111,24 +113,21 @@ if __name__ == '__main__':
 
         now_str = now.strftime("_%Y%m%d_%H%M%S")
         dirpath = get_unique_fname(base_path, now_str)
-        # dirpath = path.join(getcwd(), now_str)
         mkdir(dirpath)
-        batch = []
+        params = Params.p200000
+        # for params in [Params.p200000]:
+        p = deepcopy(params)
+        p.n_cf_evals = 1
+        p.n_agents = 1
+        p.battery = 18      # Found through experimentation
+        for bh in all_options:
+            for i in range(lp.n_stat_runs):
+                filepath = path.join(dirpath, f'{p.param_idx:03d}_{bh}_run{i}')
+                mkdir(filepath)
+                batch.append([p, px, filepath, i, bh])
 
-        for params in [Params.p200000]:
-            p = deepcopy(params)
-            p.n_cf_evals = 1
-            p.n_agents = 1
-            p.battery = 18      # Found through experimentation
-            lp.n_stat_runs = 1
-            for bh in all_options:
-                for i in range(lp.n_stat_runs):
-                    filepath = path.join(dirpath, f'{p.param_idx:03d}_{bh}_run{i}')
-                    mkdir(filepath)
-                    batch.append([p, px, filepath, i, bh])
-
-        # Use this one
-        multiprocess_main(batch)
+    # Use this one
+    multiprocess_main(batch)
 
     # This runs a single experiment / setup at a time for debugging
     # px["parallel"] = False

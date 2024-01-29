@@ -140,6 +140,8 @@ def voronoi_finite_polygons_2d(vor, radius=None):
 def load_data(filename, dim, n_fit):
     # print("\nLoading ", filename)
     data = np.loadtxt(filename)
+    if len(data.shape) < 2:
+        data = np.array([data])
     try:
         fit = data[:, 0:n_fit]
         desc = data[:, n_fit: dim + n_fit]
