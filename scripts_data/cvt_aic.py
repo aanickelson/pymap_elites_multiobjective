@@ -14,6 +14,8 @@ import pymap_elites_multiobjective.map_elites.cvt_auto_encoder as cvt_auto_encod
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
 from pymap_elites_multiobjective.scripts_data.rover_wrapper import RoverWrapper
 from pymap_elites_multiobjective.cvt_params.mome_default_params import default_params
+import pymap_elites_multiobjective.scripts_data.often_used as oft
+
 from datetime import datetime
 from os import path, getcwd, mkdir
 import multiprocessing
@@ -78,6 +80,9 @@ if __name__ == '__main__':
     x = multiprocessing.cpu_count()
     px = default_params.copy()
 
+    data_fpath = path.join(getcwd(), 'data')
+    oft.make_a_directory(data_fpath)  # This makes the directory only if it does not already exist
+
     # DEBUGGING VALS:
     # px["batch_size"] = 100
     # px["dump_period"] = 1000
@@ -85,40 +90,55 @@ if __name__ == '__main__':
     # px["evals"] = 1000
     px["evals"] = 100000
 
-
+    # Select which behaviors you want to test
     # bh_options = ['avg act', 'fin act', 'min max act', 'min avg max act', 'auto so ac', 'auto mo ac',]
     # bh_options = ['avg st', 'fin st', 'min max st', 'min avg max st',
     #               'avg act', 'fin act', 'min max act', 'min avg max act',
     #                'auto mo st','auto mo ac',]  #, 'auto so st', 'auto so ac',
     bh_options = ['auto mo ac', 'auto so st', 'auto so ac']
 
+    # Number of stat runs per behavior
     lp.n_stat_runs = 10
+
+    ######################################################
+    # You shouldn't need to change anything below here
+    # Unless you want to run only one experiment for debugging purposes (go to the end comment block)
+    ######################################################
+
     batch = []
     params = Params.p200000
     p = deepcopy(params)
 
+    # Set up directories for data
     now = datetime.now()
-    base_path = path.join(getcwd(), 'data', 'rover')
-    if not os.path.exists(base_path):
-        mkdir(base_path)
+    base_path = path.join(data_fpath, 'rover')
+    oft.make_a_directory(base_path)  # This makes the directory only if it does not already exist
 
     now_str = now.strftime("_%Y%m%d_%H%M%S")
     dirpath = get_unique_fname(base_path, now_str)
-    mkdir(dirpath)
+    oft.make_a_directory(dirpath)
 
+    # Set up the batch parameters to run
     for bh in bh_options:
         for i in range(lp.n_stat_runs):
             filepath = path.join(dirpath, f'{p.param_idx}_{bh}_run{i:02d}')
-            mkdir(filepath)
+            oft.make_a_directory(filepath)  # This makes the directory only if it does not already exist
             batch.append([p, px, filepath, i, bh])
 
-    # Use this one
+    ######################################################
+    # Comment / uncomment the sections below depending on if you want to use multiprocessing
+    ######################################################
+
+    # Use this one to multiprocess all the experiments
     multiprocess_main(batch)
 
-    # This runs a single experiment / setup at a time for debugging
+    # This runs a single experiment for debugging
+    # 'parallel' flag determines if you test the environments in parallel, i.e. the policy evaluation
+    # cannot be combined with multiprocessing
     # px["parallel"] = False
     # main(batch[0])
 
+    # This runs one at a time for debugging
     # px["parallel"] = True
     # for b in batch:
     #     main(b)

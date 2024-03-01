@@ -36,10 +36,10 @@ def main(setup):
                + (lp.hid * wrap.act_size)   # Layer 1 size
                + lp.hid                     # Bias 0 size
                + wrap.act_size)             # Bias 1 size
-    if bh_name == "auto so" or bh_name == 'auto mo':
+    if 'auto' in bh_name:
         n_behaviors = 2
         # Flag that indicates if it is single or multi-objective
-        multiobjective = bh_name == 'auto mo'
+        multiobjective = 'auto mo' in bh_name
         archive = cvt_auto_encoder.compute(n_behaviors, wts_dim, wrap, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
                                  log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath, multiobj=multiobjective)
 
@@ -58,7 +58,6 @@ def multiprocess_main(batch_for_multi):
 
 if __name__ == '__main__':
     px = default_params.copy()
-    p = Parameters
 
     # DEBUGGING VALS:
     # px["batch_size"] = 100
@@ -67,26 +66,39 @@ if __name__ == '__main__':
     # px['evals'] = 200
     px['evals'] = 100000
 
+    # Behaviors you want to test in the hopper environment
     bh_options_hop = ['auto so', 'auto mo', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
     # bh_options_hop = ['auto so', 'auto mo']
 
+    # Behaviors you want to test in the mountain car environment
     # Action in mountain car is 1d, so not very useful as a behavior descriptor
     bh_options_mt = ['auto so', 'auto mo', 'avg st', 'fin st', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
     # bh_options_mt = ['auto mo', 'auto so']
 
+    # Pick which environments you want to test
     env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop],
                 ["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
 
-    # env_info = [["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
-    # env_info = [['mo-lunar-lander-continuous-new-rw-v2', 'lander', bh_options_mt]]
-    # env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop]]
-
+    # How many stat runs per behavior x environment
     lp.n_stat_runs = 10
 
+    ######################################################
+    # You shouldn't need to change anything below here
+    # Unless you want to run only one experiment for debugging purposes (go to the end comment block)
+    ######################################################
+
+    p = Parameters
+
+    # Set up directories for data
+    data_fpath = path.join(getcwd(), 'data')
+    oft.make_a_directory(data_fpath)
     batch = []
+
+    # Set up batch parameters to run
     for env_name, env_shorthand, bh_options in env_info:
 
-        base_path = path.join(getcwd(), 'data', env_shorthand)
+        # More sub-directories for data
+        base_path = path.join(data_fpath, env_shorthand)
         oft.make_a_directory(base_path)
 
         now = datetime.now()
@@ -94,19 +106,27 @@ if __name__ == '__main__':
         dirpath = oft.get_unique_fname(base_path, now_str)
         oft.make_a_directory(dirpath)
 
+        # Batch parameters
         for b in bh_options:
             for i in range(lp.n_stat_runs):
                 filepath = path.join(dirpath, f'{p.param_idx}_{b}_run{i:02d}')
                 oft.make_a_directory(filepath)
                 batch.append([p, px, filepath, env_name, b, i])
 
+    ######################################################
+    # Comment / uncomment the sections below depending on if you want to use multiprocessing
+    ######################################################
+
     # Use this one to multiprocess
     multiprocess_main(batch)
 
-    # This runs a single experiment / setup at a time for debugging
+    # This runs a single experiment for debugging
+    # 'parallel' flag determines if you test the environments in parallel, i.e. the policy evaluation
+    # cannot be combined with multiprocessing
     # px["parallel"] = True
     # main(batch[0])
 
-    # This runs them one at a time
+    # This runs one at a time for debugging
+    # px["parallel"] = True
     # for b in batch:
     #     main(b)
