@@ -130,7 +130,7 @@ class SARWrap:
                  'min avg max st': st_bh_size * 3,          # Min, average, and max states
                  'min max act': self.act_size * 2,          # Min and max actions
                  'min avg max act': self.act_size * 3,      # Min, average, max actions
-                 'auto': self.raw_st.size                   # Auto-encoder will use all states as an input
+                 'auto': [self.ts, self.st_size]            # Auto-encoder will use all states as an input
                  }
         return sizes[bh_name]
 
@@ -157,7 +157,7 @@ class SARWrap:
                    np.concatenate((np.min(self.acts, axis=0),
                                    np.mean(self.acts, axis=0),
                                    np.max(self.acts, axis=0))),
-               'auto': np.ndarray.flatten(self.raw_st)}
+               'auto': self.raw_st}
 
         return np.nan_to_num(bhs[bh_name])
 

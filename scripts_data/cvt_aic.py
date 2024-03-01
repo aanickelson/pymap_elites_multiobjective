@@ -89,6 +89,7 @@ if __name__ == '__main__':
     # px['n_niches'] = 100
     # px["evals"] = 1000
     px["evals"] = 100000
+    px['auto_batch'] = 10000
 
     # Select which behaviors you want to test
     # bh_options = ['avg act', 'fin act', 'min max act', 'min avg max act', 'auto so ac', 'auto mo ac',]

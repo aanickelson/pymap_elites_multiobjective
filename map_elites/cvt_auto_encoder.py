@@ -141,23 +141,28 @@ def __evaluate(t):
     fit, desc = f(z)
     return cm.Species(z, desc=[], fitness=fit, states=desc)
 
-def get_bh_from_auto(autoenc, archive, new_pols):
-    # List of species in archive
-    arch_list = []
-    for v in list(archive.values()):
-        arch_list.extend(v)
-    # arch_list = list(archive.values())
-    arch_list.extend(new_pols)              # Add the newly tested policies
-    st_list = np.array([a.states for a in arch_list])
+def get_bh_from_auto(autoenc, archive, new_pols, train):
 
-    # Train the auto-encoder
-    autoenc.train(st_list)
+    if train:
+        # List of species in archive
+        arch_list = []
+        for v in list(archive.values()):
+            arch_list.extend(v)
+        arch_list.extend(new_pols)  # Add the newly tested policies
+        st_list = np.array([a.states for a in arch_list])
+        # Train the auto-encoder
+        autoenc.train(st_list)
+        archive = {}                            # Reset the archive
 
+    else:
+        # List of species in archive
+        arch_list = []
+        arch_list.extend(new_pols)  # Add the newly tested policies
+        st_list = np.array([a.states for a in arch_list])
 
     model_out = autoenc.feed(st_list)       # get the behavior descriptors from the autoencoder
     for i, sp in enumerate(arch_list):                 # Set the behavior descriptors for each species
         sp.desc = model_out[i]
-    archive = {}                            # Reset the archive
     return archive, autoenc, arch_list
 
 
@@ -229,7 +234,12 @@ def compute(bh_size, dim_x, wrapper,
 
         # Train the autoencoder
         # Then empty the archive and get the new bh descriptors from the autoencoder
-        archive, autoencoder, s_list = get_bh_from_auto(autoencoder, archive, s_list)
+        if not n_evals % params['auto_batch']:
+            train_auto = True
+        else:
+            train_auto = False
+
+        archive, autoencoder, s_list = get_bh_from_auto(autoencoder, archive, s_list, train_auto)
 
         # natural selection
         __add_to_archive(s_list, archive, kdt, multiobj)

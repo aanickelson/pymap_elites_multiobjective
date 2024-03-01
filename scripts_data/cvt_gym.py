@@ -67,6 +67,8 @@ if __name__ == '__main__':
     # px['evals'] = 20
     # px['evals'] = 100
 
+    px['auto_batch'] = 10000
+
     # Behaviors you want to test in the hopper environment
     # bh_options_hop = ['auto so', 'auto mo', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
     bh_options_hop = ['auto so', 'auto mo']
