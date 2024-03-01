@@ -131,7 +131,7 @@ def get_areas_in_sub(sub, fnms, pnum, plot_sc, dt, paramsnm, graphs_f, f_types, 
         fname = os.path.join(sub, f'{a_or_f}{evo}{ext}')
         if not os.path.exists(fname):
             continue
-        x, y, xy = load_data(fname, n_objectives, obj_to_plot, maxv)
+        x, y, xy = load_data(fname, obj_to_plot, maxv)
         is_eff = is_pareto_efficient_simple(xy)
 
         # if evo == 1998:
@@ -208,7 +208,7 @@ def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
             continue
         means, sterr = process(data)
         if max(means) > max_mean:
-            max_mean = max(means) + 0.2
+            max_mean = max(means)
 
         with open(text_f, 'a') as f:
             f.write(f'{nm} \n means: {means} \n sterr: {sterr} \n')
@@ -237,30 +237,31 @@ def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
 
 if __name__ == '__main__':
 
-    ftypes = ['.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
+    ftypes = ['.svg', '.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
 
     n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
-    dates_hop = ['018_20240115_124423', '019_20240115_152734', '020_20240117_124709', '021_20240119_095648']
+    dates_hop = ['018_20240115_124423', '019_20240115_152734', '020_20240117_124709', '021_20240119_095648',
+                '022_20240126_145552']
     hop_name = 'hopper'  # Hopper 18, 19, 20, and 21 are all comparable
-    basedir_hop = os.path.join(os.getcwd(), 'data_gym', hop_name)
+    basedir_hop = os.path.join(os.getcwd(), 'data', hop_name)
     max_vals_hop = [2.45, 1.36]  # Hopper max vals (through experimentation) are [2.450297493338585 1.356763742864132]
     hop_files_info = [hop_name, dates_hop, basedir_hop, 'archive_', max_vals_hop]
 
-    dates_mt = ['024_20240117_124709']
+    dates_mt = ['024_20240117_124709', '025_20240126_145552', '026_20240128_145330', '028_20240129_110622']
     mt_name = 'mountain'
-    basedir_mt = os.path.join(os.getcwd(), 'data_gym', mt_name)
+    basedir_mt = os.path.join(os.getcwd(), 'data', mt_name)
     max_vals_mt = [0.71, 1.]  # Mountain max vals are [0.7074856593352816 0.9999999998146282]
     mt_files_info = [mt_name, dates_mt, basedir_mt, 'archive_', max_vals_mt]
 
-    files_info = [mt_files_info]
+    files_info = [mt_files_info]  #, hop_files_info]
 
-    param_nms = ['auto mo st', 'auto so st', 'auto mo ac', 'auto so ac',
-                 'avg st', 'fin st', 'min max st', 'min avg max st',
-                 'avg act', 'fin act', 'min max act', 'min avg max act']
-    # param_nms = ['avg st', 'fin st', 'min avg max act']
+    # param_nms = ['auto mo st', 'auto so st', 'auto mo ac', 'auto so ac',
+    #              'avg st', 'fin st', 'min max st', 'min avg max st',
+    #              'avg act', 'fin act', 'min max act', 'min avg max act']
+    param_nms = ['avg st', 'min max act']
     # param_nms = ['fin act', 'min max st']
 
-    plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
+    plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
     write_fin = True
     n_obj = 2
     plot_obj_idx = [0, 1]

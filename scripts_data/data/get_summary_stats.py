@@ -21,12 +21,12 @@ def pd_from_data(metafile, dataf):
 
             row[-4:] = [float(v) for v in row[-4:]]
             [dom_nm, date_num, run_num, bh_name, hypervol, pol_par, pol_kept, bh_pct_full] = row
-            if bh_name == 'auto mo':
-                bh_name = 'auto mo st'
-            elif bh_name == 'auto so':
-                bh_name = 'auto so st'
-            # if 'auto so' in bh_name:
-            #     continue
+            # if bh_name == 'auto mo':
+            #     bh_name = 'auto mo st'
+            # elif bh_name == 'auto so':
+            #     bh_name = 'auto so st'
+            if 'auto' in bh_name:
+                continue
 
             metadata = metadf[(metadf['behavior'] == bh_name) & (metadf['domain'] == dom_nm)].values.flatten().tolist()
             row.extend(metadata)
@@ -95,7 +95,7 @@ def print_means_as_table(statsdf):
 
 
 def print_anova_stats(fulldf):
-    chars = ['behavior','policy output', 'raw', 'bh size', "restricted", 'auto']
+    chars = ['behavior','policy output', 'raw', 'bh size', "restricted"]  #, 'auto']
     domains = ['hopper', 'mountain', 'rover']
     st_print = ['hypervol', 'bh pct full']
     anova_vals = ['p-unc', 'np2']
@@ -107,8 +107,8 @@ def print_anova_stats(fulldf):
                 model1 = pg.anova(dv=s, between=[c], data=fulldf[fulldf['domain'] == d], detailed=True)
                 pval = model1['p-unc'].values[0]
                 np2val = model1['np2'].values[0]
-                prev = '\\highlight' if np2val > 0.07 else ''
-                pre = '\\highlighter' if np2val > 0.14 else prev
+                prev = '\\highlight' if np2val >= 0.07 else ''
+                pre = '\\highlighter' if np2val >= 0.14 else prev
 
                 if pval < 0.01:
                     str_to_print += f' & {pre}{{{pval:.2E}'
@@ -124,7 +124,7 @@ def print_anova_stats(fulldf):
 
 if __name__ == '__main__':
     metafn = '/home/toothless/workspaces/pymap_elites_multiobjective/scripts_data/Behavior definitions - Sheet1.csv'
-    datafn = '/home/toothless/workspaces/pymap_elites_multiobjective/scripts_data/data/sum data/NOTES_fin_vals_h_018_019_020_021_022_m_024_025_026_r_579_580_581_585_586_587_588_.csv'
+    datafn = '/home/toothless/workspaces/pymap_elites_multiobjective/scripts_data/data/sum data/NOTES_fin_vals_h_018_019_020_021_022_m_024_025_026_028_029_r_579_580_581_585_586_587_588_.csv'
     stats_df, raw_df = pd_from_data(metafn, datafn)
 
     # print_anova_stats(raw_df)
@@ -133,13 +133,13 @@ if __name__ == '__main__':
     print(stats_df.loc[:, ['domain', 'behavior', 'len', 'hypervol mean', 'hypervol sem']], '\n')
     # print(stats_df.loc[:, ['domain', 'behavior', 'len', 'bh pct full mean', 'bh pct full sem']], '\n')
     # print(pd.DataFrame(round(stats_df.groupby(by=['behavior'])['bh pct full mean'].agg([np.mean, sem]), 4)).reset_index())
-    # print(stats_df['hypervol mean'].corr(stats_df['bh pct full mean'], method='pearson'))
-    # print(stats_df['hypervol mean'].corr(stats_df['bh size']))
+    # print(raw_df['hypervol'].corr(raw_df['bh pct full'], method='pearson'))
+    # print(raw_df['hypervol'].corr(raw_df['bh size']))
     # # plot_scatter(raw_df)
-    # for dom in ['hopper', 'mountain', 'rover']:
-    #     print(f"############    {dom}   ############")
-    #     for comp_against in ['bh pct full mean', 'bh size']:
-    #         print(stats_df['hypervol mean'][stats_df['domain'] == dom].corr(stats_df[comp_against][stats_df['domain'] == dom],method='pearson'))
+    for dom in ['hopper', 'mountain', 'rover']:
+        print(f"############    {dom}   ############")
+        for comp_against in ['bh pct full', 'bh size']:
+            print(raw_df['hypervol'][raw_df['domain'] == dom].corr(raw_df[comp_against][raw_df['domain'] == dom],method='pearson'))
     #     print('')
     #     chars = ['behavior', 'bh size', 'raw', 'policy output','auto']
     #     for c in chars:

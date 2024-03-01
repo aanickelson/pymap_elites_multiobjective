@@ -237,15 +237,15 @@ def mk_files(rootdir, subd, niches, pols):
     return pth, cent_f, dat_f
 
 
-def graph_fname(dates):
-    graphs_f = os.path.join(file_setup(dates, os.getcwd()), 'bh')
+def graph_fname(dates, based):
+    graphs_f = file_setup(dates, based)
     if not os.path.exists(graphs_f):
         os.mkdir(graphs_f)
     return graphs_f
 
 
 def calc_fit_data(fitnesses, layers):
-    fit = np.zeros(fitnesses.shape[0])
+    fit = np.zeros(fitnesses.shape[0])+0.000001
     fits = fitnesses.copy()
     x = 1
     for lay in range(layers, 0, -1):
@@ -255,7 +255,7 @@ def calc_fit_data(fitnesses, layers):
         x *= 0.99
         # if not lay % 100:
         #     print(lay)
-        if np.max(fits) < 0.0001:
+        if np.max(fits) < 0.000001:
             break
     return fit
 
@@ -264,7 +264,7 @@ def process_and_plot(files_info, ds, ext, sub, plotit, grph_f, red=False):
     if not files_info:
         print(f'### SKIPPING')
         return
-    n_pareto_layers = 150
+    n_pareto_layers = 300
     fpath, centroids_f, data_f = files_info
     # print(f'processing {fpath}')
     centroids = load_centroids(centroids_f)
@@ -286,17 +286,12 @@ def process_and_plot(files_info, ds, ext, sub, plotit, grph_f, red=False):
 
 
 if __name__ == "__main__":
-    # if len(sys.argv) < 3:
-    #     sys.exit('Usage: %s centroids_file archive.dat [min_fit] [max_fit]' % sys.argv[0])
-    # dates = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600', '532_20230828_101445']
-    # dates = ['529_20230822_120257', '530_20230823_111127', '531_20230825_111600', '532_20230828_101445',
-    # '533_20230828_113856', '534_20230828_134557']
     # all_options = ['auto mo st', ' auto mo ac',  'auto so st', 'auto so ac',
     #                'avg st', 'fin st', 'min max st', 'min avg max st',
     #                'avg act', 'fin act', 'min max act', 'min avg max act']
-    all_options = ['fin act']
-    dates = ['579_20240115_171242', '580_20240116_153741', '581_20240122_100337', '585_20240123_083656']
-    exts = ['.png']  # ,'.png'
+    all_options = ['fin act', 'avg st']
+    dates = ['579_20240115_171242']  #, '580_20240116_153741', '581_20240122_100337', '585_20240123_083656', '586_20240126_145708', '587_20240128_151600', '588_20240128_151600']
+    exts = ['.svg','.png']  #
     n_niches = 1000
     n_pols = 100000
     final_num = n_pols
@@ -307,19 +302,20 @@ if __name__ == "__main__":
     toplotornot = True
     param_sets = ['200000']
 
-    params_dict = {pname: [] for pname in param_sets}
-    graphsfname = graph_fname(dates)
+    params_dict = {pname: [] for pname in all_options}
+    graphsfname = graph_fname(dates, os.path.join(os.getcwd(),'data', 'rover'))
 
     for date in dates:
-        root_dir = os.path.join(os.getcwd(), 'data', date)
+        root_dir = os.path.join(os.getcwd(), 'data', 'rover', date)
         data_set_num = re.split('_|/', root_dir)[-3]
         bh_pth = os.path.join(root_dir, 'bh_vis')
         # util.make_a_directory(bh_pth)
         # print(root_dir)
         sub_dirs = list(os.walk(root_dir))[0][1]
         for d in sub_dirs:
-            p_num = re.split('_|/', d)[0]
+            p_num = re.split('_|/', d)[1]
             if p_num not in params_dict:
+                print(f'{p_num} not in params dictionary')
                 continue
             f_info = mk_files(root_dir, d, n_niches, n_pols)
 

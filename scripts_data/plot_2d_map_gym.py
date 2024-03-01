@@ -230,7 +230,7 @@ def mk_files(rootdir, subd, niches, pols, n_bh):
 
 
 def calc_fit_data(fitnesses, layers, nobj):
-    fit = np.zeros(fitnesses.shape[0])
+    fit = np.zeros(fitnesses.shape[0]) + 0.000001
     fits = fitnesses.copy()
     x = 1
     for lay in range(layers, 0, -1):
@@ -238,10 +238,13 @@ def calc_fit_data(fitnesses, layers, nobj):
         pareto = util.is_pareto_efficient_simple(fits)
         fit[pareto] = x
         fits[pareto] = [0] * nobj
-        x *= 0.99
+        # Mountain
+        x *= 0.965
+        # Hopper
+        # x *= 0.98
         # if not lay % 100:
         #     print(lay)
-        if np.max(fits) < 0.0001:
+        if np.max(fits) < 0.000001:
             break
     return fit
 
@@ -269,30 +272,37 @@ def process_and_plot(files_info, ds, ext, sub, plotit, n_obj, n_pareto_layers, r
 
 if __name__ == "__main__":
 
-    exts = ['.png']  # ,'.png'
-    dates = ['024_20240117_124709', '025_20240126_145552']
-    gym_dir_name = 'mountain'
-    n_niches = 1000
-    n_pols = 100000
-    # [['hopper', ['018_20240115_124423', '019_20240115_152734', '020_20240117_124709', '021_20240119_095648',
-    #              '022_20240126_145552']],
-    #  ['mountain', ['024_20240117_124709', '025_20240126_145552']],
+    exts = ['.svg','.png']  #
 
-    final_num = n_pols
-    n_objectives = 2
-    n_pareto_layers = 150
-    plotornot = True
-    # Mountain
-    bh_dict = {'auto so ac': 2, 'auto mo ac': 2, 'auto so st': 2, 'auto mo st': 2,
-               'avg act':1, 'fin act':1, 'min max act': 2,'min avg max act':3,
-               'avg st':2, 'fin st':2, 'min max st': 4, 'min avg max st': 6}
     # Hopper
+    # gym_dir_name = 'hopper'
+    # dates =  ['018_20240115_124423', '019_20240115_152734', '020_20240117_124709', '021_20240119_095648',
+    #             '022_20240126_145552']
     # bh_dict = {'auto so ac': 2, 'auto mo ac': 2, 'auto so st': 2, 'auto mo st': 2,
     #            'avg act': 3, 'avg st': 4, 'fin act': 3, 'fin st': 4,
     #            'min max st': 8, 'min avg max st': 12, 'min max act': 6, 'min avg max act': 9}
-    param_nms = ['auto so ac', 'auto mo ac', 'auto so st', 'auto mo st',
-                 'avg st', 'fin st', 'avg act', 'fin act',
-                 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    # param_nms = ['auto so ac', 'auto mo ac', 'auto so st', 'auto mo st',
+    #              'avg st', 'fin st', 'avg act', 'fin act',
+    #              'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    # param_nms = ['avg act', 'min max st']
+
+    # Mountain
+    gym_dir_name = 'mountain'
+    dates = ['024_20240117_124709', '025_20240126_145552', '026_20240128_145330', '028_20240129_110622']
+    bh_dict = {'auto so ac': 2, 'auto mo ac': 2, 'auto so st': 2, 'auto mo st': 2,
+               'avg act':1, 'fin act':1, 'min max act': 2,'min avg max act':3,
+               'avg st':2, 'fin st':2, 'min max st': 4, 'min avg max st': 6}
+    param_nms = ['avg st', 'min max act']
+
+    n_niches = 1000
+    n_pols = 100000
+
+    final_num = n_pols
+    n_objectives = 2
+    n_pareto_layers = 300
+    plotornot = True
+
+
     # param_nms = ['avg act', 'avg st', 'fin act', 'fin st', 'min avg max act']
     # param_nms = ['avg st', 'fin st', 'min avg max act']
     # param_nms = ['min avg max act']
@@ -314,11 +324,13 @@ if __name__ == "__main__":
         sub_dirs = list(os.walk(root_dir))[0][1]
         for d in sub_dirs:
             p_num = re.split('_|/', d)[1]
+
             if p_num == 'auto so':
                 p_num = 'auto so st'
             elif p_num == 'auto mo':
                 pnum = 'auto mo st'
             if p_num not in params_dict:
+                print(f'skipping {p_num} not in dict')
                 continue
             bh_size = bh_dict[p_num]
             f_info = mk_files(root_dir, d, n_niches, n_pols, bh_size)
@@ -326,7 +338,8 @@ if __name__ == "__main__":
                 continue
             f_info.append(graphs_f)
             try:
-                bh_fill = process_and_plot(f_info, dims, exts, d, plotornot, n_objectives, n_pareto_layers)
+                d_date = date[:4] + d
+                bh_fill = process_and_plot(f_info, dims, exts, d_date, plotornot, n_objectives, n_pareto_layers)
             except FileNotFoundError:
                 continue
             params_dict[p_num].append(bh_fill)

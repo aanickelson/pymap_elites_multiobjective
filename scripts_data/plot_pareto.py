@@ -26,7 +26,7 @@ def file_setup(f_dates, cwd=None):
     if not cwd:
         cwd = os.getcwd()
     # Filename setup
-    graphs_dir = os.path.join(cwd, 'data', 'graphs')
+    graphs_dir = os.path.join(cwd, 'graphs')
     if not os.path.exists(graphs_dir):
         os.mkdir(graphs_dir)
 
@@ -45,13 +45,13 @@ def file_setup(f_dates, cwd=None):
     return graphs_f
 
 
-def get_file_info(dates, a_or_f, cwd=None):
+def get_file_info(dates, a_or_f, domain, cwd=None):
     if not cwd:
         cwd = os.getcwd()
 
     files_to_use = []
     for date in dates:
-        root_dir = os.path.join(cwd, 'data', date)
+        root_dir = os.path.join(cwd, date)
         sub_dirs = list(os.walk(root_dir))[0][1]
         for s in sub_dirs:
             sub = os.path.join(root_dir, s)
@@ -196,7 +196,7 @@ def plot_areas(evos, data_and_names, dirname, graphs_dir_fname, filetypes):
             continue
         means, sterr = process(data)
         if max(means) > max_mean:
-            max_mean = max(means) + 0.2
+            max_mean = max(means)
 
         with open(text_f, 'a') as f:
             f.write(f'{nm} & {means[-1]} & {sterr[-1]} \n')
@@ -227,20 +227,21 @@ if __name__ == '__main__':
 
     # Change these parameters to run the script
 
-    ftypes = ['.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
+    ftypes = ['.svg', '.png']  #, '.svg']   # What file type(s) do you want for the plots  '.svg',
 
-    plot_scatters = True   # Do you want to plot the scatter plots of the objective space for each data set
+    plot_scatters = False   # Do you want to plot the scatter plots of the objective space for each data set
     n_files = 10  # Need this in order to make sure the number of data points is consistent for the area plot
-    all_options = ['auto mo st', ' auto mo ac',  'auto so st', 'auto so ac',
-                   'avg st', 'fin st', 'min max st', 'min avg max st',
-                   'avg act', 'fin act', 'min max act', 'min avg max act']
-    dates_qd = ['579_20240115_171242', '580_20240116_153741', '581_20240122_100337', '585_20240123_083656']
+    # all_options = ['auto mo st', ' auto mo ac',  'auto so st', 'auto so ac',
+    #                'avg st', 'fin st', 'min max st', 'min avg max st',
+    #                'avg act', 'fin act', 'min max act', 'min avg max act']
+    all_options = ['avg st', 'fin act']
+    dates_qd = ['579_20240115_171242', '580_20240116_153741', '581_20240122_100337', '585_20240123_083656', '586_20240126_145708', '587_20240128_151600', '588_20240128_151600']
     param_sets = ['200000']
     param_names = ['0cf, no st']
     nm = 'Behavoir comparison'
 
     # If you don't define this, it will use the current working directory of this file
-    basedir_qd = os.getcwd()
+    basedir_qd = os.path.join(os.getcwd(), 'data', 'rover')
     files_info = [[dates_qd, basedir_qd, 'archive_']]
 
     # You shouldn't need to change anything beyond here
@@ -257,7 +258,7 @@ if __name__ == '__main__':
     max_x = 0
     max_y = 0
     for dates, basedir, arch_or_fits in files_info:
-        files = get_file_info(dates, arch_or_fits, basedir)
+        files = get_file_info(dates, arch_or_fits, 'rover',basedir)
 
         # Walk through all the files in the given directory
         for sub, date, params_name, fnums in files:
