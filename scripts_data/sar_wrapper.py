@@ -1,11 +1,5 @@
-import mo_gymnasium as mo_gym
 import numpy as np
-from mo_gymnasium.utils import MORecordEpisodeStatistics
-
-from evo_playground.support.neuralnet import NeuralNetwork as NN
-from evo_playground.ccea_base import CCEA
-from evo_playground.parameters.learningparams01 import LearnParams as lp
-# from beepy import beep
+from pymap_elites_multiobjective.map_elites.neuralnet import NeuralNetwork as NN
 
 import warnings
 
@@ -173,18 +167,6 @@ class Params:
         self.n_agents = 1
 
 
-if __name__ == '__main__':
-    params = Params()
-    env = MORecordEpisodeStatistics(mo_gym.make("mo-lunar-lander-continuous-v2"), gamma=0.99)
-    eval_env = mo_gym.make("mo-lunar-lander-continuous-v2")
-    st_size = 8
-    act_size = 2
-    reward_size = 4
-    # x = eval_env.action_space
-    wrap = SARWrap(env)
-    ccea = CCEA(wrap, params, lp, 'G', st_size, act_size, '/home/anna/PycharmProjects/evo_playground/test_morl/test_lander', 0)
-    ccea.run_evolution()
-    # beep(8)
 
 # Cont environments:
 # water-reservoir-vo

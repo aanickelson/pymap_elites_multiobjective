@@ -6,10 +6,10 @@ class Parameters:
 
     param_idx = 200000
     n_agents = 1
-    battery = 30
+    battery = 18
     time_steps = 50
     speed = 2.0
-    n_cf_evals = 10  # Number of times to rerun with different cf configurations 
+    n_cf_evals = 1  # Number of times to rerun with different cf configurations
     map_size = 20
     counter = 0
     counter_locs =[]

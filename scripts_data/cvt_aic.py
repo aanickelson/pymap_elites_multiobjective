@@ -76,7 +76,6 @@ def get_unique_fname(rootdir, date_time=None):
 
 if __name__ == '__main__':
     x = multiprocessing.cpu_count()
-    # we do 10M evaluations, which takes a while in Python (but it is very fast in the C++ version...)
     px = default_params.copy()
 
     # DEBUGGING VALS:
@@ -92,34 +91,26 @@ if __name__ == '__main__':
     #               'avg act', 'fin act', 'min max act', 'min avg max act',
     #                'auto mo st','auto mo ac',]  #, 'auto so st', 'auto so ac',
     bh_options = ['auto mo ac', 'auto so st', 'auto so ac']
-    # bh_combos = list(combinations(bh_options, 2))
-    # bh_options_one = [['type sep'], ['type combo'], ['v or e'], ['full act']]
-    # all_options = bh_options_one + bh_combos
-    all_options = bh_options
 
     lp.n_stat_runs = 10
     batch = []
-    # Because I'm extremely lazy and some of my code assumes the run number is only one digit.....
-    for _ in range(2):
-        now = datetime.now()
-        base_path = path.join(getcwd(), 'data', 'rover')
-        if not os.path.exists(base_path):
-            mkdir(base_path)
+    params = Params.p200000
+    p = deepcopy(params)
 
-        now_str = now.strftime("_%Y%m%d_%H%M%S")
-        dirpath = get_unique_fname(base_path, now_str)
-        mkdir(dirpath)
-        params = Params.p200000
-        # for params in [Params.p200000]:
-        p = deepcopy(params)
-        p.n_cf_evals = 1
-        p.n_agents = 1
-        p.battery = 18      # Found through experimentation
-        for bh in all_options:
-            for i in range(lp.n_stat_runs):
-                filepath = path.join(dirpath, f'{p.param_idx:03d}_{bh}_run{i}')
-                mkdir(filepath)
-                batch.append([p, px, filepath, i, bh])
+    now = datetime.now()
+    base_path = path.join(getcwd(), 'data', 'rover')
+    if not os.path.exists(base_path):
+        mkdir(base_path)
+
+    now_str = now.strftime("_%Y%m%d_%H%M%S")
+    dirpath = get_unique_fname(base_path, now_str)
+    mkdir(dirpath)
+
+    for bh in bh_options:
+        for i in range(lp.n_stat_runs):
+            filepath = path.join(dirpath, f'{p.param_idx}_{bh}_run{i:02d}')
+            mkdir(filepath)
+            batch.append([p, px, filepath, i, bh])
 
     # Use this one
     multiprocess_main(batch)
@@ -131,9 +122,3 @@ if __name__ == '__main__':
     # px["parallel"] = True
     # for b in batch:
     #     main(b)
-
-    # This is the bad way. Don't do it this way
-    # num_cores = multiprocessing.cpu_count()
-    # pool = multiprocessing.Pool(num_cores)
-    # with multiprocessing.Pool(num_cores=multiprocessing.cpu_count()-1) as pool:
-    #     pool.map(main, batch)

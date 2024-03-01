@@ -22,7 +22,7 @@ def main(setup):
     print(f"main has begun for {bh_name} - {stat_num}")
     numpy.random.seed(stat_num + random.randint(0, 10000))
     moo_gym_env = MORecordEpisodeStatistics(mo_gym.make(env_nm), gamma=0.99)
-    # eval_env = mo_gym.make(gym_env)
+
     if env_nm == "mo-hopper-new-rw-v4":
         ts = 200
     elif env_nm == '"mo-mountaincarcontinuous-new-rw-v0"':
@@ -38,6 +38,7 @@ def main(setup):
                + wrap.act_size)             # Bias 1 size
     if bh_name == "auto so" or bh_name == 'auto mo':
         n_behaviors = 2
+        # Flag that indicates if it is single or multi-objective
         multiobjective = bh_name == 'auto mo'
         archive = cvt_auto_encoder.compute(n_behaviors, wts_dim, wrap, n_niches=px['n_niches'], max_evals=cvt_p["evals"],
                                  log_file=open('cvt.dat', 'w'), params=cvt_p, data_fname=filepath, multiobj=multiobjective)
@@ -68,19 +69,18 @@ if __name__ == '__main__':
 
     bh_options_hop = ['auto so', 'auto mo', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
     # bh_options_hop = ['auto so', 'auto mo']
+
     # Action in mountain car is 1d, so not very useful as a behavior descriptor
     bh_options_mt = ['auto so', 'auto mo', 'avg st', 'fin st', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
     # bh_options_mt = ['auto mo', 'auto so']
+
     env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop],
                 ["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
+
     # env_info = [["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
     # env_info = [['mo-lunar-lander-continuous-new-rw-v2', 'lander', bh_options_mt]]
     # env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop]]
 
-    # bh_options = ['avg st']  #, 'fin st', 'avg act', 'fin act', 'min avg max act']
-    # bh_options = ['min avg max act', 'fin act']
-
-    # lp.n_stat_runs = 10
     lp.n_stat_runs = 10
 
     batch = []
@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
         for b in bh_options:
             for i in range(lp.n_stat_runs):
-                filepath = path.join(dirpath, f'{p.param_idx:03d}_{b}_run{i}')
+                filepath = path.join(dirpath, f'{p.param_idx}_{b}_run{i:02d}')
                 oft.make_a_directory(filepath)
                 batch.append([p, px, filepath, env_name, b, i])
 

@@ -4,7 +4,7 @@ import sys
 import numpy as np
 from torch import from_numpy
 
-from evo_playground.support.neuralnet import NeuralNetwork as NN
+from pymap_elites_multiobjective.map_elites.neuralnet import NeuralNetwork as NN
 from pymap_elites_multiobjective.parameters.learningparams01 import LearnParams as lp
 
 
