@@ -6,9 +6,8 @@ import numpy as np
 import math
 
 from random import seed
-import pymap_elites_multiobjective.map_elites.cvt_plus_pareto as cvt_me_pareto
-import pymap_elites_multiobjective.map_elites.cvt as cvt_me
-import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
+import pymap_elites_multiobjective.Archive.cvt_plus_pareto as cvt_me_pareto
+import pymap_elites_multiobjective.Archive.cvt_pareto_parallel as cvt_me_pareto_parallel
 import pymap_elites_multiobjective.map_elites.common as cm_map_elites
 from datetime import datetime
 from os import path, getcwd, mkdir

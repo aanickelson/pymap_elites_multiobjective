@@ -37,16 +37,14 @@
 #| The fact that you are presently reading this means that you have
 #| had knowledge of the CeCILL license and that you accept its terms.
 
-import math
 import numpy as np
 import multiprocessing
 from datetime import datetime
 import random
-# from scipy.spatial import cKDTree
 from sklearn.neighbors import KDTree
 
 from pymap_elites_multiobjective.map_elites import common as cm
-from evo_playground.support.auto_encoder import Autoencoder
+from pymap_elites_multiobjective.learning.auto_encoder import Autoencoder
 
 
 def __add_to_archive(slist, archive, kdt, pareto=True):

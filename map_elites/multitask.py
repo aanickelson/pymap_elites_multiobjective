@@ -42,14 +42,11 @@
 import math
 import numpy as np
 import multiprocessing
-from pathlib import Path
-import sys
 import random
 from collections import defaultdict
-from sklearn.neighbors import KDTree
 from scipy.spatial import distance
 
-from pymap_elites_multiobjective import common as cm
+from pymap_elites_multiobjective.map_elites import common as cm
 
 
 def add_to_archive(s, archive):

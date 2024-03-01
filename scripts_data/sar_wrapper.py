@@ -1,5 +1,5 @@
 import numpy as np
-from pymap_elites_multiobjective.map_elites.neuralnet import NeuralNetwork as NN
+from pymap_elites_multiobjective.learning.neuralnet import NeuralNetwork as NN
 
 import warnings
 

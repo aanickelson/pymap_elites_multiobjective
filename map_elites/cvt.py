@@ -37,12 +37,10 @@
 #| The fact that you are presently reading this means that you have
 #| had knowledge of the CeCILL license and that you accept its terms.
 
-import math
 import numpy as np
 import multiprocessing
 from datetime import datetime
 import random
-# from scipy.spatial import cKDTree : TODO -- faster?
 from sklearn.neighbors import KDTree
 
 from pymap_elites_multiobjective.map_elites import common as cm

@@ -1,7 +1,6 @@
 # only required to run python3 Archive/cvt_rastrigin.py
 import random
 import numpy.random
-from time import time
 from datetime import datetime
 from os import path, getcwd
 import multiprocessing
@@ -59,16 +58,18 @@ def multiprocess_main(batch_for_multi):
 if __name__ == '__main__':
     px = default_params.copy()
 
-    # DEBUGGING VALS:
-    # px["batch_size"] = 100
-    # px["dump_period"] = 100
-    # px['n_niches'] = 1000
-    # px['evals'] = 200
     px['evals'] = 100000
 
+    # DEBUGGING VALS:
+    # px["batch_size"] = 10
+    # px["dump_period"] = 10
+    # px['n_niches'] = 1000
+    # px['evals'] = 20
+    # px['evals'] = 100
+
     # Behaviors you want to test in the hopper environment
-    bh_options_hop = ['auto so', 'auto mo', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
-    # bh_options_hop = ['auto so', 'auto mo']
+    # bh_options_hop = ['auto so', 'auto mo', 'avg st', 'fin st', 'avg act', 'fin act', 'min max st', 'min avg max st', 'min max act', 'min avg max act']
+    bh_options_hop = ['auto so', 'auto mo']
 
     # Behaviors you want to test in the mountain car environment
     # Action in mountain car is 1d, so not very useful as a behavior descriptor
@@ -76,8 +77,8 @@ if __name__ == '__main__':
     # bh_options_mt = ['auto mo', 'auto so']
 
     # Pick which environments you want to test
-    env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop],
-                ["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
+    env_info = [["mo-hopper-new-rw-v4", 'hopper', bh_options_hop],]
+                # ["mo-mountaincarcontinuous-new-rw-v0", 'mountain', bh_options_mt]]
 
     # How many stat runs per behavior x environment
     lp.n_stat_runs = 10

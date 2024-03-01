@@ -3,11 +3,9 @@ import re
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib as mpl
-from shapely.geometry import Polygon
 import os
 from pymap_elites_multiobjective.scripts_data.often_used import is_pareto_efficient_simple
 import pygmo
-# import platypus
 
 # Type 1 / Truetype Fonts for GECCO
 mpl.rcParams['pdf.fonttype'] = 42

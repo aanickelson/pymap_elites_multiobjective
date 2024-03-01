@@ -3,12 +3,11 @@ import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import numpy as np
-import math
 
-import pymap_elites_multiobjective.map_elites.cvt_plus_pareto as cvt_me_pareto
+import pymap_elites_multiobjective.Archive.cvt_plus_pareto as cvt_me_pareto
 import pymap_elites_multiobjective.map_elites.cvt as cvt_me
 import pymap_elites_multiobjective.map_elites.common as cm_map_elites
-import pymap_elites_multiobjective.map_elites.cvt_pareto_parallel as cvt_me_pareto_parallel
+import pymap_elites_multiobjective.Archive.cvt_pareto_parallel as cvt_me_pareto_parallel
 
 from teaming.domain import DiscreteRoverDomain as Domain
 import evo_playground.parameters as param
